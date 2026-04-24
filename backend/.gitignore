@@ -1,8 +1,10 @@
 # Dépendances (le dossier le plus lourd, ne jamais l'uploader)
 node_modules/
 
-# Variables d'environnement (contient tes mots de passe BDD)
+# Variables d'environnement
 .env
+**/ .env
+src/.env
 
 # Logs (fichiers générés en cas d'erreur)
 npm-debug.log*
