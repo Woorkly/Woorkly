@@ -43,6 +43,13 @@ class Room {
         return rows[0];
     }
 
+    // 3.bis Récupérer uniquement la galerie d'une salle
+static async getPhotos(salleId) {
+    const sql = "SELECT url FROM salle_photos WHERE salle_id = ?";
+    const [rows] = await db.execute(sql, [salleId]);
+    return rows; // Retourne un tableau d'URLs
+}
+
     // 4. Ajouter une méthode pour Créer une salle (indispensable pour l'Admin)
     static async create(data) {
         const sql = `
