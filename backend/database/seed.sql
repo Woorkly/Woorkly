@@ -18,11 +18,12 @@ INSERT INTO `equipements` (nom)
 SELECT * FROM (SELECT 'Machine à café') AS tmp WHERE NOT EXISTS (SELECT nom FROM `equipements` WHERE nom = 'Machine à café') LIMIT 1;
 
 -- 3. Insertion d'un utilisateur de test (password: password123)
-INSERT INTO `utilisateurs` (nom, email, password, role)
-SELECT * FROM (SELECT 'Jean Workly', 'jean@workly.fr', 'password123', 'user') AS tmp 
+-- 3. Insertion d'un utilisateur de test (Mise à jour avec avatar)
+INSERT INTO `utilisateurs` (nom, email, password, avatar_url, role)
+SELECT * FROM (SELECT 'Jean Workly', 'jean@workly.fr', 'password123', 'avatar1.png', 'user') AS tmp 
 WHERE NOT EXISTS (SELECT email FROM `utilisateurs` WHERE email = 'jean@workly.fr') LIMIT 1;
 
 -- 4. Insertion d'une salle de test
-INSERT INTO `salles` (nom, statut, adresse, code_postal, ville, capacite, prix_heure, type_id)
-SELECT * FROM (SELECT 'La Station', 'disponible', '12 Rue de la République', '13001', 'Marseille', 6, 25.00, 2) AS tmp 
+INSERT INTO `salles` (nom, statut, adresse, code_postal, ville, capacite, prix_heure, image_principale, type_id)
+SELECT * FROM (SELECT 'La Station', 'disponible', '12 Rue de la République', '13001', 'Marseille', 6, 25.00, 'default-room.jpg', 2) AS tmp 
 WHERE NOT EXISTS (SELECT nom FROM `salles` WHERE nom = 'La Station') LIMIT 1;

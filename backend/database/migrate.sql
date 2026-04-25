@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS `utilisateurs` (
   `nom` VARCHAR(100) NOT NULL,
   `email` VARCHAR(150) UNIQUE NOT NULL,
   `password` VARCHAR(255) NOT NULL,
+  `avatar_url` VARCHAR(255) DEFAULT 'default-avatar.png',
   `role` VARCHAR(20) DEFAULT 'user'
 ) ENGINE=InnoDB;
 
@@ -43,6 +44,7 @@ CREATE TABLE IF NOT EXISTS `salles` (
   `prix_heure` DECIMAL(5, 2),
   `prix_demi_journee` DECIMAL(5, 2),
   `prix_journee` DECIMAL(6, 2),
+  `image_principale` VARCHAR(255) DEFAULT 'default-room.jpg',
   `type_id` INT NOT NULL,
   CONSTRAINT `fk_salle_type` FOREIGN KEY (`type_id`) REFERENCES `types`(`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB;
@@ -71,9 +73,18 @@ CREATE TABLE IF NOT EXISTS `salle_equipements` (
   CONSTRAINT `fk_pivot_equip` FOREIGN KEY (`equipement_id`) REFERENCES `equipements`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- 8. NOUVELLE Table pour la galerie d'images (Plusieurs photos par salle)
+CREATE TABLE IF NOT EXISTS `salle_photos` (
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
+  `url` VARCHAR(255) NOT NULL,
+  `salle_id` INT NOT NULL,
+  CONSTRAINT `fk_photos_salle` FOREIGN KEY (`salle_id`) REFERENCES `salles`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 -- ============================================================
 -- ZONE DE MISE À JOUR (ALTER TABLE)
--- Ajoutez vos modifications ci-dessous pour ne pas perdre de données
+-- Ajoutez les modifications ci-dessous pour ne pas perdre de données
+
 -- ============================================================
 
 -- Exemple pour plus tard :
