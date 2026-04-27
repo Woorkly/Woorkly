@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 class Room {
     // 1. On adapte le constructeur avec TOUS les champs de ta table 'salles'
-    constructor(id, nom, statut, adresse, code_postal, ville, latitude, longitude, capacite, description, prix_heure, prix_demi_journee, prix_journee, type_id) {
+    constructor(id, nom, statut, adresse, code_postal, ville, latitude, longitude, capacite, description, prix_heure, prix_demi_journee, prix_journee, image_principale, type_id) {
         this.id = id;
         this.nom = nom;
         this.statut = statut;
@@ -16,6 +16,7 @@ class Room {
         this.prix_heure = prix_heure;
         this.prix_demi_journee = prix_demi_journee;
         this.prix_journee = prix_journee;
+        this.image_principale = image_principale;
         this.type_id = type_id;
     }
 
@@ -41,6 +42,13 @@ class Room {
         const [rows] = await db.execute(sql, [id]);
         return rows[0];
     }
+
+    // 3.bis Récupérer uniquement la galerie d'une salle
+static async getPhotos(salleId) {
+    const sql = "SELECT url FROM salle_photos WHERE salle_id = ?";
+    const [rows] = await db.execute(sql, [salleId]);
+    return rows; // Retourne un tableau d'URLs
+}
 
     // 4. Ajouter une méthode pour Créer une salle (indispensable pour l'Admin)
     static async create(data) {
