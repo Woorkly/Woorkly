@@ -1,26 +1,13 @@
+const BaseModel = require('./BaseModel');
 const db = require('../config/db');
 
-class Room {
-    // 1. On adapte le constructeur avec TOUS les champs de ta table 'salles'
-    constructor(id, nom, statut, adresse, code_postal, ville, latitude, longitude, capacite, description, prix_heure, prix_demi_journee, prix_journee, image_principale, type_id) {
-        this.id = id;
-        this.nom = nom;
-        this.statut = statut;
-        this.adresse = adresse;
-        this.code_postal = code_postal;
-        this.ville = ville;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.capacite = capacite;
-        this.description = description;
-        this.prix_heure = prix_heure;
-        this.prix_demi_journee = prix_demi_journee;
-        this.prix_journee = prix_journee;
-        this.image_principale = image_principale;
-        this.type_id = type_id;
+class Room extends BaseModel {
+    constructor(data) {
+        super('salles'); // On dit à la classe mère qu'on gère la table 'salles'
+        Object.assign(this, data); // Astuce pour assigner tous les champs d'un coup
     }
 
-    // 2. Récupérer toutes les salles (avec une jointure pour avoir le nom du type !)
+    // On réécrit getAll car on a une jointure spécifique (Polymorphisme)
     static async getAll() {
         const sql = `
             SELECT s.*, t.nom as type_nom 
@@ -31,7 +18,6 @@ class Room {
         return rows;
     }
 
-    // 3. Récupérer une salle précise
     static async getById(id) {
         const sql = `
             SELECT s.*, t.nom as type_nom 
@@ -43,62 +29,48 @@ class Room {
         return rows[0];
     }
 
-    // 3.bis Récupérer uniquement la galerie d'une salle
-static async getPhotos(salleId) {
-    const sql = "SELECT url FROM salle_photos WHERE salle_id = ?";
-    const [rows] = await db.execute(sql, [salleId]);
-    return rows; // Retourne un tableau d'URLs
-}
-
- // 4. Ajouter une méthode pour Créer une salle (indispensable pour l'Admin)
- static async create(data, photos = []) {
-    // 1. On récupère une connexion spécifique pour la transaction
-    const connection = await db.getConnection();
-    
-    try {
-        // 2. On démarre la transaction
-        await connection.beginTransaction();
-
-        const sql = `
-            INSERT INTO salles 
-            (nom, statut, adresse, code_postal, ville, latitude, longitude, capacite, description, prix_heure, prix_demi_journee, prix_journee, image_principale, type_id) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `;
-        const params = [
-            data.nom, data.statut, data.adresse, data.code_postal, data.ville, 
-            data.latitude, data.longitude, data.capacite, data.description, 
-            data.prix_heure, data.prix_demi_journee, data.prix_journee, data.image_principale, data.type_id
-        ];
-
-        // On utilise 'connection.execute' et non 'db.execute'
-        const [result] = await connection.execute(sql, params);
-        const newId = result.insertId;
-
-        // 3. Insertion des photos
-        if (photos.length > 0) {
-            const photoSql = "INSERT INTO salle_photos (salle_id, url) VALUES (?, ?)";
-            for (const url of photos) {
-                await connection.execute(photoSql, [newId, url]);
-            }
-        }
-
-        // 4. Si tout est OK, on valide tout d'un coup
-        await connection.commit();
-        return newId;
-
-    } catch (error) {
-        // 5. En cas d'erreur, on ANNULE tout (le commit n'aura jamais lieu)
-        await connection.rollback();
-        console.error("Erreur Transaction :", error);
-        throw error; // On renvoie l'erreur pour que le controller la gère
-
-    } finally {
-        // 6. TRÈS IMPORTANT : On libère la connexion dans tous les cas
-        connection.release();
+    static async getPhotos(salleId) {
+        const [rows] = await db.execute("SELECT url FROM salle_photos WHERE salle_id = ?", [salleId]);
+        return rows;
     }
-}
 
-    // 5. Récupérer les équipements d'une salle (Jointure Many-to-Many)
+    // La création utilise l'outil getConnection de la classe mère
+    static async create(data, photos = []) {
+        const connection = await super.getConnection(); 
+        try {
+            await connection.beginTransaction();
+
+            const sql = `
+                INSERT INTO salles 
+                (nom, statut, adresse, code_postal, ville, latitude, longitude, capacite, description, prix_heure, prix_demi_journee, prix_journee, image_principale, type_id) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            const params = [
+                data.nom, data.statut, data.adresse, data.code_postal, data.ville, 
+                data.latitude, data.longitude, data.capacite, data.description, 
+                data.prix_heure, data.prix_demi_journee, data.prix_journee, data.image_principale, data.type_id
+            ];
+
+            const [result] = await connection.execute(sql, params);
+            const newId = result.insertId;
+
+            if (photos.length > 0) {
+                const photoSql = "INSERT INTO salle_photos (salle_id, url) VALUES (?, ?)";
+                for (const url of photos) {
+                    await connection.execute(photoSql, [newId, url]);
+                }
+            }
+
+            await connection.commit();
+            return newId;
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
     static async getEquipments(roomId) {
         const sql = `
             SELECT e.nom 
