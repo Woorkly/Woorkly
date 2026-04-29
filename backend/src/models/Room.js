@@ -50,21 +50,53 @@ static async getPhotos(salleId) {
     return rows; // Retourne un tableau d'URLs
 }
 
-    // 4. Ajouter une méthode pour Créer une salle (indispensable pour l'Admin)
-    static async create(data) {
+ // 4. Ajouter une méthode pour Créer une salle (indispensable pour l'Admin)
+ static async create(data, photos = []) {
+    // 1. On récupère une connexion spécifique pour la transaction
+    const connection = await db.getConnection();
+    
+    try {
+        // 2. On démarre la transaction
+        await connection.beginTransaction();
+
         const sql = `
             INSERT INTO salles 
-            (nom, statut, adresse, code_postal, ville, latitude, longitude, capacite, description, prix_heure, prix_demi_journee, prix_journee, type_id) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (nom, statut, adresse, code_postal, ville, latitude, longitude, capacite, description, prix_heure, prix_demi_journee, prix_journee, image_principale, type_id) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const params = [
             data.nom, data.statut, data.adresse, data.code_postal, data.ville, 
             data.latitude, data.longitude, data.capacite, data.description, 
-            data.prix_heure, data.prix_demi_journee, data.prix_journee, data.type_id
+            data.prix_heure, data.prix_demi_journee, data.prix_journee, data.image_principale, data.type_id
         ];
-        const [result] = await db.execute(sql, params);
-        return result.insertId; // Retourne l'ID de la salle créée
+
+        // On utilise 'connection.execute' et non 'db.execute'
+        const [result] = await connection.execute(sql, params);
+        const newId = result.insertId;
+
+        // 3. Insertion des photos
+        if (photos.length > 0) {
+            const photoSql = "INSERT INTO salle_photos (salle_id, url) VALUES (?, ?)";
+            for (const url of photos) {
+                await connection.execute(photoSql, [newId, url]);
+            }
+        }
+
+        // 4. Si tout est OK, on valide tout d'un coup
+        await connection.commit();
+        return newId;
+
+    } catch (error) {
+        // 5. En cas d'erreur, on ANNULE tout (le commit n'aura jamais lieu)
+        await connection.rollback();
+        console.error("Erreur Transaction :", error);
+        throw error; // On renvoie l'erreur pour que le controller la gère
+
+    } finally {
+        // 6. TRÈS IMPORTANT : On libère la connexion dans tous les cas
+        connection.release();
     }
+}
 
     // 5. Récupérer les équipements d'une salle (Jointure Many-to-Many)
     static async getEquipments(roomId) {
