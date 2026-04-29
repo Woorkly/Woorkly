@@ -14,4 +14,12 @@ router.get('/:id', userController.getUserDetails);
 // URL : POST http://localhost:3000/api/users/
 router.post('/', userController.createUser);
 
+// Route pour modifier un utilisateur
+// URL : PUT http://localhost:3000/api/users/1
+router.put('/:id', userController.updateUser);
+
+// Route pour supprimer un utilisateur
+// URL : DELETE http://localhost:3000/api/users/1
+router.delete('/:id', userController.deleteUser);
+
 module.exports = router;

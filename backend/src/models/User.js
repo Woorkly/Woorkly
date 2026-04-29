@@ -11,9 +11,9 @@ class User extends BaseModel {
 
     
 
-    static async delete(id) {
-        return super.delete(id, 'utilisateurs');
-    }
+    // static async delete(id) {
+    //     return super.delete(id, 'utilisateurs');
+    // }
 
     // Création d'un utilisateur dans la table `utilisateurs`
     static async create(data) {
@@ -39,6 +39,32 @@ class User extends BaseModel {
             connection.release();
         }
     }
+
+    //modification d'un utilisateur
+    static async update(id, data) {
+        const connection = await super.getConnection();
+        try {
+            const sql = `
+                UPDATE utilisateurs 
+                SET nom = ?, email = ?, password = ?, avatar_url = ?, role = ?
+                WHERE id = ?
+            `;
+            const params = [
+                data.nom,
+                data.email,
+                data.password,
+                data.avatar_url,
+                data.role,
+                id
+            ];
+
+            const [result] = await connection.execute(sql, params);
+            return result.affectedRows > 0;
+        } finally {
+            connection.release();
+        }
+    }
+
 
    
 
