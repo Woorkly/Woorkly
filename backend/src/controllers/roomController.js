@@ -6,38 +6,43 @@ const getAllRooms = async (req, res) => {
         const rooms = await Room.getAll();
         res.status(200).json(rooms);
     } catch (error) {
-        console.error(error);
+        console.error("ERREUR SQL :", error);
         res.status(500).json({ message: "Erreur lors de la récupération des salles" });
     }
 };
 
 // Récupérer les détails d'une salle (avec sa galerie) - VERSION OPTIMISÉE (2 requêtes lancées en parallèle)
-const getRoomDetails = async (req, res) => {
+exports.getRoomDetails = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // On lance les deux requêtes en PARALLÈLE
-        const [room, photos] = await Promise.all([
-            Room.getById(id),
-            Room.getPhotos(id)
-        ]);
+        // 1. On récupère les infos de base
+        const room = await Room.getById(id);
 
         if (!room) {
-            return res.status(404).json({ message: "Salle non trouvée" });
+            return res.status(404).json({ message: "Salle introuvable" });
         }
 
-        // On renvoie un objet propre au Front-end
-        res.status(200).json({
+        // 2. On récupère en parallèle les photos et équipements
+        const [photos, equipments] = await Promise.all([
+            Room.getPhotos(id),
+            Room.getEquipments(id)
+        ]);
+
+        // 3. On fusionne tout dans un seul objet
+        const fullRoomData = {
             ...room,
-            galerie: photos // Un beau tableau d'objets [{url: '...'}, {url: '...'}]
-        });
+            galerie: photos.map(p => p.url), // On simplifie pour n'avoir qu'un tableau de strings
+            equipements: equipments.map(e => e.nom)
+        };
+
+        res.status(200).json(fullRoomData);
 
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Erreur lors de la récupération des détails" });
     }
 };
-
 // Détail d'une salle avec sa galerie
 // const getRoomDetails = async (req, res) => {
 //     try {
