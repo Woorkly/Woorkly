@@ -17,7 +17,7 @@ class Room extends BaseModel {
         const [rows] = await db.execute(sql);
         return rows;
     }
-
+    // On réécrit getById car on a une jointure spécifique (type de salle)
     static async getById(id) {
         const sql = `
             SELECT s.*, t.nom as type_nom 
@@ -28,7 +28,7 @@ class Room extends BaseModel {
         const [rows] = await db.execute(sql, [id]);
         return rows[0];
     }
-
+    // recuperer les photos d'une salle
     static async getPhotos(salleId) {
         const [rows] = await db.execute("SELECT url FROM salle_photos WHERE salle_id = ?", [salleId]);
         return rows;

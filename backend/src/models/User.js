@@ -7,13 +7,7 @@ class User extends BaseModel {
     constructor(data) {
         super('utilisateurs'); // On dit à la classe mère qu'on gère la table 'utilisateurs'
         Object.assign(this, data); // Astuce pour assigner tous les champs d'un coup
-    }
-
-    
-
-    // static async delete(id) {
-    //     return super.delete(id, 'utilisateurs');
-    // }
+    } 
 
     // Création d'un utilisateur dans la table `utilisateurs`
     static async create(data) {

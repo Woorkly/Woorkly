@@ -68,7 +68,21 @@ const getRoomDetails = async (req, res) => {
 //     }
 // };
 
+// Création d'une salle (Admin)
+const createRoom = async (req, res) => {
+    try {
+        const { photos, ...roomData } = req.body; // On sépare les photos du reste des données
+
+        const newRoomId = await Room.create(roomData, photos);
+        res.status(201).json({ id: newRoomId, ...roomData, photos });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur lors de la création de la salle" });
+    }
+};
+
 module.exports = {
     getAllRooms,
-    getRoomDetails
+    getRoomDetails,
+    createRoom
 };

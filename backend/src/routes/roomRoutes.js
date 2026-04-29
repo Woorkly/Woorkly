@@ -12,6 +12,6 @@ router.get('/:id', roomController.getRoomDetails);
 
 // Route pour créer une salle (Admin)
 // URL : POST http://localhost:3000/api/rooms/
-// router.post('/', roomController.createRoom);
+router.post('/', roomController.createRoom);
 
 module.exports = router;
