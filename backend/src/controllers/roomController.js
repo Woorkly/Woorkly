@@ -12,7 +12,7 @@ const getAllRooms = async (req, res) => {
 };
 
 // Récupérer les détails d'une salle (avec sa galerie) - VERSION OPTIMISÉE (2 requêtes lancées en parallèle)
-exports.getRoomDetails = async (req, res) => {
+const getRoomDetails = async (req, res) => {
     try {
         const { id } = req.params;
 

@@ -6,19 +6,19 @@ class BaseModel {
     }
 
     // Méthode générique pour récupérer tout d'une table
-    static async findAll(table) {
+    static async findAll(table = this.table) {
         const [rows] = await db.execute(`SELECT * FROM ${table}`);
         return rows;
     }
 
     // Méthode générique pour récupérer par ID
-    static async findById(id, table) {
+    static async findById(id, table = this.table) {
         const [rows] = await db.execute(`SELECT * FROM ${table} WHERE id = ?`, [id]);
         return rows[0];
     }
 
     // Méthode générique pour supprimer
-    static async delete(id, table) {
+    static async delete(id, table = this.table) {
         const [result] = await db.execute(`DELETE FROM ${table} WHERE id = ?`, [id]);
         return result.affectedRows > 0;
     }
