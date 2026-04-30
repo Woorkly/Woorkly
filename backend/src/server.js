@@ -1,19 +1,33 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+
+// 1. Importation des routes (on les créera juste après)
+const roomRoutes = require('./routes/roomRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
-// cors est un middleware qui permet de gérer les requêtes cross-origin (CORS) entre le frontend et le backend. C'est indispensable
-//  pour que le frontend puisse communiquer avec le backend sans être bloqué par les politiques de sécurité du navigateur.
+
+// --- MIDDLEWARES ---
 app.use(cors());
-app.use(express.json()); // Pour lire le JSON dans les requêtes POST
+app.use(express.json()); 
 
-const PORT = process.env.PORT || 3000;
+// --- ROUTES ---
 
+// Route de test
 app.get('/', (req, res) => {
-    res.send('Serveur Reserva opérationnel !');
+    res.send('Serveur Workly opérationnel !');
 });
 
+// 2. Utilisation des routes spécialisées
+// Toutes les routes définies dans roomRoutes commenceront par /api/rooms
+app.use('/api/rooms', roomRoutes);
+
+app.use('/api/users', userRoutes); 
+
+
+// --- LANCEMENT ---
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Serveur lancé sur : http://localhost:${PORT}`);
 });
