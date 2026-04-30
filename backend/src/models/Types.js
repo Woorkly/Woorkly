@@ -31,16 +31,12 @@ class Types extends BaseModel {
         const connection = await super.getConnection();
         try {
             const sql = `
-                UPDATE typess 
-                SET nom = ?, email = ?, password = ?, avatar_url = ?, role = ?
+                UPDATE types
+                SET nom = ?
                 WHERE id = ?
             `;
             const params = [
-                data.nom,
-                data.email,
-                data.password,
-                data.avatar_url,
-                data.role,
+                data.nom,               
                 id
             ];
 
