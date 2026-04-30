@@ -3,8 +3,8 @@ const Types = require('../models/Types');
 // Récupérer tous les types
 const getAllTypes = async (req, res) => {
     try {
-        const types = await Types.findAll();
-        res.status(200).json(types);
+        const allTypes = await Types.findAll();
+        res.status(200).json(allTypes);
     } catch (error) {
         console.error("ERREUR SQL :", error);
         res.status(500).json({ message: "Erreur lors de la récupération des types" });

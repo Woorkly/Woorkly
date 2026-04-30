@@ -1,15 +1,15 @@
 const BaseModel = require('./BaseModel');
 const db = require('../config/db');
 
-class Types extends BaseModel {
-   
+class Types extends BaseModel { 
+    static table='types';
 
     constructor(data) {
         super('types'); // On dit à la classe mère qu'on gère la table 'types'
         Object.assign(this, data); // Astuce pour assigner tous les champs d'un coup
+        
     } 
-
-    // Création d'un types dans la table `typess`
+    // Création d'un types dans la table `types`
     static async create(data) {
         const connection = await super.getConnection();
 
@@ -17,9 +17,13 @@ class Types extends BaseModel {
             const sql = `
                 INSERT INTO types (nom)
                 VALUES (?)
-            `;          
+            `;
 
-            const [result] = await connection.execute(sql, [data.nom]);
+            const params = [
+                data.nom              
+            ];
+
+            const [result] = await connection.execute(sql, params);
             return result.insertId;
         } finally {
             connection.release();
@@ -31,12 +35,12 @@ class Types extends BaseModel {
         const connection = await super.getConnection();
         try {
             const sql = `
-                UPDATE types
+                UPDATE types 
                 SET nom = ?
                 WHERE id = ?
             `;
             const params = [
-                data.nom,               
+                data.nom,             
                 id
             ];
 
@@ -45,12 +49,7 @@ class Types extends BaseModel {
         } finally {
             connection.release();
         }
-    }
-
-
-   
-
-    
+    }    
 }
 
 module.exports = Types;
