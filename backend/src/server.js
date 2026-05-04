@@ -26,7 +26,7 @@ app.use("/api/rooms", roomRoutes);
 
 app.use("/api/users", userRoutes);
 
-app.use("/api/equipement", equipementRoutes);
+app.use("/api/equipements", equipementRoutes);
 
 // --- LANCEMENT ---
 const PORT = process.env.PORT || 3000;

@@ -2,6 +2,7 @@ const BaseModel = require("./BaseModel");
 const db = require("../config/db");
 
 class Equipements extends BaseModel {
+  static table = "equipements";
   constructor(data) {
     super("equipements"); // On dit à la classe mère qu'on gère la table 'equipements'
     Object.assign(this, data); // Astuce pour assigner tous les champs d'un coup
@@ -26,7 +27,7 @@ class Equipements extends BaseModel {
     }
   }
 
-  //modification d'un equipement 
+  //modification d'un equipement
   static async update(id, data) {
     const connection = await super.getConnection();
     try {
