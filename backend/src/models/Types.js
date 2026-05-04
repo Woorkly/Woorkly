@@ -1,31 +1,26 @@
 const BaseModel = require('./BaseModel');
 const db = require('../config/db');
 
-class User extends BaseModel {
-    static table='utilisateurs';
-   
+class Types extends BaseModel { 
+    static table='types';
 
     constructor(data) {
-        super('utilisateurs'); // On dit à la classe mère qu'on gère la table 'utilisateurs'
+        super('types'); // On dit à la classe mère qu'on gère la table 'types'
         Object.assign(this, data); // Astuce pour assigner tous les champs d'un coup
+        
     } 
-
-    // Création d'un utilisateur dans la table `utilisateurs`
+    // Création d'un types dans la table `types`
     static async create(data) {
         const connection = await super.getConnection();
 
         try {
             const sql = `
-                INSERT INTO utilisateurs (nom, email, password, avatar_url, role)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO types (nom)
+                VALUES (?)
             `;
 
             const params = [
-                data.nom,
-                data.email,
-                data.password,
-                data.avatar_url || 'default-avatar.png',
-                data.role || 'user'
+                data.nom              
             ];
 
             const [result] = await connection.execute(sql, params);
@@ -35,21 +30,17 @@ class User extends BaseModel {
         }
     }
 
-    //modification d'un utilisateur
+    //modification d'un types
     static async update(id, data) {
         const connection = await super.getConnection();
         try {
             const sql = `
-                UPDATE utilisateurs 
-                SET nom = ?, email = ?, password = ?, avatar_url = ?, role = ?
+                UPDATE types 
+                SET nom = ?
                 WHERE id = ?
             `;
             const params = [
-                data.nom,
-                data.email,
-                data.password,
-                data.avatar_url,
-                data.role,
+                data.nom,             
                 id
             ];
 
@@ -58,12 +49,7 @@ class User extends BaseModel {
         } finally {
             connection.release();
         }
-    }
-
-
-   
-
-    
+    }    
 }
 
-module.exports = User;
+module.exports = Types;

@@ -2,6 +2,7 @@ const BaseModel = require('./BaseModel');
 const db = require('../config/db');
 
 class Room extends BaseModel {
+    static table='salles';
     constructor(data) {
         super('salles'); // On dit à la classe mère qu'on gère la table 'salles'
         Object.assign(this, data); // Astuce pour assigner tous les champs d'un coup
