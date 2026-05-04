@@ -3,9 +3,12 @@ const express = require("express");
 const cors = require("cors");
 
 // 1. Importation des routes (on les créera juste après)
-const roomRoutes = require("./routes/roomRoutes");
-const userRoutes = require("./routes/userRoutes");
+
+
 const equipementRoutes = require("./routes/equipementsRoutes");
+const roomRoutes = require('./routes/roomRoutes');
+const userRoutes = require('./routes/userRoutes');
+const typeRoutes = require('./routes/typeRoutes')
 
 const app = express();
 
@@ -27,6 +30,8 @@ app.use("/api/rooms", roomRoutes);
 app.use("/api/users", userRoutes);
 
 app.use("/api/equipements", equipementRoutes);
+app.use('/api/types',typeRoutes);
+
 
 // --- LANCEMENT ---
 const PORT = process.env.PORT || 3000;
