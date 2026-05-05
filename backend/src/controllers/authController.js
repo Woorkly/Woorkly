@@ -1,32 +1,17 @@
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
-const User = require("../models/User");
-const jwt = require('jsonwebtoken');
 const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+const authService = require("../services/authService");
+const jwt = require('jsonwebtoken');
 
-
-
-// Fonction pour générer un token JWT
-const generateToken = (user) => {   
-    return jwt.sign(
-        {
-            userId: user.id,
-            email: user.email,
-            nom: user.nom,
-            role: user.role
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: '7d' }
-    );
-}
 
 // POST /api/auth/login
 // Connexion d'un utilisateur
 const login = async (req, res) => {
-    const user = await User.login(req.body);
+    const user = await authService.login(req.body);
     if (!user) {
         return res.status(401).json({ message: "Email ou mot de passe incorrect" });
     }
-    const token = generateToken(user);
+    const token = authService.generateToken(user);
     
     // Envoyer le token en HttpOnly Cookie
     res.cookie('token', token, {

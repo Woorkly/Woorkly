@@ -70,21 +70,7 @@ class User extends BaseModel {
     return rows[0];
   }
 
-  // connexion d'un utilisateur
-  static async login(data) {
-    
-    const user = await this.findByEmail(data.email);
-    if (!user) {
-      throw new Error("Utilisateur non trouvé");
-    }
-
-    const isMatch = await bcrypt.compare(data.password, user.password);
-    if (!isMatch) {
-      throw new Error("Mot de passe incorrect");
-    }
-
-    return user;
-  }
+  
 
 }
 

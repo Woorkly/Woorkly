@@ -4,8 +4,8 @@ const authController = require('../controllers/authController');
 
 
 
-// Route pour récupérer tous les types
-// URL : GET http://localhost:3000/api/auth/login
+// Route pour authentification (login)
+// URL : POST http://localhost:3000/api/auth/login
 router.post('/login', authController.login);
 
 
