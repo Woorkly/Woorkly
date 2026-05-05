@@ -20,6 +20,15 @@ const generateToken = (user) => {
     );
 }
 
+// Fonction pour vérifier un token JWT
+const verifyToken = (token) => {
+    try {
+        return jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+        return null;
+    }
+}
+
 // connexion d'un utilisateur
   const login = async (data) => {
     
