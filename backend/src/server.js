@@ -8,7 +8,8 @@ const cors = require("cors");
 const equipementRoutes = require("./routes/equipementsRoutes");
 const roomRoutes = require('./routes/roomRoutes');
 const userRoutes = require('./routes/userRoutes');
-const typeRoutes = require('./routes/typeRoutes')
+const typeRoutes = require('./routes/typeRoutes');
+const autRoutes = require('./routes/authRoute');
 
 const app = express();
 
@@ -31,6 +32,8 @@ app.use("/api/users", userRoutes);
 
 app.use("/api/equipements", equipementRoutes);
 app.use('/api/types',typeRoutes);
+
+app.use('/api/auth', autRoutes);
 
 
 // --- LANCEMENT ---

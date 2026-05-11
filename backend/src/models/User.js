@@ -1,4 +1,5 @@
 const BaseModel = require("./BaseModel");
+const bcrypt = require('bcrypt');
 const db = require("../config/db");
 
 class User extends BaseModel {
@@ -20,10 +21,12 @@ class User extends BaseModel {
                 VALUES (?, ?, ?, ?, ?)
             `;
 
+      const hashedPassword = await bcrypt.hash(data.password, 10); // Hash du mot de passe
+
       const params = [
         data.nom,
         data.email,
-        data.password,
+        hashedPassword,
         data.avatar_url || "default-avatar.png",
         data.role || "user",
       ];
@@ -59,6 +62,17 @@ class User extends BaseModel {
       connection.release();
     }
   }
+
+  // Récupérer un utilisateur par son email (pour l'authentification)
+  static async findByEmail(email) {
+    const sql = "SELECT * FROM utilisateurs WHERE email = ?";
+    const [rows] = await db.execute(sql, [email]);
+    return rows[0];
+  }
+
+  
+
 }
+
 
 module.exports = User;
