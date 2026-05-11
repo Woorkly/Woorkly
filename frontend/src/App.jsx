@@ -1,4 +1,3 @@
-import './App.css'
 import Landing from './page/Landing/index'
 import Salle from './page/salle'
 import SalleDétail from './page/salleDétail'

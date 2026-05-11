@@ -11,7 +11,7 @@ export default function Landing() {
   return (
     <section className="landing">
       {/* Hero section */}
-      <div className="hero">
+      <section className="hero">
         <div className="hero-content">
           <p className="hero-kicker">WOORKLY</p>
           <h1>RÉUNISSEZ-VOUS</h1>
@@ -58,7 +58,7 @@ export default function Landing() {
           <span className="partner">Contoso</span>
           <span className="partner">Globex</span>
         </div>
-      </div>
+      </section>
 
       <section className="section-intro">
         <div className="intro-header">
