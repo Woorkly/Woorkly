@@ -43,7 +43,7 @@ const Login = () => {
 
           <div className="login-actions">
             <button className="btn-primary" type="submit">Se connecter</button>
-            <button className="btn-outline" type="button">Créer un compte</button>
+            <button className="btn-outline" type="button" onClick={() => navigate('/register')}>Créer un compte</button>
           </div>
         </form>
       </div>
