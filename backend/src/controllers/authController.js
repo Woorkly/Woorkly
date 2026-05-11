@@ -33,6 +33,37 @@ const login = async (req, res) => {
   }
 };
 
+// GET /api/auth/me
+const me = (req, res) => {
+  try {
+    const token = req.cookies?.token;
+    if (!token) return res.status(401).json({ message: 'Non authentifié' });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // decoded contient userId, email, nom, role
+    return res.status(200).json({
+      userId: decoded.userId,
+      email: decoded.email,
+      nom: decoded.nom,
+      role: decoded.role,
+    });
+  } catch (err) {
+    return res.status(401).json({ message: 'Token invalide' });
+  }
+}
+
+// POST /api/auth/logout
+const logout = (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  });
+  return res.status(200).json({ message: 'Déconnecté' });
+}
+
 module.exports = {
-    login
+  login,
+  me,
+  logout
 };      

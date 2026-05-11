@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require('cookie-parser');
 
 // 1. Importation des routes (on les créera juste après)
 
@@ -19,6 +20,7 @@ app.use(cors({
   origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
   credentials: true
 }));
+app.use(cookieParser());
 app.use(express.json());
 
 // --- ROUTES ---
