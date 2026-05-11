@@ -28,7 +28,6 @@ const verifyToken = (token) => {
         return null;
     }
 }
-
 // connexion d'un utilisateur
   const login = async (data) => {
     
