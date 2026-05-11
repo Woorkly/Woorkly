@@ -11,7 +11,7 @@ const header = () => {
       <nav className="nav">
         <div className="nav__links">
           <a href="#">SALLES</a>
-          <a href="#">MON éSPACE</a>
+          <a href="#">MON ESPACE</a>
           <a href="#">ADMIN</a>
         </div>
         <div className="nav__logo">woorkly.</div>
