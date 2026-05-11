@@ -14,7 +14,11 @@ const autRoutes = require('./routes/authRoute');
 const app = express();
 
 // --- MIDDLEWARES ---
-app.use(cors());
+// Allow the frontend (Vite) to send/receive cookies (HttpOnly token)
+app.use(cors({
+  origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+  credentials: true
+}));
 app.use(express.json());
 
 // --- ROUTES ---
