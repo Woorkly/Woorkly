@@ -5,7 +5,8 @@
 /* ========== SECTION 1: HERO ========== */
 .landing {
   min-height: calc(100vh - 120px);
-  background: var(--color-surface);
+  background: var(--color-surface); 
+  padding-top: 40px;
 }
 
 .hero {
