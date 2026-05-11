@@ -5,7 +5,6 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const User = require("../models/User");
 
 
-
 // Fonction pour générer un token JWT
 const generateToken = (user) => {   
     return jwt.sign(
