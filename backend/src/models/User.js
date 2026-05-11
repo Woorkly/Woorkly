@@ -1,5 +1,6 @@
 const BaseModel = require('./BaseModel');
 const db = require('../config/db');
+const bcrypt = require('bcrypt')
 
 class User extends BaseModel {
     static table='utilisateurs';
@@ -20,10 +21,12 @@ class User extends BaseModel {
                 VALUES (?, ?, ?, ?, ?)
             `;
 
+            const hashedPassword = await bcrypt.hash(data.password, 10);
+
             const params = [
                 data.nom,
                 data.email,
-                data.password,
+                hashedPassword,
                 data.avatar_url || 'default-avatar.png',
                 data.role || 'user'
             ];
@@ -44,6 +47,7 @@ class User extends BaseModel {
                 SET nom = ?, email = ?, password = ?, avatar_url = ?, role = ?
                 WHERE id = ?
             `;
+
             const params = [
                 data.nom,
                 data.email,
@@ -58,6 +62,13 @@ class User extends BaseModel {
         } finally {
             connection.release();
         }
+    }
+
+    // fonction qui cherche un utlisateur par email
+    static async findUserByEmail(email){
+        const sql =`SELECT * FROM utilisateurs where email=?`;
+        const [rows] = await db.execute(sql,[email]);
+        return rows[0];
     }
 
 

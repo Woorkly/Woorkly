@@ -5,7 +5,9 @@ const cors = require('cors');
 // 1. Importation des routes (on les créera juste après)
 const roomRoutes = require('./routes/roomRoutes');
 const userRoutes = require('./routes/userRoutes');
-const typeRoutes = require('./routes/typeRoutes')
+const typeRoutes = require('./routes/typeRoutes');
+const authRoutes = require('./routes/authRoutes');
+
 
 const app = express();
 
@@ -27,6 +29,8 @@ app.use('/api/rooms', roomRoutes);
 app.use('/api/users', userRoutes); 
 
 app.use('/api/types',typeRoutes);
+
+app.use('/api/auth',authRoutes);
 
 
 // --- LANCEMENT ---
