@@ -24,6 +24,16 @@ export const AuthProvider = ({ children }) => {
     checkAuth()
   }, [])
 
+  const login = async (credentials) => {
+    try {
+      const userData = await authService.login(credentials)
+      setUser(userData)
+      return userData
+    } catch (err) {
+      throw err
+    }
+  }
+
   const logout = async () => {
     try {
       await authService.logout()
@@ -36,6 +46,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading,
+    login,
     logout,
     isAuthenticated: !!user
   }

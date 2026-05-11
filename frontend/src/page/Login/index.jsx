@@ -1,20 +1,21 @@
 import React, { useState } from 'react'
 import './styles.css'
-import authService from '../../services/authService'
+import { useAuth } from '../../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const { login } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     try {
-      await authService.login({ email, password })
-      // server sets HttpOnly cookie; redirect after success
+      await login({ email, password })
+      // Contexte mis à jour avec l'utilisateur, redirection
       navigate('/')
     } catch (err) {
       setError(err?.response?.data?.message || 'Erreur lors de la connexion')
