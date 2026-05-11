@@ -12,4 +12,9 @@ const logout = async () => {
   return res.data
 }
 
-export default { login, logout }
+const me = async () => {
+  const res = await API.get('/auth/me')
+  return res.data
+}
+
+export default { login, logout, me }
