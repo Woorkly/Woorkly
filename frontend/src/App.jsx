@@ -1,5 +1,6 @@
 import Landing from './page/Landing/index'
 import Login from './page/Login/index'
+import Register from './page/Register/index'
 import Salle from './page/salle'
 import SalleDétail from './page/salleDétail'
 import {  Routes, Route } from 'react-router-dom'
@@ -19,6 +20,7 @@ function App() {
       <Route path="/salle/:ANZIZ/"element={<SalleDétail /> } />
       <Route path="/reservation" element={<FormReservation /> } />
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
     </Routes>
     <Footer />
     </>
