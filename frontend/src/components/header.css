@@ -25,6 +25,14 @@
 }
 .header-nav__actions { display: flex; gap: 10px; align-items: center; }
 
+.header-user-menu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+  font-size: 13px;
+}
+
 .header-nav__btn-outline {
   display: inline-flex; align-items: center; gap: 7px;
   background: transparent; color: #fff;
