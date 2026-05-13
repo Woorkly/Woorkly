@@ -7,6 +7,7 @@ import {  Routes, Route } from 'react-router-dom'
 import FormReservation from './page/FormReservation/index'
 import Header from './components/header'
 import Footer from './components/footer'
+import DashboardUser from './page/Dashboard/dashboardUser'
 
 function App() {
   
@@ -21,6 +22,8 @@ function App() {
       <Route path="/reservation" element={<FormReservation /> } />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/dashboarduser" element={<DashboardUser />} />
+      <Route path="/dashboardAdmin" element={<DashBoardAdmin />} />
     </Routes>
     <Footer />
     </>
