@@ -7,6 +7,7 @@ import { Routes, Route } from 'react-router-dom'
 import FormReservation from './page/FormReservation/index'
 import Header from './components/header'
 import Footer from './components/footer'
+import DashboardUser from './page/Dashboard/dashboardUser'
 
 function App() {
   return (

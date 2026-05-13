@@ -185,6 +185,7 @@ h1{
   background: var(--white);
   padding: 36px;
   border: 1px solid var(--border);
+  border-radius: 10px;
 }
 
 /* Stepper */
@@ -364,6 +365,7 @@ h1{
   font-weight: 500;
   cursor: pointer;
   font-family: 'DM Sans', sans-serif;
+  border-radius: 5px;
   margin-top: 8px;
   letter-spacing: 0.3px;
   transition: background 0.2s;
