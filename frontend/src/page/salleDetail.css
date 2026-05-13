@@ -1,0 +1,98 @@
+.room-detail-page {
+  padding: 40px;
+  color: white;
+  background-color: #111827;
+  min-height: 100vh;
+}
+
+.room-hero {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 40px;
+  align-items: center;
+}
+
+.room-hero img {
+  width: 500px;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 15px;
+}
+
+.room-hero-content h1 {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.available-badge {
+  background-color: green;
+  padding: 8px 15px;
+  border-radius: 20px;
+}
+
+.unavailable-badge {
+  background-color: red;
+  padding: 8px 15px;
+  border-radius: 20px;
+}
+
+.room-content {
+  display: flex;
+  gap: 40px;
+}
+
+.room-left {
+  flex: 2;
+}
+
+.room-section {
+  margin-bottom: 30px;
+}
+
+.equipments-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.equipment-item {
+  background-color: #1f2937;
+  padding: 10px 15px;
+  border-radius: 10px;
+}
+
+.reservation-card {
+  flex: 1;
+  background-color: #1f2937;
+  padding: 25px;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  height: fit-content;
+}
+
+.reservation-card input {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+}
+
+.reservation-card button {
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.reservation-card button:disabled {
+  background-color: gray;
+  cursor: not-allowed;
+}
+
+.room-not-found {
+  color: white;
+  padding: 50px;
+}
