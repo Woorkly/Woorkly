@@ -1,111 +1,149 @@
+@import 'leaflet/dist/leaflet.css';
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Couleurs principales */
+  --color-primary: #1f6fff;
+  --color-primary-strong: #1457cc;
+  --color-landing-black: #111827;
+  --color-secondary: #0f172a;
+  
+  /* Surfaces et neutrals */
+  --color-surface: #ffffff;
+  --color-surface-alt: #f8fafc;
+  --color-border: #dbe3ee;
+  --color-text: #475569;
+  --color-title: #0f172a;
+  --color-muted: #8b8b8b;
+  
+  /* Séances et statuts */
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+  
+  /* Couleurs landing (maquette) */
+  --color-accent-peach: #f5a87f;
+  --color-accent-peach-light: #fbd4c1;
+  --color-accent-beige: #e8dcc8;
+  --color-accent-rose: #e88b9e;
+  --color-accent-orange: #f5a87f;
+  --color-accent-blue: #4a8fc7;
+  
+  /* Ombres et effets */
+  --shadow-soft: 0 18px 40px rgba(15, 23, 42, 0.08);
+  
+  /* Rayons de bordure */
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
+  
+  /* Espacements */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  
+  /* Transitions */
+  --transition-base: 180ms ease;
+  
+  /* Typographies */
+  --font-body: 'Inter', 'Segoe UI', sans-serif;
+  --font-heading: 'Georgia', serif;
+  
+  /* Poids de police */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Tailles pour titres */
+  --font-size-h1: 3.5rem;    /* 56px */
+  --font-size-h2: 2.75rem;   /* 44px */
+  --font-size-h3: 2rem;      /* 32px */
+  --font-size-h4: 1.5rem;    /* 24px */
+  --font-size-h5: 1.25rem;   /* 20px */
+  --font-size-h6: 1.125rem;  /* 18px */
+  
+  /* Tailles pour body */
+  --font-size-large: 1.125rem;  /* 18px */
+  --font-size-base: 1rem;       /* 16px */
+  --font-size-small: 0.875rem;  /* 14px */
+  --font-size-xs: 0.75rem;      /* 12px */
+  
+  /* Line-heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  /* Styles composés */
+  --text-h1: 700 var(--font-size-h1) / var(--line-height-tight) var(--font-heading);
+  --text-h2: 700 var(--font-size-h2) / var(--line-height-tight) var(--font-heading);
+  --text-h3: 700 var(--font-size-h3) / var(--line-height-tight) var(--font-heading);
+  --text-h4: 600 var(--font-size-h4) / var(--line-height-normal) var(--font-heading);
+  --text-h5: 600 var(--font-size-h5) / var(--line-height-normal) var(--font-heading);
+  --text-h6: 600 var(--font-size-h6) / var(--line-height-normal) var(--font-heading);
+  
+  --text-large: 500 var(--font-size-large) / var(--line-height-normal) var(--font-body);
+  --text-base: 400 var(--font-size-base) / var(--line-height-normal) var(--font-body);
+  --text-small: 400 var(--font-size-small) / var(--line-height-normal) var(--font-body);
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+  font: 16px/1.5 var(--font-body);
+  color: var(--color-text);
+  background:
+    radial-gradient(circle at top left, rgba(31, 111, 255, 0.12), transparent 30%),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 55%);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
 }
 
 body {
   margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: inherit;
 }
 
 #root {
-  width: 1126px;
+  width: 100%;
   max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+  min-height: 100vh;
+}
+
+* {
   box-sizing: border-box;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+h1 {
+  margin: 0;
+  color: var(--color-title);
+  font-family: var(--font-heading);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
+a {
+  color: inherit;
+  text-decoration: none;
 }
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
+
 p {
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+img {
+  display: block;
+  max-width: 100%;
 }
+
+

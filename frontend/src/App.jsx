@@ -1,22 +1,30 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
-import Accueil from './page/accueil'
+import Landing from './page/Landing/index'
+import Login from './page/Login/index'
+import Register from './page/Register/index'
 import Salle from './page/salle'
 import SalleDétail from './page/salleDétail'
 import {  Routes, Route } from 'react-router-dom'
+import FormReservation from './page/FormReservation/index'
+import Header from './components/header'
+import Footer from './components/footer'
 
 function App() {
-  const [count, setCount] = useState(0)
+  
 
   return (
+    <>    
+    <Header/>
     <Routes>
-      <Route path="/" element={<Accueil />} />
+      <Route path="/" element={<Landing />} />
       <Route path="/salle" element={<Salle />} />
-      <Route path="/salle/:id/"element={<SalleDétail /> } /> 
+      <Route path="/salle/:ANZIZ/"element={<SalleDétail /> } />
+      <Route path="/reservation" element={<FormReservation /> } />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
     </Routes>
+    <Footer />
+    </>
+
   )
 }
 
