@@ -84,14 +84,14 @@ export default function GestionSalles() {
 
   return (
     <div className="admin-wrap">
-      <aside className="sidebar">
+      {/* <aside className="sidebar">
         <div className="sidebar-logo">Woorkly<span>,</span></div>
         <nav className="sidebar-nav">
           {["Dashboard", "Salles", "Reservations", "Utilisateurs"].map((p) => (
             <button key={p} className={`snav-btn ${NAV_ROUTES[p] === pathname ? "active" : ""}`} onClick={() => navigate(NAV_ROUTES[p])}>{p}</button>
           ))}
         </nav>
-      </aside>
+      </aside> */}
 
       <main className="admin-main">
         <div className="topbar">Tableau de bord Admin</div>

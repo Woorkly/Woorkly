@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import "./adminStyle.css";
 
 const kpis = [
@@ -131,83 +129,63 @@ function Badge({ s }) {
   return <span className={`badge ${m[s] || ""}`}>{s}</span>;
 }
 
-const NAV_ROUTES = {
-  Dashboard:    "/dashboardAdmin",
-  Salles:       "/Gestionsalles",
-  Reservations: "/GestionReservations",
-  Utilisateurs: "/GestionUser",
-};
-
 export default function DashboardAdmin() {
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
   return (
-    <div className="admin-wrap">
-      <aside className="sidebar">
-        <div className="sidebar-logo">Woorkly<span>,</span></div>
-        <nav className="sidebar-nav">
-          {["Dashboard", "Salles", "Reservations", "Utilisateurs"].map((p) => (
-            <button key={p} className={`snav-btn ${NAV_ROUTES[p] === pathname ? "active" : ""}`} onClick={() => navigate(NAV_ROUTES[p])}>{p}</button>
+    <>
+      <div className="topbar">Dashboard Admin</div>
+      <div className="page-body">
+
+        <div className="kpi-row">
+          {kpis.map((k, i) => (
+            <div key={i} className={`kpi-card ${k.c}`}>
+              <p className="kpi-label">{k.label}</p>
+              <div className="kpi-row-val">
+                <span className="kpi-val">{k.value}<span className="kpi-unit"> {k.unit}</span></span>
+                <span className="kpi-delta">{k.delta}</span>
+              </div>
+            </div>
           ))}
-        </nav>
-      </aside>
-
-      <main className="admin-main">
-        <div className="topbar">Dashboard Admin</div>
-        <div className="page-body">
-
-          <div className="kpi-row">
-            {kpis.map((k, i) => (
-              <div key={i} className={`kpi-card ${k.c}`}>
-                <p className="kpi-label">{k.label}</p>
-                <div className="kpi-row-val">
-                  <span className="kpi-val">{k.value}<span className="kpi-unit"> {k.unit}</span></span>
-                  <span className="kpi-delta">{k.delta}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="card card-pad">
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"0.6rem" }}>
-              <span className="card-title" style={{ marginBottom: 0 }}>
-                Tendances des Réservations (Mensuel)
-                <span style={{ fontSize:"0.75rem", fontWeight:400, color:"var(--muted)", marginLeft:"0.5rem" }}>Total: 840</span>
-              </span>
-              <div className="chart-legend-row">
-                <span className="cl-dot" style={{ background:"#38BDF8" }} /> Total Réservations
-                <span className="cl-dot" style={{ background:"#1A56A0" }} /> Confirmées
-              </div>
-            </div>
-            <AreaChart data={monthly} />
-          </div>
-
-          <div className="bottom-row">
-            <div className="card card-pad">
-              <p className="card-title">Usage des Salles par Type</p>
-              <Donut data={donutData} />
-            </div>
-            <div className="card" style={{ padding:0, overflow:"hidden" }}>
-              <div style={{ padding:"0.85rem 1rem 0.5rem" }}>
-                <p className="card-title" style={{ marginBottom:0 }}>Dernières Réservations</p>
-              </div>
-              <table className="data-table">
-                <thead><tr><th>Date/Heure</th><th>Salle</th><th>Utilisateur</th><th>Statut</th><th>Action</th></tr></thead>
-                <tbody>
-                  {lastResa.map((r, i) => (
-                    <tr key={i}>
-                      <td>{r.dt}</td><td>{r.salle}</td><td>{r.user}</td>
-                      <td><Badge s={r.statut} /></td>
-                      <td><button className="act-btn"><IconEdit /></button><button className="act-btn"><IconTrash /></button></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
         </div>
-      </main>
-    </div>
+
+        <div className="card card-pad">
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"0.6rem" }}>
+            <span className="card-title" style={{ marginBottom: 0 }}>
+              Tendances des Réservations (Mensuel)
+              <span style={{ fontSize:"0.75rem", fontWeight:400, color:"var(--muted)", marginLeft:"0.5rem" }}>Total: 840</span>
+            </span>
+            <div className="chart-legend-row">
+              <span className="cl-dot" style={{ background:"#38BDF8" }} /> Total Réservations
+              <span className="cl-dot" style={{ background:"#1A56A0" }} /> Confirmées
+            </div>
+          </div>
+          <AreaChart data={monthly} />
+        </div>
+
+        <div className="bottom-row">
+          <div className="card card-pad">
+            <p className="card-title">Usage des Salles par Type</p>
+            <Donut data={donutData} />
+          </div>
+          <div className="card" style={{ padding:0, overflow:"hidden" }}>
+            <div style={{ padding:"0.85rem 1rem 0.5rem" }}>
+              <p className="card-title" style={{ marginBottom:0 }}>Dernières Réservations</p>
+            </div>
+            <table className="data-table">
+              <thead><tr><th>Date/Heure</th><th>Salle</th><th>Utilisateur</th><th>Statut</th><th>Action</th></tr></thead>
+              <tbody>
+                {lastResa.map((r, i) => (
+                  <tr key={i}>
+                    <td>{r.dt}</td><td>{r.salle}</td><td>{r.user}</td>
+                    <td><Badge s={r.statut} /></td>
+                    <td><button className="act-btn"><IconEdit /></button><button className="act-btn"><IconTrash /></button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </>
   );
 }
