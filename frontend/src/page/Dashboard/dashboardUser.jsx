@@ -155,18 +155,18 @@ export default function DashboardUser() {
 
       <main className="dash-main">
         {/* KPIs */}
-        <section className="kpi-row">
-          <div className="kpi-card kpi-accent">
+        <section style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"1rem", margin:"0 2rem" }}>
+          <div className="kpi-card kpi-accent" style={{ padding:"0.85rem 1.1rem" }}>
             <p className="kpi-label">Mes Réservations à Venir</p>
-            <p className="kpi-value">4 <span className="kpi-unit">salles</span></p>
+            <p style={{ fontSize:"1.55rem", fontWeight:700, color:"var(--text)", letterSpacing:"-0.03em", lineHeight:1 }}>4 <span className="kpi-unit">salles</span></p>
           </div>
-          <div className="kpi-card kpi-blue">
+          <div className="kpi-card kpi-blue" style={{ padding:"0.85rem 1.1rem" }}>
             <p className="kpi-label">Heures en Réunion</p>
-            <p className="kpi-value">32h <span className="kpi-unit">ce mois</span></p>
+            <p style={{ fontSize:"1.55rem", fontWeight:700, color:"var(--text)", letterSpacing:"-0.03em", lineHeight:1 }}>32h <span className="kpi-unit">ce mois</span></p>
           </div>
-          <div className="kpi-card kpi-green">
+          <div className="kpi-card kpi-green" style={{ padding:"0.85rem 1.1rem" }}>
             <p className="kpi-label">Taux de Présence</p>
-            <p className="kpi-value">98%</p>
+            <p style={{ fontSize:"1.55rem", fontWeight:700, color:"var(--text)", letterSpacing:"-0.03em", lineHeight:1 }}>98%</p>
           </div>
         </section>
 

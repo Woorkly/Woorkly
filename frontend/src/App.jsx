@@ -8,6 +8,11 @@ import FormReservation from './page/FormReservation/index'
 import Header from './components/header'
 import Footer from './components/footer'
 import DashboardUser from './page/Dashboard/dashboardUser'
+import DashboardAdmin from './page/Dashboard/DashBoardAdmin/dashboardAdmin'
+import Gestionsalles from './page/Dashboard/Gestionsalles'
+import GestionReservations from './page/Dashboard/gestionReservations'
+import GestionUser from "./page/Dashboard/Gestion_user"
+
 
 function App() {
   
@@ -22,8 +27,11 @@ function App() {
       <Route path="/reservation" element={<FormReservation /> } />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/dashboarduser" element={<DashboardUser />} />
-      <Route path="/dashboardAdmin" element={<DashBoardAdmin />} />
+      <Route path="/dashboardUser" element={<DashboardUser />} />
+      <Route path="/dashboardAdmin" element={<DashboardAdmin />} />
+      <Route path="/Gestionsalles" element={ <Gestionsalles />} />
+      <Route path="/GestionReservations" element={ <GestionReservations />} />
+      <Route path="/GestionUser" element={ <GestionUser />} />
     </Routes>
     <Footer />
     </>
