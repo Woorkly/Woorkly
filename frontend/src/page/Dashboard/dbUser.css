@@ -84,65 +84,56 @@
 
 /* ─── Main layout ─── */
 .dash-main {
-  padding: 1.75rem 2rem;
+  padding: 1.5rem 0;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  max-width: 1280px;
-  margin: 0 auto;
 }
 
 /* ─── KPI cards ─── */
-.kpi-row {
+.dashboard .kpi-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
+  margin: 0 2rem;
 }
 
-.kpi-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem 1.5rem;
-  box-shadow: var(--shadow);
+.dashboard .kpi-card {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  padding: 0.85rem 1.1rem !important;
+  box-shadow: var(--shadow) !important;
   transition: box-shadow 0.2s;
 }
 
-.kpi-card:hover {
+.dashboard .kpi-card:hover {
   box-shadow: var(--shadow-hover);
 }
 
-.kpi-accent {
-  border-left: 4px solid var(--primary);
-}
+.dashboard .kpi-accent { border-left: 4px solid var(--primary) !important; }
+.dashboard .kpi-blue   { border-left: 4px solid #38BDF8 !important; }
+.dashboard .kpi-green  { border-left: 4px solid var(--accent-green) !important; }
 
-.kpi-blue {
-  border-left: 4px solid #38BDF8;
-}
-
-.kpi-green {
-  border-left: 4px solid var(--accent-green);
-}
-
-.kpi-label {
-  font-size: 0.78rem;
+.dashboard .kpi-label {
+  font-size: 0.72rem;
   font-weight: 500;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
-.kpi-value {
-  font-size: 2rem;
+.dashboard .kpi-value {
+  font-size: 1.55rem !important;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.03em;
   line-height: 1;
 }
 
-.kpi-unit {
-  font-size: 0.9rem;
+.dashboard .kpi-unit {
+  font-size: 0.82rem;
   font-weight: 400;
   color: var(--text-muted);
   margin-left: 4px;
@@ -169,6 +160,7 @@
   display: grid;
   grid-template-columns: 1fr 320px;
   gap: 1rem;
+  margin: 0 2rem;
 }
 
 .chart-card {
@@ -254,6 +246,7 @@
 .tables-row {
   display: grid;
   grid-template-columns: 1fr;
+  margin: 0 2rem;
 }
 
 .table-card {
@@ -354,13 +347,18 @@
 @media (max-width: 900px) {
   .charts-row {
     grid-template-columns: 1fr;
+    margin: 0 1rem;
   }
 
-  .kpi-row {
+  .dashboard .kpi-row {
     grid-template-columns: 1fr;
   }
 
+  .tables-row {
+    margin: 0 1rem;
+  }
+
   .dash-main {
-    padding: 1rem;
+    padding: 1rem 0;
   }
 }
