@@ -1,9 +1,8 @@
-import react from "react";
 import "./header.css";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
-const Header = () => {
+const Header = ({ isDashboardUser = false }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -16,7 +15,7 @@ const Header = () => {
     <div>
       <section className="header-hero">
         {/* NAV */}
-        <nav className="header-nav">
+        <nav className={`header-nav ${isDashboardUser ? 'header-nav--dashboard-user' : ''}`}>
           <div className="header-nav__links">
             <a href="#">SALLES</a>
             <a href="#">MON ESPACE</a>
