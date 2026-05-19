@@ -12,6 +12,7 @@ import DashboardAdmin from './page/Dashboard/DashBoardAdmin/dashboardAdmin';
 import Gestionsalles from './page/Dashboard/DashBoardAdmin/Gestionsalles';
 import GestionReservations from './page/Dashboard/DashBoardAdmin/gestionReservations';
 import GestionUser from './page/Dashboard/DashBoardAdmin/Gestion_user';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -20,17 +21,29 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/salle" element={<Salle />} />
         <Route path="/salle/:id" element={<SalleDetail />} />
-        <Route path="/reservation" element={<FormReservation />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboardUser" element={<DashboardUser />} />
       </Route>
 
-      <Route element={<AdminLayout />}>
-        <Route path="/dashboardAdmin" element={<DashboardAdmin />} />
-        <Route path="/Gestionsalles" element={<Gestionsalles />} />
-        <Route path="/GestionReservations" element={<GestionReservations />} />
-        <Route path="/GestionUser" element={<GestionUser />} />
+      <Route element={<ProtectedRoute allowRoles={['user', 'admin']} />}>
+        <Route element={<PublicLayout />}>
+          <Route path="/reservation" element={<FormReservation />} />
+        </Route>
+      </Route>
+
+      <Route element={<ProtectedRoute allowRoles={['user']} />}>
+        <Route element={<PublicLayout />}>
+          <Route path="/dashboardUser" element={<DashboardUser />} />
+        </Route>
+      </Route>
+
+      <Route element={<ProtectedRoute allowRoles={['admin']} redirectTo="/login" />}>
+        <Route element={<AdminLayout />}>
+          <Route path="/dashboardAdmin" element={<DashboardAdmin />} />
+          <Route path="/Gestionsalles" element={<Gestionsalles />} />
+          <Route path="/GestionReservations" element={<GestionReservations />} />
+          <Route path="/GestionUser" element={<GestionUser />} />
+        </Route>
       </Route>
     </Routes>
   );

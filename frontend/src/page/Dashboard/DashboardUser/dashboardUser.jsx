@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from '../../../hooks/useAuth';
 import "./dbuser.css";
 
 const upcomingReservations = [
@@ -140,18 +141,32 @@ function StatutBadge({ statut }) {
 
 export default function DashboardUser() {
   const [activeTab, setActiveTab] = useState("upcoming");
+  const { user } = useAuth();
+  const dashboardName = user?.nom || user?.email || 'Utilisateur';
+  const dashboardEmail = user?.email || '';
+  const avatarLabel = dashboardName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
 
   return (
     <div className="dashboard">
       <header className="dash-header">
         <div className="dash-header-left">
           <span className="dash-logo">Woorkly</span>
-          <span className="dash-title">Dashboard utilisateur</span>
+          <span className="dash-title">Dashboard de {dashboardName}</span>
         </div>
         <div className="dash-avatar">
-          <span>SD</span>
+          <span>{avatarLabel || 'U'}</span>
         </div>
       </header>
+
+      <div style={{ margin: '0 2rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+        {dashboardEmail ? `Connecté en tant que ${dashboardEmail}` : 'Compte connecté'}
+      </div>
 
       <main className="dash-main">
         {/* KPIs */}
