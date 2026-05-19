@@ -5,13 +5,13 @@ import Landing from './page/Landing/index';
 import Login from './page/Login/index';
 import Register from './page/Register/index';
 import Salle from './page/salle';
-import SalleDétail from './page/salleDétail';
+import SalleDetail from './page/SalleDetail/salleDetail';
 import FormReservation from './page/FormReservation/index';
-import DashboardUser from './page/Dashboard/dashboardUser';
+import DashboardUser from './page/Dashboard/DashboardUser/dashboardUser';
 import DashboardAdmin from './page/Dashboard/DashBoardAdmin/dashboardAdmin';
-import Gestionsalles from './page/Dashboard/Gestionsalles';
-import GestionReservations from './page/Dashboard/gestionReservations';
-import GestionUser from './page/Dashboard/Gestion_user';
+import Gestionsalles from './page/Dashboard/DashBoardAdmin/Gestionsalles';
+import GestionReservations from './page/Dashboard/DashBoardAdmin/gestionReservations';
+import GestionUser from './page/Dashboard/DashBoardAdmin/Gestion_user';
 
 function App() {
   return (

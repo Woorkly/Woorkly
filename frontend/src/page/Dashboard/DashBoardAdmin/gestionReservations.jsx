@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import "./DashBoardAdmin/adminStyle.css";
+import "./adminStyle.css";
 
 const DAYS = [
   "Oct 15",
