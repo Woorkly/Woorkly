@@ -1,0 +1,164 @@
+.room-detail-page {
+  background-color: #f5f1eb;
+  color: #111111;
+  min-height: 100vh;
+  padding-bottom: 60px;
+}
+
+.room-gallery {
+  background-color: #171717;
+  padding: 45px 8%;
+  display: grid;
+  grid-template-columns: 2fr 1.35fr;
+  gap: 12px;
+}
+
+.main-image img {
+  width: 100%;
+  height: 360px;
+  object-fit: cover;
+  border-radius: 14px;
+  display: block;
+}
+
+.small-images {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.small-images img {
+  width: 100%;
+  height: 174px;
+  object-fit: cover;
+  border-radius: 14px;
+  display: block;
+}
+
+.room-tabs {
+  padding: 18px 8%;
+  display: flex;
+  gap: 28px;
+  background-color: #f5f1eb;
+  border-bottom: 1px solid #ded8cf;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.room-info {
+  padding: 40px 8%;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 60px;
+}
+
+.room-location {
+  font-size: 14px;
+  font-weight: 600;
+  color: #777777;
+  margin-bottom: 10px;
+}
+
+.room-main-content h1 {
+  font-size: 32px;
+  margin-bottom: 18px;
+}
+
+.room-meta {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.available-badge {
+  background-color: #dff5e1;
+  color: #1f7a36;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.unavailable-badge {
+  background-color: #ffdede;
+  color: #b42323;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.room-description {
+  line-height: 1.7;
+  max-width: 850px;
+  margin-bottom: 35px;
+}
+
+.room-section h2 {
+  margin-bottom: 18px;
+}
+
+.equipments-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.equipment-item {
+  background-color: white;
+  border: 1px solid #ded8cf;
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.room-side-card {
+  background-color: white;
+  border: 1px solid #ded8cf;
+  border-radius: 16px;
+  padding: 25px;
+  height: fit-content;
+  text-align: center;
+}
+
+.room-side-card p {
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.room-side-card button {
+  width: 100%;
+  border: none;
+  background-color: #111111;
+  color: white;
+  padding: 14px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.room-side-card span {
+  font-size: 13px;
+  color: #777777;
+}
+
+.room-not-found {
+  padding: 100px;
+  min-height: 100vh;
+  background-color: #f5f1eb;
+}
+
+@media (max-width: 900px) {
+  .room-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .room-info {
+    grid-template-columns: 1fr;
+  }
+
+  .room-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}

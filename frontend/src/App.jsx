@@ -19,7 +19,7 @@ function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Landing />} />
         <Route path="/salle" element={<Salle />} />
-        <Route path="/salle/:ANZIZ" element={<SalleDétail />} />
+        <Route path="/salle/:id" element={<SalleDetail />} />
         <Route path="/reservation" element={<FormReservation />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
