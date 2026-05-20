@@ -4,8 +4,8 @@ import { useAuth } from '../../../hooks/useAuth';
 import "./DashboardUser.css";
 import {
   ResponsiveContainer,
-  AreaChart,
-  Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -82,42 +82,28 @@ function DonutChart({ data }) {
   );
 }
 
-function ReservationsAreaChart({ data }) {
+function ReservationsBarChart({ data }) {
   return (
-    <div style={{ width: '100%', height: 300 }}>
+    <div style={{ width: '100%', height: 320 }}>
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 12, right: 20, left: 24, bottom: 12 }}>
+        <BarChart data={data} margin={{ top: 12, right: 20, left: 8, bottom: 12 }}>
           <defs>
-            <linearGradient id="gradReservations" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#60A5FA" stopOpacity={0.6} />
-              <stop offset="95%" stopColor="#60A5FA" stopOpacity={0.04} />
+            <linearGradient id="barGradReservations" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#60A5FA" stopOpacity={0.9} />
+              <stop offset="95%" stopColor="#60A5FA" stopOpacity={0.2} />
             </linearGradient>
-            <linearGradient id="gradAnnulations" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#1A56A0" stopOpacity={0.45} />
-              <stop offset="95%" stopColor="#1A56A0" stopOpacity={0.02} />
+            <linearGradient id="barGradAnnulations" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#1A56A0" stopOpacity={0.9} />
+              <stop offset="95%" stopColor="#1A56A0" stopOpacity={0.12} />
             </linearGradient>
           </defs>
           <CartesianGrid stroke="#e2e8f0" vertical={false} />
           <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#94a3b8' }} />
           <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
           <Tooltip formatter={(value) => [value, '']} />
-          <Area
-            type="monotone"
-            dataKey="reservations"
-            stroke="#38BDF8"
-            strokeWidth={2}
-            fill="url(#gradReservations)"
-            name="Total réservations"
-          />
-          <Area
-            type="monotone"
-            dataKey="annulations"
-            stroke="#1A56A0"
-            strokeWidth={2}
-            fill="url(#gradAnnulations)"
-            name="Annulations"
-          />
-          </AreaChart>
+          <Bar dataKey="reservations" name="Total réservations" barSize={18} fill="url(#barGradReservations)" />
+          <Bar dataKey="annulations" name="Annulations" barSize={18} fill="url(#barGradAnnulations)" />
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );
@@ -179,7 +165,7 @@ export default function DashboardUser() {
         <section className="charts-row">
           <div className="card chart-card">
             <h3 className="card-title">Mon Activité de Réservation (Annuel)</h3>
-            <ReservationsAreaChart data={monthlyData} />
+            <ReservationsBarChart data={monthlyData} />
             <div className="chart-legend">
               <span className="legend-line blue" />
               <span className="legend-label">Ma Réservation</span>
