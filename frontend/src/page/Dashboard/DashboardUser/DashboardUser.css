@@ -458,4 +458,22 @@
     padding: 0.15rem 0.5rem;
     font-size: 0.72rem;
   }
+
+  /* vertical scroll for tables on small screens */
+  .dashboard .table-card {
+    max-height: 320px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dashboard .resa-table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--card-bg);
+    z-index: 3;
+  }
+
+  .dashboard .resa-table thead tr {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  }
 }
