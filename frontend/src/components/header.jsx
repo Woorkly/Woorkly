@@ -1,6 +1,6 @@
 import "./header.css";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = ({ isDashboardUser = false }) => {
   const { user, logout } = useAuth();
@@ -18,14 +18,14 @@ const Header = ({ isDashboardUser = false }) => {
         <nav className={`header-nav ${isDashboardUser ? 'header-nav--dashboard-user' : ''}`}>
           <div className="header-nav__links">
             <a href="#">SALLES</a>
-            <a href="#">MON ESPACE</a>
+            {user?.role !== "admin" && <Link to="/dashboardUser">MON ESPACE</Link>}
             {user?.role?.toLowerCase() === "admin" && (
-              <a
+              <Link to="/dashboardAdmin"
                 style={{ cursor: "pointer" }}
-                onClick={() => navigate("/dashboardAdmin")}
+                
               >
                 ADMIN
-              </a>
+              </Link>
             )}
           </div>
           <div
