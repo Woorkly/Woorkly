@@ -164,11 +164,12 @@
 
 .dashboard .charts-row {
   display: grid;
-  grid-template-columns: minmax(480px, 560px) minmax(0, 1fr);
+  grid-template-columns: 2fr 1fr;
   gap: 1rem;
-  width: min(100%, 1280px);
-  margin: 0 auto;
-  padding: 0 2rem;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 2rem;
+  padding: 0;
   align-items: stretch;
 }
 

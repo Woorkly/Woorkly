@@ -11,7 +11,7 @@ import DashboardUser from './page/Dashboard/DashboardUser/DashboardUser';
 import DashboardAdmin from './page/Dashboard/DashBoardAdmin/DashboardAdmin';
 import Gestionsalles from './page/Dashboard/DashBoardAdmin/Gestionsalles';
 import GestionReservations from './page/Dashboard/DashBoardAdmin/GestionReservations';
-import GestionUser from './page/Dashboard/DashBoardAdmin/Gestion_user';
+import GestionUser from './page/Dashboard/DashBoardAdmin/GestionUser';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotFound from './page/NotFound';
 import ScrollToTop from './components/ScrollToTop';
