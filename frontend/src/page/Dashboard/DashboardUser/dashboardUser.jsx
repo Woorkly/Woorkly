@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { /* no local state needed for tables */ } from "react";
 import { useAuth } from '../../../hooks/useAuth';
 import "./DashboardUser.css";
 import {
@@ -102,7 +102,7 @@ function AreaChart({ data }) {
             stroke="#1A56A0"
             strokeWidth={2.2}
             dot={{ r: 3.5 }}
-            name="Mon Réservation"
+            name="Ma Réservation"
           />
           <Line
             type="monotone"
@@ -129,7 +129,6 @@ function StatutBadge({ statut }) {
 }
 
 export default function DashboardUser() {
-  const [activeTab, setActiveTab] = useState("upcoming");
   const { user } = useAuth();
   const dashboardName = user?.nom || user?.email || 'Utilisateur';
   const dashboardEmail = user?.email || '';
@@ -179,7 +178,7 @@ export default function DashboardUser() {
             <AreaChart data={monthlyData} />
             <div className="chart-legend">
               <span className="legend-line blue" />
-              <span className="legend-label">Mon Réservation</span>
+              <span className="legend-label">Ma Réservation</span>
               <span className="legend-line yellow dashed" />
               <span className="legend-label">Taux d'Annulation</span>
             </div>
@@ -193,20 +192,7 @@ export default function DashboardUser() {
 
         <section className="tables-row">
           <div className="card table-card">
-            <div className="table-tabs">
-              <button
-                className={`tab-btn ${activeTab === "upcoming" ? "active" : ""}`}
-                onClick={() => setActiveTab("upcoming")}
-              >
-                Réservations — À Venir
-              </button>
-              <button
-                className={`tab-btn ${activeTab === "history" ? "active" : ""}`}
-                onClick={() => setActiveTab("history")}
-              >
-                Historique Complet
-              </button>
-            </div>
+            <h3 className="card-title">Réservations — À Venir</h3>
             <table className="resa-table">
               <thead>
                 <tr>
@@ -217,7 +203,31 @@ export default function DashboardUser() {
                 </tr>
               </thead>
               <tbody>
-                {(activeTab === "upcoming" ? upcomingReservations : historyReservations).map((r, i) => (
+                {upcomingReservations.map((r, i) => (
+                  <tr key={i}>
+                    <td>{r.date}</td>
+                    <td>{r.salle}</td>
+                    <td>{r.utilisateur}</td>
+                    <td><StatutBadge statut={r.statut} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="card table-card">
+            <h3 className="card-title">Historique Complet</h3>
+            <table className="resa-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Salle</th>
+                  <th>Utilisateur</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historyReservations.map((r, i) => (
                   <tr key={i}>
                     <td>{r.date}</td>
                     <td>{r.salle}</td>
