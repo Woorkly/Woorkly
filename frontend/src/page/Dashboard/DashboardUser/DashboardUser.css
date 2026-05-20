@@ -203,12 +203,8 @@
   border-radius: 2px;
 }
 
-.dashboard .legend-line.blue { background: var(--primary); }
-.dashboard .legend-line.yellow { background: var(--accent-yellow); }
-.dashboard .legend-line.dashed {
-  background: none;
-  border-top: 2px dashed var(--accent-yellow);
-}
+.dashboard .legend-line.reservations { background: #60A5FA; }
+.dashboard .legend-line.annulations { background: #1A56A0; }
 
 .dashboard .legend-label {
   margin-right: 0.75rem;
