@@ -4,8 +4,8 @@ import { useAuth } from '../../../hooks/useAuth';
 import "./DashboardUser.css";
 import {
   ResponsiveContainer,
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -82,39 +82,42 @@ function DonutChart({ data }) {
   );
 }
 
-function AreaChart({ data }) {
+function ReservationsAreaChart({ data }) {
   return (
     <div style={{ width: '100%', height: 300 }}>
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 12, right: 20, left: 24, bottom: 12 }}>
+        <AreaChart data={data} margin={{ top: 12, right: 20, left: 24, bottom: 12 }}>
           <defs>
-            <linearGradient id="colorReservations" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#1A56A0" stopOpacity={0.35} />
-              <stop offset="100%" stopColor="#1A56A0" stopOpacity={0.02} />
+            <linearGradient id="gradReservations" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#60A5FA" stopOpacity={0.6} />
+              <stop offset="95%" stopColor="#60A5FA" stopOpacity={0.04} />
+            </linearGradient>
+            <linearGradient id="gradAnnulations" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#1A56A0" stopOpacity={0.45} />
+              <stop offset="95%" stopColor="#1A56A0" stopOpacity={0.02} />
             </linearGradient>
           </defs>
           <CartesianGrid stroke="#e2e8f0" vertical={false} />
           <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#94a3b8' }} />
           <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
           <Tooltip formatter={(value) => [value, '']} />
-          <Line
+          <Area
             type="monotone"
             dataKey="reservations"
-            stroke="#1A56A0"
-            strokeWidth={2.2}
-            dot={{ r: 3.5 }}
-            name="Ma Réservation"
+            stroke="#38BDF8"
+            strokeWidth={2}
+            fill="url(#gradReservations)"
+            name="Total réservations"
           />
-          <Line
+          <Area
             type="monotone"
             dataKey="annulations"
-            stroke="#F59E0B"
-            strokeWidth={1.8}
-            strokeDasharray="4 3"
-            dot={false}
-            name="Taux d'Annulation"
+            stroke="#1A56A0"
+            strokeWidth={2}
+            fill="url(#gradAnnulations)"
+            name="Annulations"
           />
-        </LineChart>
+          </AreaChart>
       </ResponsiveContainer>
     </div>
   );
@@ -176,7 +179,7 @@ export default function DashboardUser() {
         <section className="charts-row">
           <div className="card chart-card">
             <h3 className="card-title">Mon Activité de Réservation (Annuel)</h3>
-            <AreaChart data={monthlyData} />
+            <ReservationsAreaChart data={monthlyData} />
             <div className="chart-legend">
               <span className="legend-line blue" />
               <span className="legend-label">Ma Réservation</span>
