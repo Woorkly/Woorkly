@@ -30,6 +30,20 @@
 }
 .header-nav__actions { display: flex; gap: 10px; align-items: center; }
 
+/* Burger (mobile) */
+.header-burger { display: none; width: 40px; height: 34px; padding: 6px; border: none; background: transparent; flex-direction: column; justify-content: center; gap: 4px; cursor: pointer; }
+.header-burger span { display: block; height: 3px; background: #fff; border-radius: 3px; transition: transform .18s ease, opacity .18s ease; }
+.header-burger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.header-burger.open span:nth-child(2) { opacity: 0; }
+.header-burger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+/* Mobile menu panel */
+.header-mobile { display: none; position: absolute; top: 64px; left: 0; right: 0; background: #E8967A; padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,0.12); z-index: 50; }
+.header-mobile__links { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+.header-mobile__links a { color: rgba(255,255,255,0.95); font-weight: 700; text-decoration: none; }
+.header-mobile__actions { display: flex; gap: 10px; align-items: center; }
+.header-mobile__user { color: rgba(255,255,255,0.95); font-weight: 600; }
+
 .header-user-menu {
   display: flex;
   align-items: center;
@@ -137,6 +151,20 @@
 @media (max-width: 768px) {
   .header-nav { padding: 14px 20px; }
   .header-nav__links { display: none; }
+  .header-burger { display: flex; }
+  .header-mobile { display: block; }
+  /* Hide action buttons and user block on mobile, keep burger visible */
+  .header-nav__actions > .header-nav__btn-outline,
+  .header-nav__actions > .header-user-menu,
+  .header-nav__actions > .header-nav__btn-dark {
+    display: none;
+  }
+  /* When mobile menu is open, hide duplicate action elements in the header */
+  .header-nav--open .header-nav__actions > .header-user-menu,
+  .header-nav--open .header-nav__actions > .header-nav__btn-dark,
+  .header-nav--open .header-nav__actions > .header-nav__btn-outline {
+    display: none;
+  }
   .header-breadcrumb { padding: 10px 20px; }
   .header-hero__body { grid-template-columns: 1fr; padding: 32px 20px; }
   .header-hero__right { display: none; }

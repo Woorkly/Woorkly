@@ -1,4 +1,5 @@
 import { /* no local state needed for tables */ } from "react";
+import { useState } from "react";
 import { useAuth } from '../../../hooks/useAuth';
 import "./DashboardUser.css";
 import {
