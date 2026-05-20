@@ -35,72 +35,70 @@ const lastResa = [
   { dt: "Oct 15 14:00", salle: "Innovation Hub", user: "Sarah Dupont", statut: "Confirmé"   },
 ];
 
-function AreaChart({ data }) {
-  const W = 820, H = 250, pL = 48, pR = 20, pT = 20, pB = 28, max = 900;
-  const cW = W - pL - pR, cH = H - pT - pB;
-  const x = (i) => pL + (i / (data.length - 1)) * cW;
-  const y = (v) => pT + cH - (v / max) * cH;
-  const ptT = data.map((d, i) => `${x(i)},${y(d.total)}`).join(" ");
-  const ptC = data.map((d, i) => `${x(i)},${y(d.conf)}`).join(" ");
-  const aT  = `${x(0)},${H - pB} ${ptT} ${x(data.length - 1)},${H - pB}`;
-  const aC  = `${x(0)},${H - pB} ${ptC} ${x(data.length - 1)},${H - pB}`;
+import {
+  ResponsiveContainer,
+  AreaChart as ReAreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
 
+function AreaChart({ data }) {
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="area-svg">
-      <defs>
-        <linearGradient id="gT" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.02" />
-        </linearGradient>
-        <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1A56A0" stopOpacity="0.45" />
-          <stop offset="100%" stopColor="#1A56A0" stopOpacity="0.03" />
-        </linearGradient>
-      </defs>
-      {[0, 200, 400, 600, 800].map((v) => (
-        <g key={v}>
-          <line x1={pL} x2={W - pR} y1={y(v)} y2={y(v)} stroke="#e2e8f0" strokeWidth="0.8" />
-          <text x={pL - 6} y={y(v) + 4} textAnchor="end" fontSize="10" fill="#94a3b8">{v}</text>
-        </g>
-      ))}
-      <polygon points={aT} fill="url(#gT)" />
-      <polygon points={aC} fill="url(#gC)" />
-      <polyline points={ptT} fill="none" stroke="#38BDF8" strokeWidth="2" strokeLinejoin="round" />
-      <polyline points={ptC} fill="none" stroke="#1A56A0" strokeWidth="2" strokeLinejoin="round" />
-      {data.map((d, i) => (
-        <g key={i}>
-          <circle cx={x(i)} cy={y(d.total)} r="3.5" fill="#38BDF8" />
-          <circle cx={x(i)} cy={y(d.conf)}  r="3.5" fill="#1A56A0" />
-          <text x={x(i)} y={y(d.total) - 7} textAnchor="middle" fontSize="9" fill="#64748b">{d.total}</text>
-          <text x={x(i)} y={H - 7}          textAnchor="middle" fontSize="9" fill="#94a3b8">{d.month}</text>
-        </g>
-      ))}
-    </svg>
+    <div style={{ width: '100%', height: 280 }}>
+      <ResponsiveContainer>
+        <ReAreaChart data={data} margin={{ top: 20, right: 20, left: 48, bottom: 28 }}>
+          <defs>
+            <linearGradient id="gT" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#38BDF8" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="#38BDF8" stopOpacity={0.02} />
+            </linearGradient>
+            <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#1A56A0" stopOpacity={0.45} />
+              <stop offset="100%" stopColor="#1A56A0" stopOpacity={0.03} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid stroke="#e6eef9" vertical={false} />
+          <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#94a3b8' }} />
+          <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
+          <Tooltip formatter={(value) => [value, '']} />
+          <Area type="monotone" dataKey="total" stroke="#38BDF8" fill="url(#gT)" strokeWidth={2} dot={{ r: 3.5 }} />
+          <Area type="monotone" dataKey="conf"  stroke="#1A56A0" fill="url(#gC)" strokeWidth={2} dot={{ r: 3.5 }} />
+        </ReAreaChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
 
 function Donut({ data }) {
-  const sz = 140, cx = 70, cy = 70, R = 50, r = 28;
-  let cum = 0;
-  const slices = data.map((item) => {
-    const a0 = (cum / 100) * 2 * Math.PI - Math.PI / 2;
-    cum += item.pct;
-    const a1 = (cum / 100) * 2 * Math.PI - Math.PI / 2;
-    const lg = item.pct > 50 ? 1 : 0;
-    const d = `M ${cx + R * Math.cos(a0)} ${cy + R * Math.sin(a0)} A ${R} ${R} 0 ${lg} 1 ${cx + R * Math.cos(a1)} ${cy + R * Math.sin(a1)} L ${cx + r * Math.cos(a1)} ${cy + r * Math.sin(a1)} A ${r} ${r} 0 ${lg} 0 ${cx + r * Math.cos(a0)} ${cy + r * Math.sin(a0)} Z`;
-    return { ...item, d };
-  });
+  const COLORS = data.map((d) => d.color);
   return (
-    <div className="donut-wrap">
-      <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`} style={{ flexShrink: 0 }}>
-        {slices.map((s, i) => <path key={i} d={s.d} fill={s.color} />)}
-        <circle cx={cx} cy={cy} r={r} fill="white" />
-      </svg>
-      <div className="donut-legend">
+    <div className="donut-wrap" style={{ alignItems: 'flex-start' }}>
+      <div style={{ width: 140, height: 140, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie data={data} dataKey="pct" nameKey="label" innerRadius={44} outerRadius={68} startAngle={90} endAngle={-270} paddingAngle={2}>
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="donut-legend" style={{ marginLeft: 8 }}>
         {data.map((item, i) => (
           <div key={i} className="leg-item">
-            <span className="leg-dot" style={{ background: item.color }} />
-            <span>{item.label} {item.pct}%</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="leg-dot" style={{ background: item.color }} />
+              <span className="leg-label">{item.label}</span>
+            </div>
+            <div className="leg-pct">{item.pct}%</div>
           </div>
         ))}
       </div>

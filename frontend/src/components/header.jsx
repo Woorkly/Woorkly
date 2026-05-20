@@ -1,6 +1,7 @@
 import "./header.css";
+import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = ({ isDashboardUser = false }) => {
   const { user, logout } = useAuth();
@@ -11,21 +12,23 @@ const Header = ({ isDashboardUser = false }) => {
     navigate("/");
   };
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <div>
       <section className="header-hero">
         {/* NAV */}
-        <nav className={`header-nav ${isDashboardUser ? 'header-nav--dashboard-user' : ''}`}>
+        <nav className={`header-nav ${isDashboardUser ? 'header-nav--dashboard-user' : ''} ${menuOpen ? 'header-nav--open' : ''}`}>
           <div className="header-nav__links">
             <a href="#">SALLES</a>
-            <a href="#">MON ESPACE</a>
+            {user?.role !== "admin" && <Link to="/dashboardUser">MON ESPACE</Link>}
             {user?.role?.toLowerCase() === "admin" && (
-              <a
+              <Link to="/dashboardAdmin"
                 style={{ cursor: "pointer" }}
-                onClick={() => navigate("/dashboardAdmin")}
+                
               >
                 ADMIN
-              </a>
+              </Link>
             )}
           </div>
           <div
@@ -36,6 +39,15 @@ const Header = ({ isDashboardUser = false }) => {
             woorkly.
           </div>
           <div className="header-nav__actions">
+            <button
+              className={`header-burger ${menuOpen ? 'open' : ''}`}
+              aria-label={menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+              onClick={() => setMenuOpen((s) => !s)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
             <button className="header-nav__btn-outline">
               <svg
                 width="13"
@@ -66,6 +78,27 @@ const Header = ({ isDashboardUser = false }) => {
               </button>
             )}
           </div>
+          {menuOpen && (
+            <div className="header-mobile">
+              <div className="header-mobile__links">
+                <a href="#">SALLES</a>
+                {user?.role !== "admin" && <Link to="/dashboardUser">MON ESPACE</Link>}
+                {user?.role?.toLowerCase() === "admin" && (
+                  <Link to="/dashboardAdmin">ADMIN</Link>
+                )}
+              </div>
+              <div className="header-mobile__actions">
+                {user ? (
+                  <>
+                    <div className="header-mobile__user">{user.nom || user.email}</div>
+                    <button className="header-nav__btn-dark" onClick={handleLogout}>Déconnexion</button>
+                  </>
+                ) : (
+                  <button className="header-nav__btn-dark" onClick={() => navigate('/login')}>Connexion</button>
+                )}
+              </div>
+            </div>
+          )}
         </nav>
       </section>
     </div>
