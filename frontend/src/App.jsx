@@ -13,6 +13,7 @@ import Gestionsalles from './page/Dashboard/DashBoardAdmin/Gestionsalles';
 import GestionReservations from './page/Dashboard/DashBoardAdmin/gestionReservations';
 import GestionUser from './page/Dashboard/DashBoardAdmin/Gestion_user';
 import ProtectedRoute from './components/ProtectedRoute';
+import NotFound from './page/NotFound';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/salle/:id" element={<SalleDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
 
       <Route element={<ProtectedRoute allowRoles={['user', 'admin']} />}>
