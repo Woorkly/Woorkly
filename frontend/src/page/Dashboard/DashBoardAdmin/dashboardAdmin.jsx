@@ -79,21 +79,26 @@ function AreaChart({ data }) {
 function Donut({ data }) {
   const COLORS = data.map((d) => d.color);
   return (
-    <div className="donut-wrap" style={{ display: 'flex', alignItems: 'center' }}>
-      <ResponsiveContainer width={140} height={140}>
-        <PieChart>
-          <Pie data={data} dataKey="pct" nameKey="label" innerRadius={36} outerRadius={60} startAngle={90} endAngle={-270} paddingAngle={2}>
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
-      <div className="donut-legend">
+    <div className="donut-wrap" style={{ alignItems: 'flex-start' }}>
+      <div style={{ width: 140, height: 140, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie data={data} dataKey="pct" nameKey="label" innerRadius={44} outerRadius={68} startAngle={90} endAngle={-270} paddingAngle={2}>
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="donut-legend" style={{ marginLeft: 8 }}>
         {data.map((item, i) => (
           <div key={i} className="leg-item">
-            <span className="leg-dot" style={{ background: item.color }} />
-            <span>{item.label} {item.pct}%</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="leg-dot" style={{ background: item.color }} />
+              <span className="leg-label">{item.label}</span>
+            </div>
+            <div className="leg-pct">{item.pct}%</div>
           </div>
         ))}
       </div>

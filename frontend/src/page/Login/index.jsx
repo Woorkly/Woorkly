@@ -14,9 +14,11 @@ const Login = () => {
     e.preventDefault()
     setError('')
     try {
-      await login({ email, password })
-      // Contexte mis à jour avec l'utilisateur, redirection
-      navigate('/')
+      const authenticatedUser = await login({ email, password })
+      const role = authenticatedUser?.role?.toLowerCase()
+
+      // La redirection doit utiliser la réponse de login, pas l'état du contexte juste après setUser.
+      role === 'admin' ? navigate('/dashboardAdmin') : navigate('/')
     } catch (err) {
       setError(err?.response?.data?.message || 'Erreur lors de la connexion')
     }
