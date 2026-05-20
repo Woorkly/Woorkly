@@ -167,10 +167,10 @@ export default function DashboardUser() {
             <h3 className="card-title">Mon Activité de Réservation (Annuel)</h3>
             <ReservationsBarChart data={monthlyData} />
             <div className="chart-legend">
-              <span className="legend-line blue" />
-              <span className="legend-label">Ma Réservation</span>
-              <span className="legend-line yellow dashed" />
-              <span className="legend-label">Taux d'Annulation</span>
+              <span className="legend-line reservations" />
+              <span className="legend-label">Total Réservations</span>
+              <span className="legend-line annulations" />
+              <span className="legend-label">Annulations</span>
             </div>
           </div>
 
