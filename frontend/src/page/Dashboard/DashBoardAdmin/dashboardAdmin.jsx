@@ -1,4 +1,4 @@
-import "./adminStyle.css";
+import "./AdminStyle.css";
 
 const kpis = [
   { label: "Salles Total",             value: "12",    unit: "Salles",        delta: "+15%", c: "c-blue"   },
