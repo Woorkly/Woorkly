@@ -945,3 +945,47 @@ body { font-family: var(--font); }
   margin-left: auto;
 }
 .ud-btn-ghost:hover { background: #f1f5f9; color: var(--text); }
+
+/* ── Modal Ajouter Utilisateur ─────────────────────────── */
+.au-form { display: flex; flex-direction: column; gap: 1rem; }
+
+.au-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.au-field { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.au-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.au-input {
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-family: var(--font);
+  color: var(--text);
+  background: #f8fafc;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.au-input:focus {
+  border-color: #1A56A0;
+  box-shadow: 0 0 0 3px rgba(26, 86, 160, 0.1);
+  background: #fff;
+}
+
+.au-input-error { border-color: #ef4444 !important; }
+.au-input-error:focus { box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important; }
+
+.au-error {
+  font-size: 0.75rem;
+  color: #ef4444;
+  font-weight: 500;
+}

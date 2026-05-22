@@ -283,6 +283,134 @@ function UserDetail({ user, onClose }) {
   );
 }
 
+// ── Modal Ajouter Utilisateur ──────────────────────────────
+const AVATAR_COLORS = [
+  "#1A56A0", "#10B981", "#F59E0B", "#8B5CF6",
+  "#EF4444", "#0EA5E9", "#EC4899", "#14B8A6",
+];
+
+function getInitiales(nom) {
+  const parts = nom.trim().split(" ");
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return nom.slice(0, 2).toUpperCase();
+}
+
+function AddUserModal({ onClose, onAdd }) {
+  const [form, setForm] = useState({
+    nom: "",
+    email: "",
+    role: "Utilisateur",
+    statut: "Actif",
+  });
+  const [errors, setErrors] = useState({});
+
+  function validate() {
+    const e = {};
+    if (!form.nom.trim()) e.nom = "Le nom est requis.";
+    if (!form.email.trim()) e.email = "L'email est requis.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+      e.email = "Email invalide.";
+    return e;
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const e2 = validate();
+    if (Object.keys(e2).length) { setErrors(e2); return; }
+    const couleur = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
+    onAdd({
+      nom: form.nom.trim(),
+      email: form.email.trim(),
+      role: form.role,
+      statut: form.statut,
+      initiales: getInitiales(form.nom),
+      couleur,
+      inscription: new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" }),
+      reservations: [],
+    });
+    onClose();
+  }
+
+  function handleChange(field, value) {
+    setForm((f) => ({ ...f, [field]: value }));
+    setErrors((e) => ({ ...e, [field]: undefined }));
+  }
+
+  return (
+    <div className="ud-overlay" onClick={onClose}>
+      <div className="ud-panel" onClick={(e) => e.stopPropagation()}>
+        <button className="ud-close" onClick={onClose}>✕</button>
+
+        <div className="ud-header" style={{ marginBottom: "1.2rem" }}>
+          <div>
+            <h2 className="ud-name">Ajouter un utilisateur</h2>
+            <p className="ud-email">Remplissez les informations ci-dessous</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="au-form" noValidate>
+          <div className="au-field">
+            <label className="au-label">Nom complet</label>
+            <input
+              className={`au-input${errors.nom ? " au-input-error" : ""}`}
+              placeholder="Ex : Marie Curie"
+              value={form.nom}
+              onChange={(e) => handleChange("nom", e.target.value)}
+            />
+            {errors.nom && <span className="au-error">{errors.nom}</span>}
+          </div>
+
+          <div className="au-field">
+            <label className="au-label">Adresse email</label>
+            <input
+              className={`au-input${errors.email ? " au-input-error" : ""}`}
+              type="email"
+              placeholder="Ex : marie.curie@woorkly.com"
+              value={form.email}
+              onChange={(e) => handleChange("email", e.target.value)}
+            />
+            {errors.email && <span className="au-error">{errors.email}</span>}
+          </div>
+
+          <div className="au-row">
+            <div className="au-field">
+              <label className="au-label">Rôle</label>
+              <select
+                className="au-input"
+                value={form.role}
+                onChange={(e) => handleChange("role", e.target.value)}
+              >
+                <option value="Utilisateur">Utilisateur</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+            <div className="au-field">
+              <label className="au-label">Statut</label>
+              <select
+                className="au-input"
+                value={form.statut}
+                onChange={(e) => handleChange("statut", e.target.value)}
+              >
+                <option value="Actif">Actif</option>
+                <option value="Inactif">Inactif</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="ud-actions" style={{ marginTop: "1.5rem" }}>
+            <button type="submit" className="btn-primary" style={{ fontSize: "0.85rem" }}>
+              Ajouter
+            </button>
+            <button type="button" className="ud-btn-ghost" onClick={onClose}>
+              Annuler
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ── Page principale ────────────────────────────────────────
 export default function GestionUtilisateurs() {
   const navigate = useNavigate();
@@ -291,8 +419,10 @@ export default function GestionUtilisateurs() {
   const [roleFilter, setRoleFilter] = useState("");
   const [statFilter, setStatFilter] = useState("");
   const [selected, setSelected] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [users, setUsers] = useState(usersData);
 
-  const filtered = usersData.filter((u) => {
+  const filtered = users.filter((u) => {
     const q = search.toLowerCase();
     const matchSearch =
       u.nom.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
@@ -308,7 +438,9 @@ export default function GestionUtilisateurs() {
         {/* Header */}
         <div className="page-header">
           <h2 className="page-title">Gestion Utilisateurs</h2>
-          <button className="btn-primary">+ Ajouter un utilisateur</button>
+          <button className="btn-primary" onClick={() => setShowAddModal(true)}>
+            + Ajouter un utilisateur
+          </button>
         </div>
 
         {/* Stats rapides */}
@@ -317,7 +449,7 @@ export default function GestionUtilisateurs() {
             <p className="kpi-label">Total utilisateurs</p>
             <div className="kpi-row-val">
               <span className="kpi-val">
-                {usersData.length}
+                {users.length}
                 <span className="kpi-unit"> users</span>
               </span>
             </div>
@@ -326,7 +458,7 @@ export default function GestionUtilisateurs() {
             <p className="kpi-label">Actifs</p>
             <div className="kpi-row-val">
               <span className="kpi-val">
-                {usersData.filter((u) => u.statut === "Actif").length}
+                {users.filter((u) => u.statut === "Actif").length}
                 <span className="kpi-unit"> users</span>
               </span>
             </div>
@@ -335,7 +467,7 @@ export default function GestionUtilisateurs() {
             <p className="kpi-label">Inactifs</p>
             <div className="kpi-row-val">
               <span className="kpi-val">
-                {usersData.filter((u) => u.statut === "Inactif").length}
+                {users.filter((u) => u.statut === "Inactif").length}
                 <span className="kpi-unit"> users</span>
               </span>
             </div>
@@ -344,7 +476,7 @@ export default function GestionUtilisateurs() {
             <p className="kpi-label">Admins</p>
             <div className="kpi-row-val">
               <span className="kpi-val">
-                {usersData.filter((u) => u.role === "Admin").length}
+                {users.filter((u) => u.role === "Admin").length}
                 <span className="kpi-unit"> admins</span>
               </span>
             </div>
@@ -467,6 +599,16 @@ export default function GestionUtilisateurs() {
       {/* Fiche détaillée */}
       {selected && (
         <UserDetail user={selected} onClose={() => setSelected(null)} />
+      )}
+
+      {/* Modal ajout utilisateur */}
+      {showAddModal && (
+        <AddUserModal
+          onClose={() => setShowAddModal(false)}
+          onAdd={(newUser) =>
+            setUsers((prev) => [...prev, { id: Date.now(), ...newUser }])
+          }
+        />
       )}
     </>
   );
