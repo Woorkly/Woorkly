@@ -64,7 +64,7 @@ const Header = ({ isDashboardUser = false }) => {
             </button>
             {user ? (
               <div className="header-user-menu">
-                <span>{user.nom || user.email}</span>
+                <span>{user?.nom}</span>
                 <button className="header-nav__btn-dark" onClick={handleLogout}>
                   Déconnexion
                 </button>
