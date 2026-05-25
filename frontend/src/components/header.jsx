@@ -48,7 +48,7 @@ const Header = ({ isDashboardUser = false }) => {
               <span />
               <span />
             </button>
-            <button className="header-nav__btn-outline">
+            <button className="header-nav__btn-outline" onClick={() => navigate('/salle')} >
               <svg
                 width="13"
                 height="13"
