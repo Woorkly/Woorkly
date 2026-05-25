@@ -13,11 +13,12 @@ const typeRoutes = require('./routes/typeRoutes');
 const autRoutes = require('./routes/authRoute');
 
 const app = express();
+const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
 
 // --- MIDDLEWARES ---
 // Allow the frontend (Vite) to send/receive cookies (HttpOnly token)
 app.use(cors({
-  origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+  origin: frontendOrigin,
   credentials: true
 }));
 app.use(cookieParser());
