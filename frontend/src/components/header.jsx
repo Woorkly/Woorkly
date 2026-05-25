@@ -90,7 +90,7 @@ const Header = ({ isDashboardUser = false }) => {
               <div className="header-mobile__actions">
                 {user ? (
                   <>
-                    <div className="header-mobile__user">{user.nom || user.email}</div>
+                    <div className="header-mobile__user">{user?.nom}</div>
                     <button className="header-nav__btn-dark" onClick={handleLogout}>Déconnexion</button>
                   </>
                 ) : (
