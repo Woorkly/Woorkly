@@ -6,6 +6,10 @@ const roomController = require('../controllers/roomController');
 // URL : GET http://localhost:3000/api/rooms/
 router.get('/', roomController.getAllRooms);
 
+// Route pour récupérer les salles disponibles
+// URL : GET http://localhost:3000/api/rooms/available
+router.get('/available', roomController.getAvailableRooms);
+
 // Route pour récupérer une salle précise (avec photos et équipements)
 // URL : GET http://localhost:3000/api/rooms/1
 router.get('/:id', roomController.getRoomDetails);

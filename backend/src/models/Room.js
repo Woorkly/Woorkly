@@ -9,13 +9,61 @@ class Room extends BaseModel {
     }
 
   // On réécrit getAll car on a une jointure spécifique (Polymorphisme)
-  static async getAll() {
+  static async getAll(filters = {}) {
+    const where = [];
+    const params = [];
+
+    if (filters.ville) {
+      where.push('LOWER(s.ville) LIKE ?');
+      params.push(`%${String(filters.ville).trim().toLowerCase()}%`);
+    }
+
+    if (filters.capacite_min) {
+      where.push('s.capacite >= ?');
+      params.push(Number(filters.capacite_min));
+    }
+
+    if (filters.type_id) {
+      where.push('s.type_id = ?');
+      params.push(Number(filters.type_id));
+    }
+
     const sql = `
             SELECT s.*, t.nom as type_nom 
             FROM salles s
             JOIN types t ON s.type_id = t.id
+            ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
         `;
-    const [rows] = await db.execute(sql);
+    const [rows] = await db.execute(sql, params);
+    return rows;
+  }
+
+  static async getAvailable(filters = {}) {
+    const where = ["s.statut = 'disponible'"];
+    const params = [];
+
+    if (filters.ville) {
+      where.push('LOWER(s.ville) LIKE ?');
+      params.push(`%${String(filters.ville).trim().toLowerCase()}%`);
+    }
+
+    if (filters.capacite_min) {
+      where.push('s.capacite >= ?');
+      params.push(Number(filters.capacite_min));
+    }
+
+    if (filters.type_id) {
+      where.push('s.type_id = ?');
+      params.push(Number(filters.type_id));
+    }
+
+    const sql = `
+            SELECT s.*, t.nom as type_nom 
+            FROM salles s
+            JOIN types t ON s.type_id = t.id
+            WHERE ${where.join(' AND ')}
+        `;
+    const [rows] = await db.execute(sql, params);
     return rows;
   }
   // On réécrit getById car on a une jointure spécifique (type de salle)
