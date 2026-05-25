@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import "./salleDetail.css";
+import "./SalleDetail.css";
 
 const salles = [
   {
