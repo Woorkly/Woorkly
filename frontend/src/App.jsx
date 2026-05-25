@@ -4,7 +4,7 @@ import AdminLayout from './layouts/AdminLayout';
 import Landing from './page/Landing/index';
 import Login from './page/Login/index';
 import Register from './page/Register/index';
-import Salle from './page/Salle';
+import Salle from './page/Rooms';
 import SalleDetail from './page/SalleDetail/SalleDetail';
 import FormReservation from './page/FormReservation/index';
 import DashboardUser from './page/Dashboard/DashboardUser/DashboardUser';

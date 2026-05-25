@@ -20,7 +20,7 @@ const Header = ({ isDashboardUser = false }) => {
         {/* NAV */}
         <nav className={`header-nav ${isDashboardUser ? 'header-nav--dashboard-user' : ''} ${menuOpen ? 'header-nav--open' : ''}`}>
           <div className="header-nav__links">
-            <a href="#">SALLES</a>
+            <Link to="/salle">SALLES</Link>
             {user?.role !== "admin" && <Link to="/dashboardUser">MON ESPACE</Link>}
             {user?.role?.toLowerCase() === "admin" && (
               <Link to="/dashboardAdmin"
@@ -81,7 +81,7 @@ const Header = ({ isDashboardUser = false }) => {
           {menuOpen && (
             <div className="header-mobile">
               <div className="header-mobile__links">
-                <a href="#">SALLES</a>
+                <Link to="/salle">SALLES</Link>
                 {user?.role !== "admin" && <Link to="/dashboardUser">MON ESPACE</Link>}
                 {user?.role?.toLowerCase() === "admin" && (
                   <Link to="/dashboardAdmin">ADMIN</Link>
