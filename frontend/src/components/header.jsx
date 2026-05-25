@@ -20,7 +20,7 @@ const Header = ({ isDashboardUser = false }) => {
         {/* NAV */}
         <nav className={`header-nav ${isDashboardUser ? 'header-nav--dashboard-user' : ''} ${menuOpen ? 'header-nav--open' : ''}`}>
           <div className="header-nav__links">
-            <a href="#">SALLES</a>
+            <Link to="/salle">SALLES</Link>
             {user?.role !== "admin" && <Link to="/dashboardUser">MON ESPACE</Link>}
             {user?.role?.toLowerCase() === "admin" && (
               <Link to="/dashboardAdmin"
@@ -48,7 +48,7 @@ const Header = ({ isDashboardUser = false }) => {
               <span />
               <span />
             </button>
-            <button className="header-nav__btn-outline">
+            <button className="header-nav__btn-outline" onClick={() => navigate('/salle')} >
               <svg
                 width="13"
                 height="13"
@@ -64,7 +64,7 @@ const Header = ({ isDashboardUser = false }) => {
             </button>
             {user ? (
               <div className="header-user-menu">
-                <span>{user.nom || user.email}</span>
+                <span>{user?.nom}</span>
                 <button className="header-nav__btn-dark" onClick={handleLogout}>
                   Déconnexion
                 </button>
@@ -81,7 +81,7 @@ const Header = ({ isDashboardUser = false }) => {
           {menuOpen && (
             <div className="header-mobile">
               <div className="header-mobile__links">
-                <a href="#">SALLES</a>
+                <Link to="/salle">SALLES</Link>
                 {user?.role !== "admin" && <Link to="/dashboardUser">MON ESPACE</Link>}
                 {user?.role?.toLowerCase() === "admin" && (
                   <Link to="/dashboardAdmin">ADMIN</Link>
@@ -90,7 +90,7 @@ const Header = ({ isDashboardUser = false }) => {
               <div className="header-mobile__actions">
                 {user ? (
                   <>
-                    <div className="header-mobile__user">{user.nom || user.email}</div>
+                    <div className="header-mobile__user">{user?.nom}</div>
                     <button className="header-nav__btn-dark" onClick={handleLogout}>Déconnexion</button>
                   </>
                 ) : (

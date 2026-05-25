@@ -3,6 +3,15 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const authService = require("../services/authService");
 const jwt = require('jsonwebtoken');
 
+const isProduction = process.env.NODE_ENV === 'production';
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'strict',
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: '/',
+};
+
 
 // POST /api/auth/login
 // Connexion d'un utilisateur
@@ -11,12 +20,7 @@ const login = async (req, res) => {
     const user = await authService.login(req.body);
     const token = authService.generateToken(user);
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
+    res.cookie('token', token, cookieOptions);
 
     return res.status(200).json({
       userId: user.id,
@@ -54,11 +58,7 @@ const me = (req, res) => {
 
 // POST /api/auth/logout
 const logout = (req, res) => {
-  res.clearCookie('token', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict'
-  });
+  res.clearCookie('token', cookieOptions);
   return res.status(200).json({ message: 'Déconnecté' });
 }
 

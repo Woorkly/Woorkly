@@ -3,11 +3,22 @@ const Room = require('../models/Room');
 // Récupérer toutes les salles
 const getAllRooms = async (req, res) => {
     try {
-        const rooms = await Room.getAll();
+        const rooms = await Room.getAll(req.query);
         res.status(200).json(rooms);
     } catch (error) {
         console.error("ERREUR SQL :", error);
         res.status(500).json({ message: "Erreur lors de la récupération des salles" });
+    }
+};
+
+// Récupérer les salles disponibles
+const getAvailableRooms = async (req, res) => {
+    try {
+        const rooms = await Room.getAvailable(req.query);
+        res.status(200).json(rooms);
+    } catch (error) {
+        console.error("ERREUR SQL :", error);
+        res.status(500).json({ message: "Erreur lors de la récupération des salles disponibles" });
     }
 };
 
@@ -83,6 +94,7 @@ const createRoom = async (req, res) => {
 
 module.exports = {
     getAllRooms,
+    getAvailableRooms,
     getRoomDetails,
     createRoom
 };
