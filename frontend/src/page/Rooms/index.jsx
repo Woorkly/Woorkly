@@ -221,7 +221,7 @@ export default function Salle() {
                       </span>
                     </div> */}
                     
-                    <Link to={`/rooms/${room.id}`} className="room-card-btn">
+                    <Link to={`/salle/${room.id}`} className="room-card-btn">
                       <Button variant="secondary" className="room-card-detail-btn" style={{ width: '100%' }}>
                         Voir détails
                       </Button>
