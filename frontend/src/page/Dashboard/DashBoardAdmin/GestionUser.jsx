@@ -406,6 +406,7 @@ export default function GestionUtilisateurs() {
 
         {/* Tableau */}
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          <div className="table-scroll">
           <table className="data-table">
             <thead>
               <tr>
@@ -461,6 +462,7 @@ export default function GestionUtilisateurs() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 

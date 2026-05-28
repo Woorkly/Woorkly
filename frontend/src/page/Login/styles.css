@@ -70,3 +70,24 @@
 @media (max-width: 640px) {
   .login-shell { padding: 20px; }
 }
+
+@media (max-width: 480px) {
+  .login-page {
+    padding: 24px 16px;
+    align-items: flex-start;
+  }
+
+  .login-shell {
+    padding: 18px 16px;
+  }
+
+  .login-actions {
+    flex-direction: column;
+  }
+
+  .login-actions .btn-primary,
+  .login-actions .btn-outline {
+    width: 100%;
+    text-align: center;
+  }
+}

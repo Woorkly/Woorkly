@@ -168,6 +168,7 @@ export default function DashboardAdmin() {
             <div style={{ padding:"0.85rem 1rem 0.5rem" }}>
               <p className="card-title" style={{ marginBottom:0 }}>Dernières Réservations</p>
             </div>
+            <div className="table-scroll">
             <table className="data-table">
               <thead><tr><th>Date/Heure</th><th>Salle</th><th>Utilisateur</th><th>Statut</th><th>Action</th></tr></thead>
               <tbody>
@@ -180,6 +181,7 @@ export default function DashboardAdmin() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
 
