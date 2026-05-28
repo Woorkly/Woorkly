@@ -1,13 +1,6 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import "./adminStyle.css";
 
-const NAV_ROUTES = {
-  Dashboard:    "/dashboardAdmin",
-  Salles:       "/Gestionsalles",
-  Reservations: "/GestionReservations",
-  Utilisateurs: "/GestionUser",
-};
 
 // Icônes SVG par type de salle
 const icons = {
@@ -77,25 +70,13 @@ function Badge({ s }) {
 }
 
 export default function GestionSalles() {
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
   const [search, setSearch] = useState("");
   const filtered = salles.filter((s) => s.nom.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="admin-wrap">
-      {/* <aside className="sidebar">
-        <div className="sidebar-logo">Woorkly<span>,</span></div>
-        <nav className="sidebar-nav">
-          {["Dashboard", "Salles", "Reservations", "Utilisateurs"].map((p) => (
-            <button key={p} className={`snav-btn ${NAV_ROUTES[p] === pathname ? "active" : ""}`} onClick={() => navigate(NAV_ROUTES[p])}>{p}</button>
-          ))}
-        </nav>
-      </aside> */}
-
-      <main className="admin-main">
-        <div className="topbar">Tableau de bord Admin</div>
-        <div className="page-body">
+    <>
+      <div className="topbar">Gestion Salles</div>
+      <div className="page-body">
 
           <div className="page-header">
             <h2 className="page-title">Gestion Salles</h2>
@@ -116,6 +97,7 @@ export default function GestionSalles() {
           </div>
 
           <div className="card" style={{ padding:0, overflow:"hidden" }}>
+            <div className="table-scroll">
             <table className="data-table">
               <thead>
                 <tr>
@@ -145,10 +127,10 @@ export default function GestionSalles() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
 
         </div>
-      </main>
-    </div>
+    </>
   );
 }
