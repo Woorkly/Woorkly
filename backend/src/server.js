@@ -17,8 +17,21 @@ const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
 
 // --- MIDDLEWARES ---
 // Allow the frontend (Vite) to send/receive cookies (HttpOnly token)
+// Permet d'autoriser localhost et TOUTES les URL de preview ou principales de Vercel
+const allowedOrigins = [
+  'http://localhost:5173',
+  /^https:\/\/dwwm-projet-front-.*\.vercel\.app$/
+];
+
 app.use(cors({
-  origin: frontendOrigin,
+  origin: function (origin, callback) {
+    // Si pas d'origine (comme les outils style Insomnia/Postman) ou si l'origine correspond à la liste
+    if (!origin || allowedOrigins.some(regex => typeof regex === 'string' ? regex === origin : regex.test(origin))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Non autorisé par CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(cookieParser());

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import AdminSidebar from '../components/AdminSidebar';
-import '../page/Dashboard/DashBoardAdmin/adminStyle.css';
+import '../page/Dashboard/DashBoardAdmin/AdminStyle.css';
 
 const NAV_ITEMS = [
   { label: "Dashboard",    route: "/dashboardAdmin" },
