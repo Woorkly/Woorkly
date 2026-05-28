@@ -800,6 +800,66 @@
   .section-types-grid {
     grid-template-columns: 1fr;
   }
+
+  .section-highlights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    padding-bottom: 64px;
+  }
+
+  .hero-partners {
+    gap: 10px;
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .hero-partners .partner {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+
+  .section-intro {
+    padding: 32px 16px;
+    border-radius: 20px;
+    margin: 24px 12px;
+  }
+
+  .section-salles-reunion {
+    padding: 24px 16px 32px;
+    border-radius: 20px;
+    margin: 0 12px 24px;
+  }
+
+  .section-highlights {
+    padding: 24px 16px 32px;
+    border-radius: 20px;
+    margin: 0 12px 24px;
+  }
+
+  .section-two {
+    padding: 24px 16px 32px;
+    border-radius: 20px;
+    margin: 0 12px 24px;
+  }
+
+  .section-faq {
+    padding: 32px 16px;
+    border-radius: 20px;
+    margin: 0 12px 24px;
+  }
+
+  .hero {
+    margin: 0 12px;
+    border-radius: 20px;
+  }
+
+  .section-two-help-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 

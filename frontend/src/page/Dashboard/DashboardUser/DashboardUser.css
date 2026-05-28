@@ -383,6 +383,39 @@
   color: #b91c1c;
 }
 
+@media (max-width: 640px) {
+  .dash-header {
+    padding: 0 1rem;
+  }
+
+  .dash-title {
+    display: none;
+  }
+
+  .dashboard .kpi-row {
+    grid-template-columns: 1fr;
+    margin: 0 0.75rem;
+  }
+
+  .dashboard .charts-row {
+    margin: 0 0.75rem;
+    width: auto;
+  }
+
+  .dashboard .tables-row {
+    margin: 0 0.75rem;
+    width: auto;
+  }
+
+  .dashboard .dashboard-subtitle {
+    margin: 0 0.75rem;
+  }
+
+  .dashboard .resa-table {
+    min-width: 480px;
+  }
+}
+
 @media (max-width: 900px) {
   .dashboard .charts-row {
     grid-template-columns: 1fr;

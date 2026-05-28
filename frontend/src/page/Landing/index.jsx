@@ -31,7 +31,7 @@ export default function Landing() {
               <Button variant="primary">Découvrir les salles</Button>
             </Link>
             <Link to="/reservation">
-              <Button variant="outline"><Link to="/reservation"> Réserver maintenant</Link></Button>
+              <Button variant="outline">Réserver maintenant</Button>
             </Link>
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function Landing() {
         </div>
 
         <div className="intro-cta">
-          <Button variant="primary"><Link to="/reservation">Réserver une salle</Link></Button>
+          <Link to="/reservation"><Button variant="primary">Réserver une salle</Button></Link>
         </div>
       </section>
 
@@ -139,7 +139,7 @@ export default function Landing() {
           </div>
 
           <div className="section-intro-cta">
-            <Button variant="primary"><Link to="/reservation">Réserver une salle</Link></Button>
+            <Link to="/reservation"><Button variant="primary">Réserver une salle</Button></Link>
           </div>
         </div>
       </section>
@@ -263,7 +263,7 @@ export default function Landing() {
         </div>
 
         <div className="section-two-cta">
-          <Button variant="primary"><Link to="/reservation">Réserver une salle</Link></Button>
+          <Link to="/reservation"><Button variant="primary">Réserver une salle</Button></Link>
         </div>
       </section>
 
