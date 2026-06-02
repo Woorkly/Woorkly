@@ -25,6 +25,12 @@ const calculatePrice = (room, typeReservation, heureDebut, heureFin) => {
     }
 };
 
+// Récupère les réservations de l'utilisateur courant
+const getUserReservations = async (userId) => {
+    return Reservation.getByUserId(userId);
+};
+
+
 
 
 
