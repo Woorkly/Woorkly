@@ -1,0 +1,6 @@
+node_modules/
+npm-debug.log
+
+# On cible les fichiers .env à l'intérieur du dossier src
+src/.env
+src/.env.docker

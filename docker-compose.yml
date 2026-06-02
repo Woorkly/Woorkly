@@ -1,0 +1,50 @@
+services:
+
+  mysql:
+    image: mysql:8
+
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: workly
+
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+
+    env_file:
+      - ./backend/src/.env.docker
+
+    depends_on:
+      - mysql
+
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  frontend:
+    build: ./frontend
+
+    ports:
+      - "5173:5173"
+
+    env_file:
+      - ./frontend/.env
+
+    depends_on:
+      - backend
+
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  mysql_data:

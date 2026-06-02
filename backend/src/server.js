@@ -1,4 +1,7 @@
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({
+  path: path.join(__dirname, ".env")
+});
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require('cookie-parser');
@@ -58,6 +61,6 @@ app.use('/api/auth', autRoutes);
 
 // --- LANCEMENT ---
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Serveur lancé sur : http://localhost:${PORT}`);
+app.listen(PORT,"0.0.0.0", () => {
+  console.log(`Serveur lancé sur : ${PORT}`);
 });

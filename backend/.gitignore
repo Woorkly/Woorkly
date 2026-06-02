@@ -5,6 +5,7 @@ node_modules/
 .env
 **/ .env
 src/.env
+src/.env.docker
 
 # Logs (fichiers générés en cas d'erreur)
 npm-debug.log*
