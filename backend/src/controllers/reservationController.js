@@ -49,6 +49,21 @@ const createReservation = (req, res) => {
     }
 };
 
+// PATCH /api/reservations/:id/cancel
+// Annule une réservation
+const cancelReservation = (req, res) => {
+    try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    const isAdmin = req.user.role === 'admin';
+
+        await reservationService.cancelReservation(id, userId, isAdmin);
+        res.status(200).json({ message: 'Réservation annulée avec succès' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 
 
 
