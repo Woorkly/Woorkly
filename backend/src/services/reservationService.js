@@ -1,0 +1,38 @@
+// Services pour les réservations
+// Centralisent la logique de validation, calcul de prix, et anti-chevauchement
+const Reservation = require('../models/Reservation');
+const Room = require('../models/Room');
+
+
+// Calcule le prix total selon le type de réservation
+const calculatePrice = (room, typeReservation, heureDebut, heureFin) => {
+    switch (typeReservation) {
+        case 'heure': {
+            const [startHour, startMinute] = heureDebut.split(':').map(Number);
+            const [endHour, endMinute] = heureFin.split(':').map(Number);
+            const startInMinutes = (startHour * 60) + startMinute;
+            const endInMinutes = (endHour * 60) + endMinute;
+            const durationInHours = (endInMinutes - startInMinutes) / 60;
+
+            return (room.prix_heure || 0) * durationInHours;
+        }
+        case 'demi-journee':
+            return room.prix_demi_journee || 0;
+        case 'journee':
+            return room.prix_journee || 0;
+        default:
+            return 0;
+    }
+};
+
+
+
+
+module.exports = {
+    getUserReservations,
+    getAllReservations,
+    getReservationById,
+    createReservation,
+    cancelReservation,
+    calculatePrice
+};

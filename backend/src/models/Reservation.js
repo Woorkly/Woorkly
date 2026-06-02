@@ -101,11 +101,7 @@ class Reservation extends BaseModel {
         const sql = 'UPDATE reservations SET statut = ? WHERE id = ?';
         const [result] = await db.execute(sql, ['annulee', id]);
         return result.affectedRows > 0;
-    }
-
-
-
-   
+    }   
 }
 
 module.exports = Reservation;
