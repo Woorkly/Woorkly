@@ -30,6 +30,11 @@ const getUserReservations = async (userId) => {
     return Reservation.getByUserId(userId);
 };
 
+// Récupère toutes les réservations (admin)
+const getAllReservations = async () => {
+    return Reservation.getAll();
+};
+
 
 
 
