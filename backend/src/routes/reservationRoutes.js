@@ -1,0 +1,26 @@
+const express = require('express');
+const router = express.Router();
+const reservationController = require('../controllers/reservationController');
+const { authRequired, requireRole } = require('../middlewares/auth');
+
+// GET /api/reservations/me
+// Retourne les réservations de l'utilisateur connecté
+router.get('/me', authRequired, reservationController.getMyReservations);
+
+// GET /api/reservations (admin only)
+// Retourne toutes les réservations
+router.get('/', authRequired, requireRole('admin'), reservationController.getAllReservations);
+
+// GET /api/reservations/:id
+// Retourne les détails d'une réservation
+router.get('/:id', authRequired, reservationController.getReservationDetails);
+
+// POST /api/reservations
+// Crée une nouvelle réservation
+router.post('/', authRequired, reservationController.createReservation);
+
+// PATCH /api/reservations/:id/cancel
+// Annule une réservation
+router.patch('/:id/cancel', authRequired, reservationController.cancelReservation);
+
+module.exports = router;
