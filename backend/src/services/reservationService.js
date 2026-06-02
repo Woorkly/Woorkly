@@ -90,6 +90,30 @@ const createReservation = async (data, userId) => {
 };
 
 
+// Annule une réservation
+const cancelReservation = async (reservationId, userId, isAdmin = false) => {
+    const reservation = await Reservation.getById(reservationId);
+    if (!reservation) {
+        throw new Error('Réservation introuvable', 404);
+    }
+
+    // Vérifier que l'utilisateur est propriétaire ou admin
+    if (!isAdmin && reservation.utilisateur_id !== userId) {
+        throw new Error('Accès refusé', 403);
+    }
+
+    // Vérifier que la réservation n'est pas déjà annulée
+    if (reservation.statut === 'annulee') {
+        throw new Error('Cette réservation est déjà annulée', 400);
+    }
+
+    const cancelled = await Reservation.cancel(reservationId);
+    if (!cancelled) {
+        throw new Error('Erreur lors de l\'annulation', 500);
+    }
+};
+
+
 
 
 
