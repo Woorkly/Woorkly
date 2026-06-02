@@ -45,6 +45,50 @@ const getReservationById = async (id) => {
     return reservation;
 };
 
+// Crée une nouvelle réservation
+const createReservation = async (data, userId) => {
+    const { salle_id, date, heure_debut, heure_fin, type_reservation } = data;
+
+    // Vérifier que la salle existe
+    const room = await Room.getById(salle_id);
+    if (!room) {
+        throw new Error('Salle introuvable', 404);
+    }
+
+    // Vérifier qu'il n'y a pas de chevauchement
+    const hasConflict = await Reservation.hasConflict(salle_id, date, heure_debut, heure_fin);
+    if (hasConflict) {
+        throw new Error('Cette salle est déjà réservée à cet horaire', 409);
+    }
+
+    // Calculer le prix total
+    const prix_total = calculatePrice(room, type_reservation, heure_debut, heure_fin);
+
+    // Créer la réservation
+    const reservationId = await Reservation.create({
+        date,
+        heure_debut,
+        heure_fin,
+        type_reservation,
+        statut: 'en-attente',
+        prix_total,
+        salle_id,
+        utilisateur_id: userId
+    });
+
+    return {
+        id: reservationId,
+        date,
+        heure_debut,
+        heure_fin,
+        type_reservation,
+        statut: 'en-attente',
+        prix_total,
+        salle_id,
+        utilisateur_id: userId
+    };
+};
+
 
 
 
