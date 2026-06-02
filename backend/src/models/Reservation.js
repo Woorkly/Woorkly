@@ -35,6 +35,19 @@ class Reservation extends BaseModel {
         return rows;
     }
 
+     // Récupère une réservation par ID
+    static async getById(id) {
+        const sql = `
+            SELECT r.*, s.nom as salle_nom, u.nom as user_nom
+            FROM reservations r
+            JOIN salles s ON r.salle_id = s.id
+            JOIN utilisateurs u ON r.utilisateur_id = u.id
+            WHERE r.id = ?
+        `;
+        const [rows] = await db.execute(sql, [id]);
+        return rows[0];
+    }
+
    
 }
 
