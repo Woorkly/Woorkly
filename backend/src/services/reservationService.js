@@ -36,6 +36,16 @@ const getAllReservations = async () => {
 };
 
 
+// Récupère une réservation spécifique
+const getReservationById = async (id) => {
+    const reservation = await Reservation.getById(id);
+    if (!reservation) {
+        throw new Error('Réservation introuvable', 404);
+    }
+    return reservation;
+};
+
+
 
 
 
