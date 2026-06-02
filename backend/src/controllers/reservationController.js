@@ -25,6 +25,19 @@ const getAllReservations = (req, res) => {
     }
 };
 
+// GET /api/reservations/:id
+// Retourne une réservation spécifique
+const getReservationDetails = (req, res) => {
+    try {
+        const { id } = req.params;
+        const reservation = await reservationService.getReservationById(id);
+        res.status(200).json(reservation);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
 
 
 module.exports = {
