@@ -69,6 +69,33 @@ class Reservation extends BaseModel {
         return result[0].conflict > 0;
     }
 
+     // Crée une réservation
+    static async create(data) {
+        const connection = await super.getConnection();
+        try {
+            const sql = `
+                INSERT INTO reservations 
+                (date, heure_debut, heure_fin, type_reservation, statut, prix_total, salle_id, utilisateur_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            const params = [
+                data.date,
+                data.heure_debut,
+                data.heure_fin,
+                data.type_reservation,
+                data.statut || 'en-attente',
+                data.prix_total,
+                data.salle_id,
+                data.utilisateur_id
+            ];
+
+            const [result] = await connection.execute(sql, params);
+            return result.insertId;
+        } finally {
+            connection.release();
+        }
+    }
+
 
 
    
