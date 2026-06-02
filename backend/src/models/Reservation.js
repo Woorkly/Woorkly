@@ -48,6 +48,29 @@ class Reservation extends BaseModel {
         return rows[0];
     }
 
+     // Vérifie s'il y a un chevauchement horaire pour une salle à une date donnée
+    static async hasConflict(salleId, date, heureDebut, heureFin, excludeId = null) {
+        let sql = `
+            SELECT COUNT(*) as conflict
+            FROM reservations
+            WHERE salle_id = ?
+            AND DATE(date) = ?
+            AND statut != 'annulee'
+            AND NOT (heure_fin <= ? OR heure_debut >= ?)
+        `;
+        const params = [salleId, date, heureDebut, heureFin];
+
+        if (excludeId) {
+            sql += ' AND id != ?';
+            params.push(excludeId);
+        }
+
+        const [result] = await db.execute(sql, params);
+        return result[0].conflict > 0;
+    }
+
+
+
    
 }
 
