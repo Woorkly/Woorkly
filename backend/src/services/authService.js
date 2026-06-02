@@ -45,5 +45,6 @@ const verifyToken = (token) => {
 
   module.exports = {    
     login,
+    verifyToken,
     generateToken   
 };

@@ -1,0 +1,78 @@
+// Controller pour les réservations
+// Thin controller: délègue à reservationService
+const reservationService = require('../services/reservationService');
+
+
+// GET /api/reservations/me
+// Retourne les réservations de l'utilisateur courant
+const getMyReservations = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const reservations = await reservationService.getUserReservations(userId);
+        res.status(200).json(reservations);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+}
+};
+
+// GET /api/reservations (admin only)
+// Retourne toutes les réservations
+const getAllReservations = async (req, res) => {
+    try {
+        const reservations = await reservationService.getAllReservations();
+        res.status(200).json(reservations);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// GET /api/reservations/:id
+// Retourne une réservation spécifique
+const getReservationDetails = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const reservation = await reservationService.getReservationById(id);
+        res.status(200).json(reservation);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// POST /api/reservations
+// Crée une nouvelle réservation
+const createReservation = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const result = await reservationService.createReservation(req.body, userId);
+        res.status(201).json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// PATCH /api/reservations/:id/cancel
+// Annule une réservation
+const cancelReservation = async (req, res) => {
+    try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    const isAdmin = req.user.role === 'admin';
+
+        await reservationService.cancelReservation(id, userId, isAdmin);
+        res.status(200).json({ message: 'Réservation annulée avec succès' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
+
+
+
+module.exports = {
+    getMyReservations,
+    getAllReservations,
+    getReservationDetails,
+    createReservation,
+    cancelReservation
+};
