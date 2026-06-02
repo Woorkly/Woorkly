@@ -96,6 +96,13 @@ class Reservation extends BaseModel {
         }
     }
 
+     // Annule une réservation
+    static async cancel(id) {
+        const sql = 'UPDATE reservations SET statut = ? WHERE id = ?';
+        const [result] = await db.execute(sql, ['annulee', id]);
+        return result.affectedRows > 0;
+    }
+
 
 
    
