@@ -5,18 +5,19 @@ const reservationService = require('../services/reservationService');
 
 // GET /api/reservations/me
 // Retourne les réservations de l'utilisateur courant
-const getMyReservations = (req, res) => {
-    try {const userId = req.user.userId;
-    const reservations = await reservationService.getUserReservations(userId);
-    res.status(200).json(reservations);
-} catch (error) {
-    res.status(500).json({ message: error.message });
+const getMyReservations = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const reservations = await reservationService.getUserReservations(userId);
+        res.status(200).json(reservations);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
 }
 };
 
 // GET /api/reservations (admin only)
 // Retourne toutes les réservations
-const getAllReservations = (req, res) => {
+const getAllReservations = async (req, res) => {
     try {
         const reservations = await reservationService.getAllReservations();
         res.status(200).json(reservations);
@@ -27,7 +28,7 @@ const getAllReservations = (req, res) => {
 
 // GET /api/reservations/:id
 // Retourne une réservation spécifique
-const getReservationDetails = (req, res) => {
+const getReservationDetails = async (req, res) => {
     try {
         const { id } = req.params;
         const reservation = await reservationService.getReservationById(id);
@@ -39,7 +40,7 @@ const getReservationDetails = (req, res) => {
 
 // POST /api/reservations
 // Crée une nouvelle réservation
-const createReservation = (req, res) => {
+const createReservation = async (req, res) => {
     try {
         const userId = req.user.userId;
         const result = await reservationService.createReservation(req.body, userId);
@@ -51,7 +52,7 @@ const createReservation = (req, res) => {
 
 // PATCH /api/reservations/:id/cancel
 // Annule une réservation
-const cancelReservation = (req, res) => {
+const cancelReservation = async (req, res) => {
     try {
     const { id } = req.params;
     const userId = req.user.userId;

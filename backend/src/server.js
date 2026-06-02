@@ -55,6 +55,7 @@ app.use("/api/rooms", roomRoutes);
 app.use("/api/users", userRoutes);
 
 app.use("/api/equipements", equipementRoutes);
+
 app.use('/api/types',typeRoutes);
 
 app.use('/api/auth', autRoutes);
