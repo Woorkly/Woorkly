@@ -37,6 +37,19 @@ const getReservationDetails = (req, res) => {
     }
 };
 
+// POST /api/reservations
+// Crée une nouvelle réservation
+const createReservation = (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const result = await reservationService.createReservation(req.body, userId);
+        res.status(201).json(result);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
 
 
 
