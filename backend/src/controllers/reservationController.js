@@ -14,6 +14,17 @@ const getMyReservations = (req, res) => {
 }
 };
 
+// GET /api/reservations (admin only)
+// Retourne toutes les réservations
+const getAllReservations = (req, res) => {
+    try {
+        const reservations = await reservationService.getAllReservations();
+        res.status(200).json(reservations);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 
 
 module.exports = {
