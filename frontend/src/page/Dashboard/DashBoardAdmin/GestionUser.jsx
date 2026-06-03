@@ -116,7 +116,7 @@ function UserDetail({ user, onClose, onEdit, onDelete }) {
     setLoadingResa(true);
     setResaError(null);
     userService.getUserReservations(user.id)
-      .then((data) => { if (!cancelled) setReservations(data); })
+      .then((data) => { if (!cancelled)  setReservations(data); })
       .catch((err) => { if (!cancelled) setResaError(err.response?.data?.message || err.message); })
       .finally(() => { if (!cancelled) setLoadingResa(false); });
     return () => { cancelled = true; };
