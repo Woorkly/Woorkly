@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Reservation = require('../models/Reservation');
 
 // Récupérer tous les utilisateurs
 const getAllUsers = async (req, res) => {
@@ -67,6 +68,15 @@ const patchUser = async (req, res) => {
 const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
+
+        const upcomingCount = await Reservation.countUpcoming(id);
+        if (upcomingCount > 0) {
+            return res.status(409).json({
+                message: `Impossible de supprimer : cet utilisateur a ${upcomingCount} réservation(s) à venir.`,
+                upcomingCount
+            });
+        }
+
         await User.delete(id);
         res.status(200).json({ message: "Utilisateur supprimé avec succès" });
     } catch (error) {

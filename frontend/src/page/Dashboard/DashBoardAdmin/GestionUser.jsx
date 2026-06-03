@@ -182,6 +182,80 @@ function UserDetail({ user, onClose }) {
   );
 }
 
+// ── Modal confirmation suppression ───────────────────────
+function DeleteConfirmModal({ user, onClose, onDeleted }) {
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    setError(null);
+    try {
+      await userService.deleteUser(user.id);
+      onDeleted(user.id);
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message;
+      setError(msg);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <div className="ud-overlay" onClick={onClose}>
+      <div
+        className="ud-panel"
+        style={{ maxWidth: 420 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button className="ud-close" onClick={onClose}>✕</button>
+
+        <div className="ud-header">
+          <Avatar initiales={user.initiales} couleur={user.couleur} size={52} />
+          <div className="ud-header-info">
+            <h2 className="ud-name">{user.nom}</h2>
+            <p className="ud-email">{user.email}</p>
+          </div>
+        </div>
+
+        <p style={{ margin: "1.2rem 0 0.6rem", fontSize: "0.9rem" }}>
+          Confirmer la suppression de cet utilisateur ? Cette action est irréversible.
+        </p>
+
+        {error && (
+          <p
+            style={{
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              borderRadius: "6px",
+              padding: "0.6rem 0.8rem",
+              color: "#b91c1c",
+              fontSize: "0.82rem",
+              margin: "0.8rem 0",
+            }}
+          >
+            {error}
+          </p>
+        )}
+
+        <div className="ud-actions" style={{ marginTop: "1.2rem" }}>
+          <button
+            className="ud-btn-danger"
+            disabled={deleting || !!error}
+            onClick={handleDelete}
+            style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}
+          >
+            <IconTrash /> {deleting ? "Suppression…" : "Supprimer"}
+          </button>
+          <button className="ud-btn-ghost" onClick={onClose}>
+            Annuler
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Modal édition du rôle ─────────────────────────────────
 function EditRoleModal({ user, onClose, onSaved }) {
   const backendRole = user.role === "Admin" ? "admin" : "user";
@@ -277,7 +351,8 @@ export default function GestionUtilisateurs() {
   const [roleFilter, setRoleFilter] = useState("");
   const [selected, setSelected] = useState(null);
   const [editing, setEditing] = useState(null);
-  const { users, loading, error, updateUserInList } = useUsers();
+  const [deleting, setDeleting] = useState(null);
+  const { users, loading, error, updateUserInList, removeUserFromList } = useUsers();
 
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
@@ -428,7 +503,10 @@ export default function GestionUtilisateurs() {
                     >
                       <IconEdit />
                     </button>
-                    <button className="act-btn act-del">
+                    <button
+                      className="act-btn act-del"
+                      onClick={() => setDeleting(u)}
+                    >
                       <IconTrash />
                     </button>
                   </td>
@@ -443,6 +521,18 @@ export default function GestionUtilisateurs() {
       {/* Fiche détaillée */}
       {selected && (
         <UserDetail user={selected} onClose={() => setSelected(null)} />
+      )}
+
+      {/* Modal suppression */}
+      {deleting && (
+        <DeleteConfirmModal
+          user={deleting}
+          onClose={() => setDeleting(null)}
+          onDeleted={(id) => {
+            removeUserFromList(id);
+            setDeleting(null);
+          }}
+        />
       )}
 
       {/* Modal édition du rôle */}

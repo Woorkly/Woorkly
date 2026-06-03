@@ -96,6 +96,19 @@ class Reservation extends BaseModel {
         }
     }
 
+    // Compte les réservations à venir (non annulées) d'un utilisateur
+    static async countUpcoming(userId) {
+        const sql = `
+            SELECT COUNT(*) as total
+            FROM reservations
+            WHERE utilisateur_id = ?
+            AND date >= CURDATE()
+            AND statut NOT IN ('annulee', 'terminee')
+        `;
+        const [rows] = await db.execute(sql, [userId]);
+        return rows[0].total;
+    }
+
      // Annule une réservation
     static async cancel(id) {
         const sql = 'UPDATE reservations SET statut = ? WHERE id = ?';

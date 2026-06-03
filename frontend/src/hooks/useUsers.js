@@ -42,5 +42,9 @@ export default function useUsers() {
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, role } : u)))
   }
 
-  return { users, loading, error, updateUserInList }
+  const removeUserFromList = (id) => {
+    setUsers((prev) => prev.filter((u) => u.id !== id))
+  }
+
+  return { users, loading, error, updateUserInList, removeUserFromList }
 }

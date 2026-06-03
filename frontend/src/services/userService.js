@@ -20,4 +20,9 @@ const updateUserRole = async (id, role) => {
   return res.data
 }
 
-export default { register, getAllUsers, updateUserRole }
+const deleteUser = async (id) => {
+  const res = await API.delete(`/users/${id}`)
+  return res.data
+}
+
+export default { register, getAllUsers, updateUserRole, deleteUser }
