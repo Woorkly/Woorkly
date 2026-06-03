@@ -13,6 +13,10 @@
   gap: 12px;
 }
 
+.room-gallery.single-image {
+  grid-template-columns: 1fr;
+}
+
 .main-image img {
   width: 100%;
   height: 360px;

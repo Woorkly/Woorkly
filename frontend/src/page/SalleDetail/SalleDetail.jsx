@@ -1,112 +1,141 @@
-import React from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
+import { roomService } from "../../services/roomService";
 import "./SalleDetail.css";
 
-const salles = [
-  {
-    id: "1",
-    name: "Salle Horizon",
-    location: "Marseille",
-    capacity: 12,
-    available: true,
-    images: [
-      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1497366412874-3415097a27e7?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517502884422-41eaead166d4?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1518005020951-eccb494ad742?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=1200&auto=format&fit=crop",
-    ],
-    description:
-      "Salle lumineuse idéale pour les réunions d’équipe, les présentations et les moments de travail collaboratif. Elle offre un cadre calme, confortable et adapté aux besoins professionnels.",
-    equipments: ["Wi-Fi", "Écran", "Tableau blanc", "Climatisation", "Prises"],
-  },
-  {
-    id: "2",
-    name: "Salle Nova",
-    location: "Paris",
-    capacity: 8,
-    available: false,
-    images: [
-      "https://images.unsplash.com/photo-1497366412874-3415097a27e7?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517502884422-41eaead166d4?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1518005020951-eccb494ad742?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=1200&auto=format&fit=crop",
-    ],
-    description:
-      "Petite salle moderne adaptée aux réunions rapides, aux échanges d’équipe et aux rendez-vous professionnels en petit comité.",
-    equipments: ["Wi-Fi", "TV", "Prises USB", "Table ronde"],
-  },
-];
+const DEFAULT_ROOM_IMAGE = "/images/default-room.jpg";
+
+const getRoomImageSrc = (imageName) => {
+  const value = (imageName || "").trim();
+  if (!value) return DEFAULT_ROOM_IMAGE;
+  if (/^https?:\/\//i.test(value)) return value;
+  return `/images/${value}`;
+};
+
+const formatPrice = (room) => {
+  if (room.prix_journee) return `A partir de ${room.prix_journee} EUR / jour`;
+  if (room.prix_demi_journee) return `A partir de ${room.prix_demi_journee} EUR / demi-journee`;
+  if (room.prix_heure) return `A partir de ${room.prix_heure} EUR / heure`;
+  return "Tarif sur demande";
+};
 
 const SalleDetail = () => {
   const { id } = useParams();
+  const [room, setRoom] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const room = salles.find((salle) => salle.id === id);
+  useEffect(() => {
+    const fetchRoom = async () => {
+      setLoading(true);
+      setError(null);
 
-  if (!room) {
+      try {
+        const data = await roomService.getRoomById(id);
+        setRoom(data);
+      } catch (err) {
+        const status = err.response?.status;
+        setError(status === 404 ? "Salle introuvable" : "Erreur lors du chargement de la salle");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoom();
+  }, [id]);
+
+  const images = useMemo(() => {
+    if (!room) return [DEFAULT_ROOM_IMAGE];
+
+    const allImages = [room.image_principale, ...(room.galerie || [])]
+      .filter(Boolean)
+      .map(getRoomImageSrc);
+
+    return allImages.length ? allImages : [DEFAULT_ROOM_IMAGE];
+  }, [room]);
+
+  if (loading) {
     return (
       <div className="room-not-found">
-        <h1>Salle introuvable</h1>
+        <h1>Chargement...</h1>
       </div>
     );
   }
 
+  if (error || !room) {
+    return (
+      <div className="room-not-found">
+        <h1>{error || "Salle introuvable"}</h1>
+      </div>
+    );
+  }
+
+  const equipments = room.equipements || [];
+  const isAvailable = room.statut === "disponible";
+  const location = [room.adresse, room.code_postal, room.ville].filter(Boolean).join(", ");
+
   return (
     <main className="room-detail-page">
-      <section className="room-gallery">
+      <section className={`room-gallery ${images.length === 1 ? "single-image" : ""}`}>
         <div className="main-image">
-          <img src={room.images[0]} alt={room.name} />
+          <img src={images[0]} alt={room.nom} />
         </div>
 
-        <div className="small-images">
-          {room.images.slice(1).map((image, index) => (
-            <img key={index} src={image} alt={`${room.name} ${index + 1}`} />
-          ))}
-        </div>
+        {images.length > 1 && (
+          <div className="small-images">
+            {images.slice(1, 5).map((image, index) => (
+              <img key={`${image}-${index}`} src={image} alt={`${room.nom} ${index + 2}`} />
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="room-tabs">
         <span>Description</span>
         <span>Offres</span>
         <span>Localisation</span>
-        <span>Services et équipements</span>
-        <span>Plan d’espace</span>
+        <span>Services et equipements</span>
+        <span>Plan d'espace</span>
       </section>
 
       <section className="room-info">
         <div className="room-main-content">
-          <p className="room-location">{room.location}</p>
+          <p className="room-location">{location || room.ville}</p>
 
-          <h1>{room.name}</h1>
+          <h1>{room.nom}</h1>
 
           <div className="room-meta">
-            <span>{room.capacity} personnes</span>
+            <span>{room.capacite} personnes</span>
+            {room.type_nom && <span>{room.type_nom}</span>}
 
-            <span className={room.available ? "available-badge" : "unavailable-badge"}>
-              {room.available ? "Disponible" : "Indisponible"}
+            <span className={isAvailable ? "available-badge" : "unavailable-badge"}>
+              {isAvailable ? "Disponible" : "Indisponible"}
             </span>
           </div>
 
           <p className="room-description">{room.description}</p>
 
           <div className="room-section">
-            <h2>Équipements</h2>
+            <h2>Equipements</h2>
 
-            <div className="equipments-list">
-              {room.equipments.map((equipment, index) => (
-                <span key={index} className="equipment-item">
-                  {equipment}
-                </span>
-              ))}
-            </div>
+            {equipments.length > 0 ? (
+              <div className="equipments-list">
+                {equipments.map((equipment) => (
+                  <span key={equipment} className="equipment-item">
+                    {equipment}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p>Aucun equipement renseigne.</p>
+            )}
           </div>
         </div>
 
         <aside className="room-side-card">
-          <p>À partir de 80€ / jour</p>
+          <p>{formatPrice(room)}</p>
 
-          <button>Voir les disponibilités</button>
+          <button type="button">Voir les disponibilites</button>
 
           <span>Sans engagement</span>
         </aside>
