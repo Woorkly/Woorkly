@@ -92,9 +92,26 @@ const createRoom = async (req, res) => {
     }
 };
 
+const updateRoom = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const affectedRows = await Room.update(id, req.body);
+
+        if (affectedRows === 0) {
+            return res.status(404).json({ message: "Salle introuvable" });
+        }
+
+        res.status(200).json({ id: Number(id), ...req.body });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur lors de la mise a jour de la salle" });
+    }
+};
+
 module.exports = {
     getAllRooms,
     getAvailableRooms,
     getRoomDetails,
-    createRoom
+    createRoom,
+    updateRoom
 };

@@ -205,6 +205,8 @@ export default function GestionSalles() {
   const [loadingRoom, setLoadingRoom] = useState(false);
   const [detailError, setDetailError] = useState(null);
   const [editRoomForm, setEditRoomForm] = useState(initialRoomForm);
+  const [savingEditRoom, setSavingEditRoom] = useState(false);
+  const [editFormError, setEditFormError] = useState(null);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -270,6 +272,7 @@ export default function GestionSalles() {
   const openRoomDetails = async (roomId) => {
     setSelectedRoom(null);
     setDetailError(null);
+    setEditFormError(null);
     setLoadingRoom(true);
 
     try {
@@ -284,10 +287,12 @@ export default function GestionSalles() {
   };
 
   const closeRoomDetails = () => {
+    if (savingEditRoom) return;
     setSelectedRoom(null);
     setDetailError(null);
     setLoadingRoom(false);
     setEditRoomForm(initialRoomForm);
+    setEditFormError(null);
   };
 
   const updateEditRoomForm = (field, value) => {
@@ -319,6 +324,38 @@ export default function GestionSalles() {
       setFormError(err.response?.data?.message || err.message || "Erreur lors de la creation de la salle");
     } finally {
       setSavingRoom(false);
+    }
+  };
+
+  const handleUpdateRoom = async (event) => {
+    event.preventDefault();
+    setEditFormError(null);
+
+    if (!selectedRoom) return;
+
+    if (!editRoomForm.nom.trim()) {
+      setEditFormError("Le nom de la salle est obligatoire.");
+      return;
+    }
+
+    if (!editRoomForm.type_id) {
+      setEditFormError("Le type de salle est obligatoire.");
+      return;
+    }
+
+    setSavingEditRoom(true);
+
+    try {
+      const payload = buildRoomPayload(editRoomForm);
+      await roomService.updateRoom(selectedRoom.id, payload);
+      const updatedRoom = await roomService.getRoomById(selectedRoom.id);
+      setSelectedRoom(updatedRoom);
+      setEditRoomForm(buildRoomForm(updatedRoom));
+      await refreshRooms();
+    } catch (err) {
+      setEditFormError(err.response?.data?.message || err.message || "Erreur lors de la modification de la salle");
+    } finally {
+      setSavingEditRoom(false);
     }
   };
 
@@ -636,7 +673,7 @@ export default function GestionSalles() {
       {(loadingRoom || detailError || selectedRoom) && (
         <div className="ud-overlay" onClick={closeRoomDetails}>
           <div className="ud-panel room-detail-panel" onClick={(event) => event.stopPropagation()}>
-            <button className="ud-close" type="button" onClick={closeRoomDetails}>
+            <button className="ud-close" type="button" onClick={closeRoomDetails} disabled={savingEditRoom}>
               x
             </button>
 
@@ -668,10 +705,11 @@ export default function GestionSalles() {
                   </div>
                 </div>
 
-                <form className="room-form" onSubmit={(event) => event.preventDefault()}>
+                <form className="room-form" onSubmit={handleUpdateRoom}>
                   <label>
                     Nom
                     <input
+                      required
                       value={editRoomForm.nom}
                       onChange={(event) => updateEditRoomForm("nom", event.target.value)}
                     />
@@ -779,6 +817,7 @@ export default function GestionSalles() {
                   <label>
                     Type ID
                     <input
+                      required
                       type="number"
                       min="1"
                       value={editRoomForm.type_id}
@@ -803,12 +842,18 @@ export default function GestionSalles() {
                     />
                   </label>
 
+                  {editFormError && (
+                    <p className="room-form-error">
+                      {editFormError}
+                    </p>
+                  )}
+
                   <div className="room-form-actions">
-                    <button className="ud-btn-ghost" type="button" onClick={closeRoomDetails}>
+                    <button className="ud-btn-ghost" type="button" onClick={closeRoomDetails} disabled={savingEditRoom}>
                       Fermer
                     </button>
-                    <button className="btn-primary" type="submit" disabled>
-                      Enregistrer bientot
+                    <button className="btn-primary" type="submit" disabled={savingEditRoom}>
+                      {savingEditRoom ? "Modification..." : "Enregistrer"}
                     </button>
                   </div>
                 </form>
