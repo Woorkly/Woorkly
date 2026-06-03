@@ -146,6 +146,85 @@
   color: #777777;
 }
 
+.room-map-section {
+  padding: 0 8% 42px;
+}
+
+.room-map-header {
+  margin-bottom: 14px;
+}
+
+.room-map-header h2 {
+  margin: 4px 0 0;
+  font-size: 24px;
+}
+
+.room-map-address {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555555;
+}
+
+.room-detail-map {
+  width: 100%;
+  height: 330px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #ded8cf;
+  background-color: #e8e3dc;
+}
+
+.room-map-empty {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  border: 1px dashed #cfc7bb;
+  border-radius: 8px;
+  background-color: #eee8df;
+  color: #555555;
+  font-weight: 600;
+  text-align: center;
+}
+
+.room-detail-marker-icon {
+  background: transparent;
+  border: none;
+}
+
+.room-detail-marker-dot {
+  position: relative;
+  display: block;
+  width: 24px;
+  height: 24px;
+  background: rgba(17, 17, 17, 0.9);
+  border: 2px solid #ffffff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 5px 12px rgba(17, 17, 17, 0.25);
+}
+
+.room-detail-marker-dot::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 6px;
+  height: 6px;
+  background: #ffffff;
+  border-radius: 50%;
+}
+
+.room-detail-popup h4 {
+  margin: 0 0 4px;
+  font-size: 14px;
+}
+
+.room-detail-popup p {
+  margin: 0;
+  font-size: 13px;
+}
+
 .room-not-found {
   padding: 100px;
   min-height: 100vh;
@@ -162,6 +241,10 @@
     grid-template-columns: 1fr;
     gap: 32px;
     padding: 28px 5%;
+  }
+
+  .room-map-section {
+    padding: 0 5% 34px;
   }
 
   .room-tabs {
@@ -198,6 +281,14 @@
   .room-info {
     padding: 20px 16px;
     gap: 24px;
+  }
+
+  .room-map-section {
+    padding: 0 16px 28px;
+  }
+
+  .room-detail-map {
+    height: 260px;
   }
 
   .room-main-content h1 {
