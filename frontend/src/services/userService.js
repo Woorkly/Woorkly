@@ -25,4 +25,9 @@ const deleteUser = async (id) => {
   return res.data
 }
 
-export default { register, getAllUsers, updateUserRole, deleteUser }
+const getUserReservations = async (id) => {
+  const res = await API.get(`/reservations/user/${id}`)
+  return res.data
+}
+
+export default { register, getAllUsers, updateUserRole, deleteUser, getUserReservations }

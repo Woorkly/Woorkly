@@ -14,7 +14,7 @@ function mapUser(u) {
   const couleur = COLORS[(u.id - 1) % COLORS.length]
   const role = u.role === 'admin' ? 'Admin' : 'Utilisateur'
 
-  return { ...u, initiales, couleur, role, reservations: [] }
+  return { ...u, initiales, couleur, role, totalReservations: Number(u.total_reservations ?? 0) }
 }
 
 export default function useUsers() {

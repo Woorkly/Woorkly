@@ -11,6 +11,10 @@ router.get('/me', authRequired, reservationController.getMyReservations);
 // Retourne toutes les réservations
 router.get('/', authRequired, requireRole('admin'), reservationController.getAllReservations);
 
+// GET /api/reservations/user/:userId (admin only)
+// Retourne les réservations d'un utilisateur spécifique
+router.get('/user/:userId', authRequired, requireRole('admin'), reservationController.getUserReservationsAdmin);
+
 // GET /api/reservations/:id
 // Retourne les détails d'une réservation
 router.get('/:id', authRequired, reservationController.getReservationDetails);

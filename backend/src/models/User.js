@@ -79,6 +79,17 @@ class User extends BaseModel {
     }
   }
 
+  static async findAll() {
+    const sql = `
+      SELECT u.id, u.nom, u.email, u.avatar_url, u.role,
+             (SELECT COUNT(*) FROM reservations r WHERE r.utilisateur_id = u.id) AS total_reservations
+      FROM utilisateurs u
+      ORDER BY u.id
+    `;
+    const [rows] = await db.execute(sql);
+    return rows;
+  }
+
   // Récupérer un utilisateur par son email (pour l'authentification)
   static async findByEmail(email) {
     const sql = "SELECT * FROM utilisateurs WHERE email = ?";

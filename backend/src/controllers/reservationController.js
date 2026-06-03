@@ -69,10 +69,23 @@ const cancelReservation = async (req, res) => {
 
 
 
+// GET /api/reservations/user/:userId (admin only)
+// Retourne les réservations d'un utilisateur spécifique
+const getUserReservationsAdmin = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const reservations = await reservationService.getUserReservations(userId);
+        res.status(200).json(reservations);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getMyReservations,
     getAllReservations,
     getReservationDetails,
     createReservation,
-    cancelReservation
+    cancelReservation,
+    getUserReservationsAdmin
 };

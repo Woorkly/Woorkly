@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./AdminStyle.css";
 import useUsers from "../../../hooks/useUsers";
@@ -71,9 +71,22 @@ function BadgeRole({ role }) {
   );
 }
 
+const STATUT_LABELS = {
+  "en-attente": { label: "En attente", cls: "b-pending" },
+  confirmee:    { label: "Confirmé",   cls: "b-confirm" },
+  annulee:      { label: "Annulé",     cls: "b-cancel" },
+  terminee:     { label: "Terminé",    cls: "b-done" },
+};
+
 function BadgeResa({ statut }) {
-  const m = { Confirmé: "b-confirm", Terminé: "b-done", Annulé: "b-cancel" };
-  return <span className={`badge ${m[statut] || ""}`}>{statut}</span>;
+  const { label, cls } = STATUT_LABELS[statut] || { label: statut, cls: "" };
+  return <span className={`badge ${cls}`}>{label}</span>;
+}
+
+function formatDate(raw) {
+  if (!raw) return "—";
+  const d = new Date(raw);
+  return d.toLocaleDateString("fr-FR");
 }
 
 function Avatar({ initiales, couleur, size = 36 }) {
@@ -93,7 +106,22 @@ function Avatar({ initiales, couleur, size = 36 }) {
 }
 
 // ── Fiche utilisateur ──────────────────────────────────────
-function UserDetail({ user, onClose }) {
+function UserDetail({ user, onClose, onEdit, onDelete }) {
+  const [reservations, setReservations] = useState([]);
+  const [loadingResa, setLoadingResa] = useState(true);
+  const [resaError, setResaError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingResa(true);
+    setResaError(null);
+    userService.getUserReservations(user.id)
+      .then((data) => { if (!cancelled) setReservations(data); })
+      .catch((err) => { if (!cancelled) setResaError(err.response?.data?.message || err.message); })
+      .finally(() => { if (!cancelled) setLoadingResa(false); });
+    return () => { cancelled = true; };
+  }, [user.id]);
+
   return (
     <div className="ud-overlay" onClick={onClose}>
       <div className="ud-panel" onClick={(e) => e.stopPropagation()}>
@@ -117,7 +145,9 @@ function UserDetail({ user, onClose }) {
         <div className="ud-meta">
           <div className="ud-meta-item">
             <span className="ud-meta-label">Réservations totales</span>
-            <span className="ud-meta-val">{user.reservations.length}</span>
+            <span className="ud-meta-val">
+              {loadingResa ? "…" : reservations.length}
+            </span>
           </div>
           <div className="ud-meta-item">
             <span className="ud-meta-label">Rôle</span>
@@ -128,7 +158,13 @@ function UserDetail({ user, onClose }) {
         {/* Réservations récentes */}
         <div className="ud-section">
           <h3 className="ud-section-title">Réservations récentes</h3>
-          {user.reservations.length === 0 ? (
+          {loadingResa ? (
+            <p className="ud-empty">Chargement…</p>
+          ) : resaError ? (
+            <p className="ud-empty" style={{ color: "var(--danger, #ef4444)" }}>
+              {resaError}
+            </p>
+          ) : reservations.length === 0 ? (
             <p className="ud-empty">Aucune réservation</p>
           ) : (
             <table className="data-table">
@@ -136,14 +172,18 @@ function UserDetail({ user, onClose }) {
                 <tr>
                   <th>Date</th>
                   <th>Salle</th>
+                  <th>Horaire</th>
                   <th>Statut</th>
                 </tr>
               </thead>
               <tbody>
-                {user.reservations.map((r, i) => (
-                  <tr key={i}>
-                    <td>{r.date}</td>
-                    <td>{r.salle}</td>
+                {reservations.map((r) => (
+                  <tr key={r.id}>
+                    <td>{formatDate(r.date)}</td>
+                    <td>{r.salle_nom}</td>
+                    <td style={{ fontSize: "0.78rem", color: "var(--muted)" }}>
+                      {r.heure_debut?.slice(0, 5)} – {r.heure_fin?.slice(0, 5)}
+                    </td>
                     <td>
                       <BadgeResa statut={r.statut} />
                     </td>
@@ -158,18 +198,15 @@ function UserDetail({ user, onClose }) {
         <div className="ud-actions">
           <button
             className="btn-primary"
-            style={{
-              fontSize: "0.82rem",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.4rem",
-            }}
+            style={{ fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.4rem" }}
+            onClick={() => { onClose(); onEdit(user); }}
           >
             <IconEdit /> Modifier
           </button>
           <button
             className="ud-btn-danger"
             style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}
+            onClick={() => { onClose(); onDelete(user); }}
           >
             <IconTrash /> Supprimer
           </button>
@@ -487,7 +524,7 @@ export default function GestionUtilisateurs() {
                   </td>
                   <td>
                     <span className="u-resa-count">
-                      {u.reservations.length}
+                      {u.totalReservations}
                     </span>
                   </td>
                   <td onClick={(e) => e.stopPropagation()}>
@@ -520,7 +557,12 @@ export default function GestionUtilisateurs() {
 
       {/* Fiche détaillée */}
       {selected && (
-        <UserDetail user={selected} onClose={() => setSelected(null)} />
+        <UserDetail
+          user={selected}
+          onClose={() => setSelected(null)}
+          onEdit={(u) => setEditing(u)}
+          onDelete={(u) => setDeleting(u)}
+        />
       )}
 
       {/* Modal suppression */}
