@@ -182,6 +182,9 @@ export default function GestionSalles() {
   const [roomForm, setRoomForm] = useState(initialRoomForm);
   const [savingRoom, setSavingRoom] = useState(false);
   const [formError, setFormError] = useState(null);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [loadingRoom, setLoadingRoom] = useState(false);
+  const [detailError, setDetailError] = useState(null);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -242,6 +245,27 @@ export default function GestionSalles() {
 
   const updateRoomForm = (field, value) => {
     setRoomForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const openRoomDetails = async (roomId) => {
+    setSelectedRoom(null);
+    setDetailError(null);
+    setLoadingRoom(true);
+
+    try {
+      const data = await roomService.getRoomById(roomId);
+      setSelectedRoom(data);
+    } catch (err) {
+      setDetailError(err.response?.data?.message || err.message || "Erreur lors du chargement de la salle");
+    } finally {
+      setLoadingRoom(false);
+    }
+  };
+
+  const closeRoomDetails = () => {
+    setSelectedRoom(null);
+    setDetailError(null);
+    setLoadingRoom(false);
   };
 
   const handleCreateRoom = async (event) => {
@@ -386,7 +410,7 @@ export default function GestionSalles() {
                         <Badge s={s.statut} />
                       </td>
                       <td>
-                        <button className="act-btn" type="button">
+                        <button className="act-btn" type="button" onClick={() => openRoomDetails(s.id)}>
                           <IconEdit />
                         </button>
                         <button className="act-btn" type="button">
@@ -579,6 +603,91 @@ export default function GestionSalles() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {(loadingRoom || detailError || selectedRoom) && (
+        <div className="ud-overlay" onClick={closeRoomDetails}>
+          <div className="ud-panel room-detail-panel" onClick={(event) => event.stopPropagation()}>
+            <button className="ud-close" type="button" onClick={closeRoomDetails}>
+              x
+            </button>
+
+            {loadingRoom && (
+              <p className="ud-empty">Chargement de la salle...</p>
+            )}
+
+            {!loadingRoom && detailError && (
+              <p className="room-form-error">{detailError}</p>
+            )}
+
+            {!loadingRoom && selectedRoom && (
+              <>
+                <div className="room-detail-admin-head">
+                  <div className="room-detail-admin-thumb">
+                    {getRoomImageSrc(selectedRoom.image_principale) ? (
+                      <img src={getRoomImageSrc(selectedRoom.image_principale)} alt={selectedRoom.nom} />
+                    ) : (
+                      icons.boardroom
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="ud-name">{selectedRoom.nom}</h3>
+                    <p className="ud-email">{getLocation(selectedRoom)}</p>
+                    <div className="ud-badges">
+                      <Badge s={selectedRoom.statut} />
+                      {selectedRoom.type_nom && <span className="badge b-blue">{selectedRoom.type_nom}</span>}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="ud-meta">
+                  <div className="ud-meta-item">
+                    <span className="ud-meta-label">Capacite</span>
+                    <span className="ud-meta-val">{selectedRoom.capacite || "Non renseigne"}</span>
+                  </div>
+                  <div className="ud-meta-item">
+                    <span className="ud-meta-label">Type ID</span>
+                    <span className="ud-meta-val">{selectedRoom.type_id || "Non renseigne"}</span>
+                  </div>
+                  <div className="ud-meta-item">
+                    <span className="ud-meta-label">Latitude</span>
+                    <span className="ud-meta-val">{selectedRoom.latitude || "Non renseigne"}</span>
+                  </div>
+                  <div className="ud-meta-item">
+                    <span className="ud-meta-label">Longitude</span>
+                    <span className="ud-meta-val">{selectedRoom.longitude || "Non renseigne"}</span>
+                  </div>
+                  <div className="ud-meta-item">
+                    <span className="ud-meta-label">Prix heure</span>
+                    <span className="ud-meta-val">{selectedRoom.prix_heure || "Non renseigne"}</span>
+                  </div>
+                  <div className="ud-meta-item">
+                    <span className="ud-meta-label">Prix journee</span>
+                    <span className="ud-meta-val">{selectedRoom.prix_journee || "Non renseigne"}</span>
+                  </div>
+                </div>
+
+                <div className="ud-section">
+                  <h4 className="ud-section-title">Description</h4>
+                  <p className="ud-empty">{selectedRoom.description || "Aucune description renseignee."}</p>
+                </div>
+
+                <div className="ud-section">
+                  <h4 className="ud-section-title">Equipements</h4>
+                  {selectedRoom.equipements?.length ? (
+                    <div className="ud-badges">
+                      {selectedRoom.equipements.map((equipment) => (
+                        <span key={equipment} className="badge b-done">{equipment}</span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="ud-empty">Aucun equipement renseigne.</p>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
