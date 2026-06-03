@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Reservation = require('../models/Reservation');
 
 // Récupérer tous les utilisateurs
 const getAllUsers = async (req, res) => {
@@ -51,10 +52,31 @@ const updateUser = async (req, res) => {
     }
 };
 
+// modification partielle d'un utilisateur (ex: rôle uniquement)
+const patchUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await User.patch(id, req.body);
+        res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur lors de la mise à jour de l'utilisateur" });
+    }
+};
+
 // suppression d'un utilisateur
 const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
+
+        const upcomingCount = await Reservation.countUpcoming(id);
+        if (upcomingCount > 0) {
+            return res.status(409).json({
+                message: `Impossible de supprimer : cet utilisateur a ${upcomingCount} réservation(s) à venir.`,
+                upcomingCount
+            });
+        }
+
         await User.delete(id);
         res.status(200).json({ message: "Utilisateur supprimé avec succès" });
     } catch (error) {
@@ -69,6 +91,7 @@ module.exports = {
     getUserDetails,
     createUser,
     updateUser,
+    patchUser,
     deleteUser
 };
  

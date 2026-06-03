@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./AdminStyle.css";
+import useUsers from "../../../hooks/useUsers";
+import userService from "../../../services/userService";
 
 const NAV_ROUTES = {
   Dashboard: "/dashboardAdmin",
@@ -60,105 +62,11 @@ const IconTrash = () => (
   </svg>
 );
 
-const usersData = [
-  {
-    id: 1,
-    nom: "Sarah Dupont",
-    email: "sarah.dupont@woorkly.com",
-    role: "Admin",
-    statut: "Actif",
-    inscription: "12 Jan 2024",
-    initiales: "SD",
-    couleur: "#1A56A0",
-    reservations: [
-      { date: "Oct 15 14:00", salle: "Innovation Hub", statut: "Confirmé" },
-      { date: "Oct 12 10:00", salle: "Boardroom A", statut: "Terminé" },
-      { date: "Oct 08 09:00", salle: "Creativity Suite", statut: "Terminé" },
-    ],
-  },
-  {
-    id: 2,
-    nom: "Marc Lemoine",
-    email: "marc.lemoine@woorkly.com",
-    role: "Utilisateur",
-    statut: "Actif",
-    inscription: "03 Mar 2024",
-    initiales: "ML",
-    couleur: "#10B981",
-    reservations: [
-      { date: "Oct 15 11:30", salle: "Boardroom A", statut: "Annulé" },
-      { date: "Oct 14 14:00", salle: "Boardroom B", statut: "Terminé" },
-    ],
-  },
-  {
-    id: 3,
-    nom: "Julie Martin",
-    email: "julie.martin@woorkly.com",
-    role: "Utilisateur",
-    statut: "Inactif",
-    inscription: "18 Fév 2024",
-    initiales: "JM",
-    couleur: "#F59E0B",
-    reservations: [
-      { date: "Sep 30 09:00", salle: "Creativity Suite B", statut: "Terminé" },
-    ],
-  },
-  {
-    id: 4,
-    nom: "Thomas Renard",
-    email: "thomas.renard@woorkly.com",
-    role: "Utilisateur",
-    statut: "Actif",
-    inscription: "27 Avr 2024",
-    initiales: "TR",
-    couleur: "#8B5CF6",
-    reservations: [
-      { date: "Oct 16 13:00", salle: "Innovation Hub", statut: "Confirmé" },
-      { date: "Oct 10 11:00", salle: "Boardroom B", statut: "Terminé" },
-      { date: "Oct 05 15:00", salle: "Boardroom A", statut: "Terminé" },
-    ],
-  },
-  {
-    id: 5,
-    nom: "Camille Faure",
-    email: "camille.faure@woorkly.com",
-    role: "Utilisateur",
-    statut: "Actif",
-    inscription: "09 Jun 2024",
-    initiales: "CF",
-    couleur: "#EF4444",
-    reservations: [],
-  },
-  {
-    id: 6,
-    nom: "Nicolas Blanc",
-    email: "nicolas.blanc@woorkly.com",
-    role: "Admin",
-    statut: "Actif",
-    inscription: "01 Jan 2024",
-    initiales: "NB",
-    couleur: "#0EA5E9",
-    reservations: [
-      { date: "Oct 17 10:00", salle: "Innovation Hub", statut: "Confirmé" },
-      { date: "Oct 13 16:00", salle: "Creativity Suite", statut: "Terminé" },
-    ],
-  },
-];
 
 function BadgeRole({ role }) {
   return (
     <span className={`badge ${role === "Admin" ? "b-confirm" : "b-role-user"}`}>
       {role}
-    </span>
-  );
-}
-
-function BadgeStatut({ statut }) {
-  return (
-    <span
-      className={`badge ${statut === "Actif" ? "b-available" : "b-offline"}`}
-    >
-      {statut}
     </span>
   );
 }
@@ -201,7 +109,6 @@ function UserDetail({ user, onClose }) {
             <p className="ud-email">{user.email}</p>
             <div className="ud-badges">
               <BadgeRole role={user.role} />
-              <BadgeStatut statut={user.statut} />
             </div>
           </div>
         </div>
@@ -209,20 +116,12 @@ function UserDetail({ user, onClose }) {
         {/* Infos */}
         <div className="ud-meta">
           <div className="ud-meta-item">
-            <span className="ud-meta-label">Date d'inscription</span>
-            <span className="ud-meta-val">{user.inscription}</span>
-          </div>
-          <div className="ud-meta-item">
             <span className="ud-meta-label">Réservations totales</span>
             <span className="ud-meta-val">{user.reservations.length}</span>
           </div>
           <div className="ud-meta-item">
             <span className="ud-meta-label">Rôle</span>
             <span className="ud-meta-val">{user.role}</span>
-          </div>
-          <div className="ud-meta-item">
-            <span className="ud-meta-label">Statut</span>
-            <span className="ud-meta-val">{user.statut}</span>
           </div>
         </div>
 
@@ -283,22 +182,184 @@ function UserDetail({ user, onClose }) {
   );
 }
 
+// ── Modal confirmation suppression ───────────────────────
+function DeleteConfirmModal({ user, onClose, onDeleted }) {
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    setError(null);
+    try {
+      await userService.deleteUser(user.id);
+      onDeleted(user.id);
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message;
+      setError(msg);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <div className="ud-overlay" onClick={onClose}>
+      <div
+        className="ud-panel"
+        style={{ maxWidth: 420 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button className="ud-close" onClick={onClose}>✕</button>
+
+        <div className="ud-header">
+          <Avatar initiales={user.initiales} couleur={user.couleur} size={52} />
+          <div className="ud-header-info">
+            <h2 className="ud-name">{user.nom}</h2>
+            <p className="ud-email">{user.email}</p>
+          </div>
+        </div>
+
+        <p style={{ margin: "1.2rem 0 0.6rem", fontSize: "0.9rem" }}>
+          Confirmer la suppression de cet utilisateur ? Cette action est irréversible.
+        </p>
+
+        {error && (
+          <p
+            style={{
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              borderRadius: "6px",
+              padding: "0.6rem 0.8rem",
+              color: "#b91c1c",
+              fontSize: "0.82rem",
+              margin: "0.8rem 0",
+            }}
+          >
+            {error}
+          </p>
+        )}
+
+        <div className="ud-actions" style={{ marginTop: "1.2rem" }}>
+          <button
+            className="ud-btn-danger"
+            disabled={deleting || !!error}
+            onClick={handleDelete}
+            style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}
+          >
+            <IconTrash /> {deleting ? "Suppression…" : "Supprimer"}
+          </button>
+          <button className="ud-btn-ghost" onClick={onClose}>
+            Annuler
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Modal édition du rôle ─────────────────────────────────
+function EditRoleModal({ user, onClose, onSaved }) {
+  const backendRole = user.role === "Admin" ? "admin" : "user";
+  const [role, setRole] = useState(backendRole);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      await userService.updateUserRole(user.id, role);
+      onSaved(user.id, role === "admin" ? "Admin" : "Utilisateur");
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="ud-overlay" onClick={onClose}>
+      <div
+        className="ud-panel"
+        style={{ maxWidth: 420 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button className="ud-close" onClick={onClose}>✕</button>
+
+        <div className="ud-header">
+          <Avatar initiales={user.initiales} couleur={user.couleur} size={52} />
+          <div className="ud-header-info">
+            <h2 className="ud-name">{user.nom}</h2>
+            <p className="ud-email">{user.email}</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ marginTop: "1.5rem" }}>
+          <div style={{ marginBottom: "1.2rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.4rem",
+                fontSize: "0.82rem",
+                color: "var(--muted)",
+              }}
+            >
+              Rôle
+            </label>
+            <select
+              className="flt-select"
+              style={{ width: "100%" }}
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <option value="user">Utilisateur</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
+          {error && (
+            <p style={{ color: "var(--danger, #ef4444)", fontSize: "0.8rem", marginBottom: "0.8rem" }}>
+              {error}
+            </p>
+          )}
+
+          <div className="ud-actions">
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={saving}
+              style={{ fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.4rem" }}
+            >
+              <IconEdit /> {saving ? "Enregistrement…" : "Enregistrer"}
+            </button>
+            <button type="button" className="ud-btn-ghost" onClick={onClose}>
+              Annuler
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ── Page principale ────────────────────────────────────────
 export default function GestionUtilisateurs() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
-  const [statFilter, setStatFilter] = useState("");
   const [selected, setSelected] = useState(null);
+  const [editing, setEditing] = useState(null);
+  const [deleting, setDeleting] = useState(null);
+  const { users, loading, error, updateUserInList, removeUserFromList } = useUsers();
 
-  const filtered = usersData.filter((u) => {
+  const filtered = users.filter((u) => {
     const q = search.toLowerCase();
     const matchSearch =
       u.nom.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
     const matchRole = roleFilter ? u.role === roleFilter : true;
-    const matchStat = statFilter ? u.statut === statFilter : true;
-    return matchSearch && matchRole && matchStat;
+    return matchSearch && matchRole;
   });
 
   return (
@@ -317,25 +378,16 @@ export default function GestionUtilisateurs() {
             <p className="kpi-label">Total utilisateurs</p>
             <div className="kpi-row-val">
               <span className="kpi-val">
-                {usersData.length}
+                {users.length}
                 <span className="kpi-unit"> users</span>
               </span>
             </div>
           </div>
           <div className="kpi-card c-green">
-            <p className="kpi-label">Actifs</p>
+            <p className="kpi-label">Utilisateurs</p>
             <div className="kpi-row-val">
               <span className="kpi-val">
-                {usersData.filter((u) => u.statut === "Actif").length}
-                <span className="kpi-unit"> users</span>
-              </span>
-            </div>
-          </div>
-          <div className="kpi-card c-orange">
-            <p className="kpi-label">Inactifs</p>
-            <div className="kpi-row-val">
-              <span className="kpi-val">
-                {usersData.filter((u) => u.statut === "Inactif").length}
+                {users.filter((u) => u.role === "Utilisateur").length}
                 <span className="kpi-unit"> users</span>
               </span>
             </div>
@@ -344,7 +396,7 @@ export default function GestionUtilisateurs() {
             <p className="kpi-label">Admins</p>
             <div className="kpi-row-val">
               <span className="kpi-val">
-                {usersData.filter((u) => u.role === "Admin").length}
+                {users.filter((u) => u.role === "Admin").length}
                 <span className="kpi-unit"> admins</span>
               </span>
             </div>
@@ -384,15 +436,6 @@ export default function GestionUtilisateurs() {
             <option value="Admin">Admin</option>
             <option value="Utilisateur">Utilisateur</option>
           </select>
-          <select
-            className="flt-select"
-            value={statFilter}
-            onChange={(e) => setStatFilter(e.target.value)}
-          >
-            <option value="">Statut ▾</option>
-            <option value="Actif">Actif</option>
-            <option value="Inactif">Inactif</option>
-          </select>
           <span
             style={{
               marginLeft: "auto",
@@ -407,6 +450,11 @@ export default function GestionUtilisateurs() {
         {/* Tableau */}
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
           <div className="table-scroll">
+          {error && (
+            <p style={{ padding: "1rem", color: "var(--danger, #ef4444)" }}>
+              Erreur : {error}
+            </p>
+          )}
           <table className="data-table">
             <thead>
               <tr>
@@ -414,14 +462,18 @@ export default function GestionUtilisateurs() {
                 <th>Nom</th>
                 <th>Email</th>
                 <th>Rôle</th>
-                <th>Statut</th>
-                <th>Inscription</th>
                 <th>Réservations</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((u) => (
+              {loading ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: "center", padding: "2rem", color: "var(--muted)" }}>
+                    Chargement…
+                  </td>
+                </tr>
+              ) : filtered.map((u) => (
                 <tr key={u.id} className="u-row" onClick={() => setSelected(u)}>
                   <td>
                     <Avatar initiales={u.initiales} couleur={u.couleur} />
@@ -432,12 +484,6 @@ export default function GestionUtilisateurs() {
                   </td>
                   <td>
                     <BadgeRole role={u.role} />
-                  </td>
-                  <td>
-                    <BadgeStatut statut={u.statut} />
-                  </td>
-                  <td style={{ color: "var(--muted)", fontSize: "0.8rem" }}>
-                    {u.inscription}
                   </td>
                   <td>
                     <span className="u-resa-count">
@@ -451,10 +497,16 @@ export default function GestionUtilisateurs() {
                     >
                       <IconEye />
                     </button>
-                    <button className="act-btn act-edit">
+                    <button
+                      className="act-btn act-edit"
+                      onClick={() => setEditing(u)}
+                    >
                       <IconEdit />
                     </button>
-                    <button className="act-btn act-del">
+                    <button
+                      className="act-btn act-del"
+                      onClick={() => setDeleting(u)}
+                    >
                       <IconTrash />
                     </button>
                   </td>
@@ -469,6 +521,30 @@ export default function GestionUtilisateurs() {
       {/* Fiche détaillée */}
       {selected && (
         <UserDetail user={selected} onClose={() => setSelected(null)} />
+      )}
+
+      {/* Modal suppression */}
+      {deleting && (
+        <DeleteConfirmModal
+          user={deleting}
+          onClose={() => setDeleting(null)}
+          onDeleted={(id) => {
+            removeUserFromList(id);
+            setDeleting(null);
+          }}
+        />
+      )}
+
+      {/* Modal édition du rôle */}
+      {editing && (
+        <EditRoleModal
+          user={editing}
+          onClose={() => setEditing(null)}
+          onSaved={(id, role) => {
+            updateUserInList(id, role);
+            setEditing(null);
+          }}
+        />
       )}
     </>
   );

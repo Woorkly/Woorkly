@@ -10,4 +10,19 @@ const register = async ({ nom, email, password }) => {
   return res.data
 }
 
-export default { register }
+const getAllUsers = async () => {
+  const res = await API.get('/users')
+  return res.data
+}
+
+const updateUserRole = async (id, role) => {
+  const res = await API.patch(`/users/${id}`, { role })
+  return res.data
+}
+
+const deleteUser = async (id) => {
+  const res = await API.delete(`/users/${id}`)
+  return res.data
+}
+
+export default { register, getAllUsers, updateUserRole, deleteUser }

@@ -63,6 +63,22 @@ class User extends BaseModel {
     }
   }
 
+  static async patch(id, fields) {
+    const connection = await super.getConnection();
+    try {
+      const entries = Object.entries(fields);
+      const set = entries.map(([col]) => `${col} = ?`).join(', ');
+      const params = [...entries.map(([, val]) => val), id];
+      const [result] = await connection.execute(
+        `UPDATE utilisateurs SET ${set} WHERE id = ?`,
+        params
+      );
+      return result.affectedRows > 0;
+    } finally {
+      connection.release();
+    }
+  }
+
   // Récupérer un utilisateur par son email (pour l'authentification)
   static async findByEmail(email) {
     const sql = "SELECT * FROM utilisateurs WHERE email = ?";

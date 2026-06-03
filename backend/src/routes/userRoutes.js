@@ -18,6 +18,10 @@ router.post('/', userController.createUser);
 // URL : PUT http://localhost:3000/api/users/1
 router.put('/:id', userController.updateUser);
 
+// Route pour modification partielle (ex: rôle)
+// URL : PATCH http://localhost:3000/api/users/1
+router.patch('/:id', userController.patchUser);
+
 // Route pour supprimer un utilisateur
 // URL : DELETE http://localhost:3000/api/users/1
 router.delete('/:id', userController.deleteUser);
