@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import L from "leaflet";
 import { roomService } from "../../services/roomService";
@@ -39,6 +39,8 @@ const SalleDetail = () => {
   const [room, setRoom] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -101,6 +103,7 @@ const SalleDetail = () => {
     popupAnchor: [0, -24],
   });
 
+
   return (
     <main className="room-detail-page">
       <section className={`room-gallery ${images.length === 1 ? "single-image" : ""}`}>
@@ -162,7 +165,7 @@ const SalleDetail = () => {
         <aside className="room-side-card">
           <p>{formatPrice(room)}</p>
 
-          <button type="button">Voir les disponibilites</button>
+          <button type="button" onClick={()=>navigate(`/reservation/${room.id}`)}>Voir les disponibilites</button>
 
           <span>Sans engagement</span>
         </aside>
