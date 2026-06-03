@@ -173,6 +173,25 @@ const buildRoomPayload = (form) => ({
   type_id: optionalNumber(form.type_id),
 });
 
+const toFormValue = (value) => (value === null || value === undefined ? "" : String(value));
+
+const buildRoomForm = (room) => ({
+  nom: toFormValue(room.nom),
+  statut: toFormValue(room.statut) || "disponible",
+  adresse: toFormValue(room.adresse),
+  code_postal: toFormValue(room.code_postal),
+  ville: toFormValue(room.ville),
+  latitude: toFormValue(room.latitude),
+  longitude: toFormValue(room.longitude),
+  capacite: toFormValue(room.capacite),
+  description: toFormValue(room.description),
+  prix_heure: toFormValue(room.prix_heure),
+  prix_demi_journee: toFormValue(room.prix_demi_journee),
+  prix_journee: toFormValue(room.prix_journee),
+  image_principale: toFormValue(room.image_principale),
+  type_id: toFormValue(room.type_id),
+});
+
 export default function GestionSalles() {
   const [search, setSearch] = useState("");
   const [salles, setSalles] = useState([]);
@@ -185,6 +204,7 @@ export default function GestionSalles() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [loadingRoom, setLoadingRoom] = useState(false);
   const [detailError, setDetailError] = useState(null);
+  const [editRoomForm, setEditRoomForm] = useState(initialRoomForm);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -255,6 +275,7 @@ export default function GestionSalles() {
     try {
       const data = await roomService.getRoomById(roomId);
       setSelectedRoom(data);
+      setEditRoomForm(buildRoomForm(data));
     } catch (err) {
       setDetailError(err.response?.data?.message || err.message || "Erreur lors du chargement de la salle");
     } finally {
@@ -266,6 +287,11 @@ export default function GestionSalles() {
     setSelectedRoom(null);
     setDetailError(null);
     setLoadingRoom(false);
+    setEditRoomForm(initialRoomForm);
+  };
+
+  const updateEditRoomForm = (field, value) => {
+    setEditRoomForm((current) => ({ ...current, [field]: value }));
   };
 
   const handleCreateRoom = async (event) => {
@@ -642,37 +668,150 @@ export default function GestionSalles() {
                   </div>
                 </div>
 
-                <div className="ud-meta">
-                  <div className="ud-meta-item">
-                    <span className="ud-meta-label">Capacite</span>
-                    <span className="ud-meta-val">{selectedRoom.capacite || "Non renseigne"}</span>
-                  </div>
-                  <div className="ud-meta-item">
-                    <span className="ud-meta-label">Type ID</span>
-                    <span className="ud-meta-val">{selectedRoom.type_id || "Non renseigne"}</span>
-                  </div>
-                  <div className="ud-meta-item">
-                    <span className="ud-meta-label">Latitude</span>
-                    <span className="ud-meta-val">{selectedRoom.latitude || "Non renseigne"}</span>
-                  </div>
-                  <div className="ud-meta-item">
-                    <span className="ud-meta-label">Longitude</span>
-                    <span className="ud-meta-val">{selectedRoom.longitude || "Non renseigne"}</span>
-                  </div>
-                  <div className="ud-meta-item">
-                    <span className="ud-meta-label">Prix heure</span>
-                    <span className="ud-meta-val">{selectedRoom.prix_heure || "Non renseigne"}</span>
-                  </div>
-                  <div className="ud-meta-item">
-                    <span className="ud-meta-label">Prix journee</span>
-                    <span className="ud-meta-val">{selectedRoom.prix_journee || "Non renseigne"}</span>
-                  </div>
-                </div>
+                <form className="room-form" onSubmit={(event) => event.preventDefault()}>
+                  <label>
+                    Nom
+                    <input
+                      value={editRoomForm.nom}
+                      onChange={(event) => updateEditRoomForm("nom", event.target.value)}
+                    />
+                  </label>
 
-                <div className="ud-section">
-                  <h4 className="ud-section-title">Description</h4>
-                  <p className="ud-empty">{selectedRoom.description || "Aucune description renseignee."}</p>
-                </div>
+                  <label>
+                    Statut
+                    <select
+                      value={editRoomForm.statut}
+                      onChange={(event) => updateEditRoomForm("statut", event.target.value)}
+                    >
+                      <option value="disponible">Disponible</option>
+                      <option value="reservee">Reservee</option>
+                      <option value="hors-service">Hors service</option>
+                    </select>
+                  </label>
+
+                  <label>
+                    Adresse
+                    <input
+                      value={editRoomForm.adresse}
+                      onChange={(event) => updateEditRoomForm("adresse", event.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    Code postal
+                    <input
+                      value={editRoomForm.code_postal}
+                      onChange={(event) => updateEditRoomForm("code_postal", event.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    Ville
+                    <input
+                      value={editRoomForm.ville}
+                      onChange={(event) => updateEditRoomForm("ville", event.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    Capacite
+                    <input
+                      type="number"
+                      min="1"
+                      value={editRoomForm.capacite}
+                      onChange={(event) => updateEditRoomForm("capacite", event.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    Latitude
+                    <input
+                      type="number"
+                      step="any"
+                      value={editRoomForm.latitude}
+                      onChange={(event) => updateEditRoomForm("latitude", event.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    Longitude
+                    <input
+                      type="number"
+                      step="any"
+                      value={editRoomForm.longitude}
+                      onChange={(event) => updateEditRoomForm("longitude", event.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    Prix heure
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={editRoomForm.prix_heure}
+                      onChange={(event) => updateEditRoomForm("prix_heure", event.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    Prix demi-journee
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={editRoomForm.prix_demi_journee}
+                      onChange={(event) => updateEditRoomForm("prix_demi_journee", event.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    Prix journee
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={editRoomForm.prix_journee}
+                      onChange={(event) => updateEditRoomForm("prix_journee", event.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    Type ID
+                    <input
+                      type="number"
+                      min="1"
+                      value={editRoomForm.type_id}
+                      onChange={(event) => updateEditRoomForm("type_id", event.target.value)}
+                    />
+                  </label>
+
+                  <label className="room-form-wide">
+                    Image principale
+                    <input
+                      value={editRoomForm.image_principale}
+                      onChange={(event) => updateEditRoomForm("image_principale", event.target.value)}
+                    />
+                  </label>
+
+                  <label className="room-form-wide">
+                    Description
+                    <textarea
+                      value={editRoomForm.description}
+                      onChange={(event) => updateEditRoomForm("description", event.target.value)}
+                      rows="4"
+                    />
+                  </label>
+
+                  <div className="room-form-actions">
+                    <button className="ud-btn-ghost" type="button" onClick={closeRoomDetails}>
+                      Fermer
+                    </button>
+                    <button className="btn-primary" type="submit" disabled>
+                      Enregistrer bientot
+                    </button>
+                  </div>
+                </form>
 
                 <div className="ud-section">
                   <h4 className="ud-section-title">Equipements</h4>
