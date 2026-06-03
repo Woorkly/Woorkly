@@ -151,6 +151,28 @@ const initialRoomForm = {
   type_id: "",
 };
 
+const optionalNumber = (value) => {
+  if (value === "") return null;
+  return Number(value);
+};
+
+const buildRoomPayload = (form) => ({
+  ...form,
+  nom: form.nom.trim(),
+  adresse: form.adresse.trim() || null,
+  code_postal: form.code_postal.trim() || null,
+  ville: form.ville.trim() || null,
+  latitude: optionalNumber(form.latitude),
+  longitude: optionalNumber(form.longitude),
+  capacite: optionalNumber(form.capacite),
+  description: form.description.trim() || null,
+  prix_heure: optionalNumber(form.prix_heure),
+  prix_demi_journee: optionalNumber(form.prix_demi_journee),
+  prix_journee: optionalNumber(form.prix_journee),
+  image_principale: form.image_principale.trim() || "default-room.jpg",
+  type_id: optionalNumber(form.type_id),
+});
+
 export default function GestionSalles() {
   const [search, setSearch] = useState("");
   const [salles, setSalles] = useState([]);
@@ -158,6 +180,8 @@ export default function GestionSalles() {
   const [error, setError] = useState(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [roomForm, setRoomForm] = useState(initialRoomForm);
+  const [savingRoom, setSavingRoom] = useState(false);
+  const [formError, setFormError] = useState(null);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -177,6 +201,20 @@ export default function GestionSalles() {
     fetchRooms();
   }, []);
 
+  const refreshRooms = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await roomService.getRooms();
+      setSalles(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err.message || "Erreur lors du chargement des salles");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filtered = salles.filter((s) =>
     s.nom?.toLowerCase().includes(search.toLowerCase()),
   );
@@ -193,15 +231,45 @@ export default function GestionSalles() {
 
   const openCreateForm = () => {
     setRoomForm(initialRoomForm);
+    setFormError(null);
     setIsCreateOpen(true);
   };
 
   const closeCreateForm = () => {
+    if (savingRoom) return;
     setIsCreateOpen(false);
   };
 
   const updateRoomForm = (field, value) => {
     setRoomForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const handleCreateRoom = async (event) => {
+    event.preventDefault();
+    setFormError(null);
+
+    if (!roomForm.nom.trim()) {
+      setFormError("Le nom de la salle est obligatoire.");
+      return;
+    }
+
+    if (!roomForm.type_id) {
+      setFormError("Le type de salle est obligatoire.");
+      return;
+    }
+
+    setSavingRoom(true);
+
+    try {
+      await roomService.createRoom(buildRoomPayload(roomForm));
+      setIsCreateOpen(false);
+      setRoomForm(initialRoomForm);
+      await refreshRooms();
+    } catch (err) {
+      setFormError(err.response?.data?.message || err.message || "Erreur lors de la creation de la salle");
+    } finally {
+      setSavingRoom(false);
+    }
   };
 
   return (
@@ -337,7 +405,7 @@ export default function GestionSalles() {
       {isCreateOpen && (
         <div className="ud-overlay" onClick={closeCreateForm}>
           <div className="ud-panel room-form-panel" onClick={(event) => event.stopPropagation()}>
-            <button className="ud-close" type="button" onClick={closeCreateForm}>
+            <button className="ud-close" type="button" onClick={closeCreateForm} disabled={savingRoom}>
               x
             </button>
 
@@ -346,10 +414,11 @@ export default function GestionSalles() {
               <p className="ud-email">Prepare les informations de la salle avant enregistrement.</p>
             </div>
 
-            <form className="room-form" onSubmit={(event) => event.preventDefault()}>
+            <form className="room-form" onSubmit={handleCreateRoom}>
               <label>
                 Nom
                 <input
+                  required
                   value={roomForm.nom}
                   onChange={(event) => updateRoomForm("nom", event.target.value)}
                   placeholder="Nom de la salle"
@@ -467,6 +536,7 @@ export default function GestionSalles() {
               <label>
                 Type ID
                 <input
+                  required
                   type="number"
                   min="1"
                   value={roomForm.type_id}
@@ -494,12 +564,18 @@ export default function GestionSalles() {
                 />
               </label>
 
+              {formError && (
+                <p className="room-form-error">
+                  {formError}
+                </p>
+              )}
+
               <div className="room-form-actions">
-                <button className="ud-btn-ghost" type="button" onClick={closeCreateForm}>
+                <button className="ud-btn-ghost" type="button" onClick={closeCreateForm} disabled={savingRoom}>
                   Annuler
                 </button>
-                <button className="btn-primary" type="submit">
-                  Enregistrer
+                <button className="btn-primary" type="submit" disabled={savingRoom}>
+                  {savingRoom ? "Enregistrement..." : "Enregistrer"}
                 </button>
               </div>
             </form>

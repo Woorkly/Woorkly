@@ -1039,8 +1039,16 @@ body { font-family: var(--font); }
 }
 
 .room-form-wide,
+.room-form-error,
 .room-form-actions {
   grid-column: 1 / -1;
+}
+
+.room-form-error {
+  margin: 0;
+  color: var(--red);
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .room-form-actions {
