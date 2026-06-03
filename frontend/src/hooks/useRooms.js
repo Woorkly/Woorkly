@@ -3,6 +3,7 @@ import { roomService } from '../services/roomService'
 
 export default function useRooms(filters = {}) {
   const [rooms, setRooms] = useState([])
+  const [room, setRoom] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -11,6 +12,15 @@ export default function useRooms(filters = {}) {
       setLoading(true)
       setError(null)
       try {
+        if (filters?.roomId) {
+          const data = await roomService.getRoomById(filters.roomId)
+          setRoom(data)
+          setRooms([])
+          return
+        }
+
+        setRoom(null)
+
         const data = filters?.date
           ? await roomService.getAvailableRooms(filters)
           : await roomService.getRooms(filters)
@@ -25,5 +35,5 @@ export default function useRooms(filters = {}) {
     fetchRooms()
   }, [JSON.stringify(filters)])
 
-  return { rooms, loading, error }
+  return { rooms, room, loading, error }
 }

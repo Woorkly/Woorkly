@@ -1,10 +1,82 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import "./style.css";
+import useRooms from "../../hooks/useRooms";
+import useReservation from "../../hooks/useReservation";
+
+const DEFAULT_TIMES = {
+  heure: { heureDebut: "09:00", heureFin: "10:00" },
+  "demi-journée": { heureDebut: "09:00", heureFin: "12:00" },
+  journée: { heureDebut: "09:00", heureFin: "17:00" },
+};
+
+const getTodayInputValue = () => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return now.toISOString().split("T")[0];
+};
 
 export default function ReservationPage() {
+  const {roomId} = useParams();
+  const { room, loading: roomLoading, error: roomError } = useRooms({ roomId });
+  const { createReservation, loading: submitting, error: reservationError } = useReservation();
   const [formule, setFormule] = useState("heure");
-  const [participants, setParticipants] = useState("");
   const [date, setDate] = useState(""); 
+  const [heureDebut, setHeureDebut] = useState(DEFAULT_TIMES.heure.heureDebut);
+  const [heureFin, setHeureFin] = useState(DEFAULT_TIMES.heure.heureFin);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [localError, setLocalError] = useState("");
+
+  const minDate = getTodayInputValue();
+
+  useEffect(() => {
+    const defaultTimes = DEFAULT_TIMES[formule];
+    setHeureDebut(defaultTimes.heureDebut);
+    setHeureFin(defaultTimes.heureFin);
+  }, [formule]);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setSuccessMessage("");
+    setLocalError("");
+
+    if (!room?.id) {
+      setLocalError("La salle sélectionnée est introuvable.");
+      return;
+    }
+
+    if (!date) {
+      setLocalError("Veuillez choisir une date.");
+      return;
+    }
+
+    if (date < minDate) {
+      setLocalError("Vous ne pouvez pas réserver une date antérieure à aujourd'hui.");
+      return;
+    }
+
+    if (!heureDebut || !heureFin) {
+      setLocalError("Veuillez renseigner les horaires de réservation.");
+      return;
+    }
+
+    try {
+      const payload = {
+        salle_id: room.id,
+        date,
+        heure_debut: heureDebut,
+        heure_fin: heureFin,
+        type_reservation: formule,
+      };
+
+      const created = await createReservation(payload);
+      setSuccessMessage(`Réservation créée avec succès${created?.id ? ` (ID ${created.id})` : ""}.`);
+    } catch (error) {
+      // L'erreur est déjà exposée via le hook, on garde aussi un message local pour l'UI.
+      setLocalError(error.response?.data?.message || error.message || "Erreur lors de la création de la réservation");
+    }
+  };
+
 
   return (
     <div className="page">
@@ -27,7 +99,7 @@ export default function ReservationPage() {
         </div>
 
         {/* RIGHT — FORM */}
-        <div className="form-card">
+        <form className="form-card" onSubmit={handleSubmit}>
 
           {/* Stepper */}
           <div className="stepper">
@@ -44,8 +116,22 @@ export default function ReservationPage() {
 
           {/* Notification */}
           <div className="notif">
-            Vous avez sélectionné la salle Florin, sous réserve de disponibilité
+            {roomLoading
+              ? "Chargement de la salle..."
+              : roomError
+                ? "Salle introuvable"
+                : `Vous avez sélectionné la salle ${room?.nom ?? "—"}, sous réserve de disponibilité`}
           </div>
+
+          {reservationError || localError ? (
+            <p className="form-message form-message-error">
+              {localError || reservationError}
+            </p>
+          ) : null}
+
+          {successMessage ? (
+            <p className="form-message form-message-success">{successMessage}</p>
+          ) : null}
 
           {/* Formule */}
           <div className="form-group">
@@ -75,21 +161,6 @@ export default function ReservationPage() {
             </div>
           </div>
 
-          {/* Participants */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="participants">
-              Nombre de participants <span>*</span>
-            </label>
-            <input
-              id="participants"
-              type="number"
-              className="form-input"
-              placeholder="Ex : 10"
-              value={participants}
-              onChange={(e) => setParticipants(e.target.value)}
-            />
-          </div>
-
           {/* Date */}
           <div className="form-group">
             <label className="form-label" htmlFor="date">
@@ -101,13 +172,48 @@ export default function ReservationPage() {
                 type="date"
                 className="form-input"
                 value={date}
+                min={minDate}
                 onChange={(e) => setDate(e.target.value)}
               />
             </div>
           </div>
 
-          <button className="btn-submit">Suivant →</button>
-        </div>
+          {/* Horaires */}
+          <div className="time-grid">
+            <div className="form-group">
+              <label className="form-label" htmlFor="heureDebut">
+                Heure de début <span>*</span>
+              </label>
+              <input
+                id="heureDebut"
+                type="time"
+                className="form-input"
+                value={heureDebut}
+                onChange={(e) => setHeureDebut(e.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label" htmlFor="heureFin">
+                Heure de fin <span>*</span>
+              </label>
+              <input
+                id="heureFin"
+                type="time"
+                className="form-input"
+                value={heureFin}
+                onChange={(e) => setHeureFin(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <p className="time-hint">
+            Les horaires sont ajustés automatiquement selon la formule choisie.
+          </p>
+
+          <button className="btn-submit" type="submit" disabled={submitting || roomLoading}>
+            {submitting ? "Enregistrement..." : "Réserver"}
+          </button>
+        </form>
       </div>   
     </div>
   );

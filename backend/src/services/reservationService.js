@@ -3,6 +3,18 @@
 const Reservation = require('../models/Reservation');
 const Room = require('../models/Room');
 
+const createHttpError = (message, statusCode) => {
+    const error = new Error(message);
+    error.statusCode = statusCode;
+    return error;
+};
+
+const getTodayIsoDate = () => {
+    const today = new Date();
+    today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+    return today.toISOString().split('T')[0];
+};
+
 
 // Calcule le prix total selon le type de réservation
 const calculatePrice = (room, typeReservation, heureDebut, heureFin) => {
@@ -49,16 +61,24 @@ const getReservationById = async (id) => {
 const createReservation = async (data, userId) => {
     const { salle_id, date, heure_debut, heure_fin, type_reservation } = data;
 
+    if (!salle_id || !date || !heure_debut || !heure_fin || !type_reservation) {
+        throw createHttpError('Les informations de réservation sont incomplètes', 400);
+    }
+
+    if (String(date) < getTodayIsoDate()) {
+        throw createHttpError('Vous ne pouvez pas réserver une date antérieure à aujourd\'hui', 400);
+    }
+
     // Vérifier que la salle existe
     const room = await Room.getById(salle_id);
     if (!room) {
-        throw new Error('Salle introuvable', 404);
+        throw createHttpError('Salle introuvable', 404);
     }
 
     // Vérifier qu'il n'y a pas de chevauchement
     const hasConflict = await Reservation.hasConflict(salle_id, date, heure_debut, heure_fin);
     if (hasConflict) {
-        throw new Error('Cette salle est déjà réservée à cet horaire', 409);
+        throw createHttpError('Cette salle est déjà réservée à cet horaire', 409);
     }
 
     // Calculer le prix total
@@ -94,22 +114,22 @@ const createReservation = async (data, userId) => {
 const cancelReservation = async (reservationId, userId, isAdmin = false) => {
     const reservation = await Reservation.getById(reservationId);
     if (!reservation) {
-        throw new Error('Réservation introuvable', 404);
+        throw createHttpError('Réservation introuvable', 404);
     }
 
     // Vérifier que l'utilisateur est propriétaire ou admin
     if (!isAdmin && reservation.utilisateur_id !== userId) {
-        throw new Error('Accès refusé', 403);
+        throw createHttpError('Accès refusé', 403);
     }
 
     // Vérifier que la réservation n'est pas déjà annulée
     if (reservation.statut === 'annulee') {
-        throw new Error('Cette réservation est déjà annulée', 400);
+        throw createHttpError('Cette réservation est déjà annulée', 400);
     }
 
     const cancelled = await Reservation.cancel(reservationId);
     if (!cancelled) {
-        throw new Error('Erreur lors de l\'annulation', 500);
+        throw createHttpError('Erreur lors de l\'annulation', 500);
     }
 };
 
