@@ -134,11 +134,30 @@ function Badge({ s }) {
   return <span className={`badge ${m[s] || ""}`}>{labels[s] || s || "Non renseigne"}</span>;
 }
 
+const initialRoomForm = {
+  nom: "",
+  statut: "disponible",
+  adresse: "",
+  code_postal: "",
+  ville: "",
+  latitude: "",
+  longitude: "",
+  capacite: "",
+  description: "",
+  prix_heure: "",
+  prix_demi_journee: "",
+  prix_journee: "",
+  image_principale: "",
+  type_id: "",
+};
+
 export default function GestionSalles() {
   const [search, setSearch] = useState("");
   const [salles, setSalles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [roomForm, setRoomForm] = useState(initialRoomForm);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -172,13 +191,28 @@ export default function GestionSalles() {
   const getLocation = (room) =>
     [room.adresse, room.code_postal, room.ville].filter(Boolean).join(", ") || "Non renseigne";
 
+  const openCreateForm = () => {
+    setRoomForm(initialRoomForm);
+    setIsCreateOpen(true);
+  };
+
+  const closeCreateForm = () => {
+    setIsCreateOpen(false);
+  };
+
+  const updateRoomForm = (field, value) => {
+    setRoomForm((current) => ({ ...current, [field]: value }));
+  };
+
   return (
     <>
       <div className="topbar">Gestion Salles</div>
       <div className="page-body">
         <div className="page-header">
           <h2 className="page-title">Gestion Salles</h2>
-          <button className="btn-primary">+ Ajouter une salle</button>
+          <button className="btn-primary" type="button" onClick={openCreateForm}>
+            + Ajouter une salle
+          </button>
         </div>
 
         <div className="filters-row">
@@ -299,6 +333,179 @@ export default function GestionSalles() {
           </div>
         </div>
       </div>
+
+      {isCreateOpen && (
+        <div className="ud-overlay" onClick={closeCreateForm}>
+          <div className="ud-panel room-form-panel" onClick={(event) => event.stopPropagation()}>
+            <button className="ud-close" type="button" onClick={closeCreateForm}>
+              x
+            </button>
+
+            <div>
+              <h3 className="ud-name">Ajouter une salle</h3>
+              <p className="ud-email">Prepare les informations de la salle avant enregistrement.</p>
+            </div>
+
+            <form className="room-form" onSubmit={(event) => event.preventDefault()}>
+              <label>
+                Nom
+                <input
+                  value={roomForm.nom}
+                  onChange={(event) => updateRoomForm("nom", event.target.value)}
+                  placeholder="Nom de la salle"
+                />
+              </label>
+
+              <label>
+                Statut
+                <select
+                  value={roomForm.statut}
+                  onChange={(event) => updateRoomForm("statut", event.target.value)}
+                >
+                  <option value="disponible">Disponible</option>
+                  <option value="reservee">Reservee</option>
+                  <option value="hors-service">Hors service</option>
+                </select>
+              </label>
+
+              <label>
+                Adresse
+                <input
+                  value={roomForm.adresse}
+                  onChange={(event) => updateRoomForm("adresse", event.target.value)}
+                  placeholder="Adresse"
+                />
+              </label>
+
+              <label>
+                Code postal
+                <input
+                  value={roomForm.code_postal}
+                  onChange={(event) => updateRoomForm("code_postal", event.target.value)}
+                  placeholder="13001"
+                />
+              </label>
+
+              <label>
+                Ville
+                <input
+                  value={roomForm.ville}
+                  onChange={(event) => updateRoomForm("ville", event.target.value)}
+                  placeholder="Marseille"
+                />
+              </label>
+
+              <label>
+                Capacite
+                <input
+                  type="number"
+                  min="1"
+                  value={roomForm.capacite}
+                  onChange={(event) => updateRoomForm("capacite", event.target.value)}
+                  placeholder="12"
+                />
+              </label>
+
+              <label>
+                Latitude
+                <input
+                  type="number"
+                  step="any"
+                  value={roomForm.latitude}
+                  onChange={(event) => updateRoomForm("latitude", event.target.value)}
+                  placeholder="43.296"
+                />
+              </label>
+
+              <label>
+                Longitude
+                <input
+                  type="number"
+                  step="any"
+                  value={roomForm.longitude}
+                  onChange={(event) => updateRoomForm("longitude", event.target.value)}
+                  placeholder="5.376"
+                />
+              </label>
+
+              <label>
+                Prix heure
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={roomForm.prix_heure}
+                  onChange={(event) => updateRoomForm("prix_heure", event.target.value)}
+                  placeholder="25.00"
+                />
+              </label>
+
+              <label>
+                Prix demi-journee
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={roomForm.prix_demi_journee}
+                  onChange={(event) => updateRoomForm("prix_demi_journee", event.target.value)}
+                  placeholder="90.00"
+                />
+              </label>
+
+              <label>
+                Prix journee
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={roomForm.prix_journee}
+                  onChange={(event) => updateRoomForm("prix_journee", event.target.value)}
+                  placeholder="160.00"
+                />
+              </label>
+
+              <label>
+                Type ID
+                <input
+                  type="number"
+                  min="1"
+                  value={roomForm.type_id}
+                  onChange={(event) => updateRoomForm("type_id", event.target.value)}
+                  placeholder="2"
+                />
+              </label>
+
+              <label className="room-form-wide">
+                Image principale
+                <input
+                  value={roomForm.image_principale}
+                  onChange={(event) => updateRoomForm("image_principale", event.target.value)}
+                  placeholder="default-room.jpg"
+                />
+              </label>
+
+              <label className="room-form-wide">
+                Description
+                <textarea
+                  value={roomForm.description}
+                  onChange={(event) => updateRoomForm("description", event.target.value)}
+                  placeholder="Description de la salle"
+                  rows="4"
+                />
+              </label>
+
+              <div className="room-form-actions">
+                <button className="ud-btn-ghost" type="button" onClick={closeCreateForm}>
+                  Annuler
+                </button>
+                <button className="btn-primary" type="submit">
+                  Enregistrer
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }

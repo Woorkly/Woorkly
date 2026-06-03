@@ -996,6 +996,61 @@ body { font-family: var(--font); }
   overflow-y: auto;
 }
 
+.room-form-panel {
+  max-width: 760px;
+}
+
+.room-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.room-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.room-form input,
+.room-form select,
+.room-form textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 0.52rem 0.7rem;
+  font: 400 0.82rem/1.4 var(--font);
+  color: var(--text);
+  background: var(--card);
+  outline: none;
+}
+
+.room-form textarea {
+  resize: vertical;
+}
+
+.room-form input:focus,
+.room-form select:focus,
+.room-form textarea:focus {
+  border-color: var(--primary);
+}
+
+.room-form-wide,
+.room-form-actions {
+  grid-column: 1 / -1;
+}
+
+.room-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--border);
+}
+
 .ud-close {
   position: absolute;
   top: 1rem;
@@ -1091,3 +1146,17 @@ body { font-family: var(--font); }
   margin-left: auto;
 }
 .ud-btn-ghost:hover { background: #f1f5f9; color: var(--text); }
+
+@media (max-width: 640px) {
+  .room-form {
+    grid-template-columns: 1fr;
+  }
+
+  .room-form-actions {
+    justify-content: stretch;
+  }
+
+  .room-form-actions button {
+    flex: 1;
+  }
+}
