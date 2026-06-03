@@ -6,7 +6,6 @@ import { roomService } from "../../services/roomService";
 import "./SalleDetail.css";
 
 const DEFAULT_ROOM_IMAGE = "/images/default-room.jpg";
-const DEFAULT_MAP_CENTER = [48.8566, 2.3522];
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -32,8 +31,8 @@ const formatPrice = (room) => {
 const hasValidCoordinates = (room) =>
   room?.latitude &&
   room?.longitude &&
-  !Number.isNaN(parseFloat(room.latitude)) &&
-  !Number.isNaN(parseFloat(room.longitude));
+  Number.isFinite(Number(room.latitude)) &&
+  Number.isFinite(Number(room.longitude));
 
 const SalleDetail = () => {
   const { id } = useParams();
@@ -89,9 +88,10 @@ const SalleDetail = () => {
   const equipments = room.equipements || [];
   const isAvailable = room.statut === "disponible";
   const location = [room.adresse, room.code_postal, room.ville].filter(Boolean).join(", ");
-  const mapPosition = hasValidCoordinates(room)
-    ? [parseFloat(room.latitude), parseFloat(room.longitude)]
-    : DEFAULT_MAP_CENTER;
+  const hasMapCoordinates = hasValidCoordinates(room);
+  const mapPosition = hasMapCoordinates
+    ? [Number(room.latitude), Number(room.longitude)]
+    : null;
 
   const roomMarkerIcon = L.divIcon({
     className: "room-detail-marker-icon",
@@ -174,25 +174,32 @@ const SalleDetail = () => {
           <h2>Localisation</h2>
         </div>
 
-        <MapContainer
-          center={mapPosition}
-          zoom={15}
-          scrollWheelZoom={false}
-          className="room-detail-map"
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <Marker position={mapPosition} icon={roomMarkerIcon}>
-            <Popup>
-              <div className="room-detail-popup">
-                <h4>{room.nom}</h4>
-                <p>{location || room.ville || "Adresse a confirmer"}</p>
-              </div>
-            </Popup>
-          </Marker>
-        </MapContainer>
+        {hasMapCoordinates ? (
+          <MapContainer
+            key={`${mapPosition[0]}-${mapPosition[1]}`}
+            center={mapPosition}
+            zoom={15}
+            scrollWheelZoom={false}
+            className="room-detail-map"
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <Marker position={mapPosition} icon={roomMarkerIcon}>
+              <Popup>
+                <div className="room-detail-popup">
+                  <h4>{room.nom}</h4>
+                  <p>{location || room.ville || "Adresse a confirmer"}</p>
+                </div>
+              </Popup>
+            </Marker>
+          </MapContainer>
+        ) : (
+          <div className="room-map-empty">
+            Les coordonnees de cette salle ne sont pas encore renseignees.
+          </div>
+        )}
       </section>
     </main>
   );
