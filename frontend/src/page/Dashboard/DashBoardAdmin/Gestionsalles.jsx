@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { roomService } from "../../../services/roomService";
 import "./AdminStyle.css";
 
 // Icônes SVG par type de salle
@@ -84,54 +85,6 @@ const icons = {
   ),
 };
 
-const salles = [
-  {
-    id: 1,
-    nom: "Innovation Hub",
-    cap: 25,
-    loc: "Floor 3",
-    equip: "Projector, Visio, Screen",
-    statut: "Disponible",
-    icon: icons.hub,
-  },
-  {
-    id: 2,
-    nom: "Boardroom A",
-    cap: 12,
-    loc: "Floor 4",
-    equip: "Screen",
-    statut: "Blue",
-    icon: icons.boardroom,
-  },
-  {
-    id: 3,
-    nom: "Creativity Suite",
-    cap: 15,
-    loc: "Floor 2",
-    equip: "Whiteboard",
-    statut: "Hors Service",
-    icon: icons.creative,
-  },
-  {
-    id: 4,
-    nom: "Creativity Suite B",
-    cap: 15,
-    loc: "Floor 2",
-    equip: "Whiteboard",
-    statut: "Disponible",
-    icon: icons.screen,
-  },
-  {
-    id: 5,
-    nom: "Boardroom B",
-    cap: 12,
-    loc: "Floor 4",
-    equip: "Screen",
-    statut: "Disponible",
-    icon: icons.office,
-  },
-];
-
 const IconEdit = () => (
   <svg
     viewBox="0 0 24 24"
@@ -168,18 +121,56 @@ const IconTrash = () => (
 
 function Badge({ s }) {
   const m = {
-    Disponible: "b-available",
-    Blue: "b-blue",
-    "Hors Service": "b-offline",
+    disponible: "b-available",
+    reservee: "b-blue",
+    "hors-service": "b-offline",
   };
-  return <span className={`badge ${m[s] || ""}`}>{s}</span>;
+  const labels = {
+    disponible: "Disponible",
+    reservee: "Reservee",
+    "hors-service": "Hors service",
+  };
+
+  return <span className={`badge ${m[s] || ""}`}>{labels[s] || s || "Non renseigne"}</span>;
 }
 
 export default function GestionSalles() {
   const [search, setSearch] = useState("");
+  const [salles, setSalles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await roomService.getRooms();
+        setSalles(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setError(err.message || "Erreur lors du chargement des salles");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRooms();
+  }, []);
+
   const filtered = salles.filter((s) =>
-    s.nom.toLowerCase().includes(search.toLowerCase()),
+    s.nom?.toLowerCase().includes(search.toLowerCase()),
   );
+
+  const getRoomImageSrc = (imageName) => {
+    const value = (imageName || "").trim();
+    if (!value) return null;
+    if (/^https?:\/\//i.test(value)) return value;
+    return `/images/${value}`;
+  };
+
+  const getLocation = (room) =>
+    [room.adresse, room.code_postal, room.ville].filter(Boolean).join(", ") || "Non renseigne";
 
   return (
     <>
@@ -239,36 +230,70 @@ export default function GestionSalles() {
                   <th>Room Name</th>
                   <th>Capacity</th>
                   <th>Location</th>
-                  <th>Status</th>
+                  <th>Equipments</th>
                   <th>Statut</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((s) => (
-                  <tr key={s.id}>
-                    <td>
-                      <div className="room-thumb">{s.icon}</div>
-                    </td>
-                    <td style={{ fontWeight: 500 }}>{s.nom}</td>
-                    <td>{s.cap}</td>
-                    <td>{s.loc}</td>
-                    <td style={{ fontSize: "0.79rem", color: "var(--muted)" }}>
-                      {s.equip}
-                    </td>
-                    <td>
-                      <Badge s={s.statut} />
-                    </td>
-                    <td>
-                      <button className="act-btn">
-                        <IconEdit />
-                      </button>
-                      <button className="act-btn">
-                        <IconTrash />
-                      </button>
+                {loading && (
+                  <tr>
+                    <td colSpan="7" style={{ textAlign: "center", padding: 24 }}>
+                      Chargement des salles...
                     </td>
                   </tr>
-                ))}
+                )}
+
+                {!loading && error && (
+                  <tr>
+                    <td colSpan="7" style={{ textAlign: "center", padding: 24, color: "var(--red)" }}>
+                      {error}
+                    </td>
+                  </tr>
+                )}
+
+                {!loading && !error && filtered.length === 0 && (
+                  <tr>
+                    <td colSpan="7" style={{ textAlign: "center", padding: 24 }}>
+                      Aucune salle trouvee.
+                    </td>
+                  </tr>
+                )}
+
+                {!loading && !error && filtered.map((s) => {
+                  const imageSrc = getRoomImageSrc(s.image_principale);
+
+                  return (
+                    <tr key={s.id}>
+                      <td>
+                        <div className="room-thumb">
+                          {imageSrc ? (
+                            <img src={imageSrc} alt={s.nom} />
+                          ) : (
+                            icons.boardroom
+                          )}
+                        </div>
+                      </td>
+                      <td style={{ fontWeight: 500 }}>{s.nom}</td>
+                      <td>{s.capacite || "Non renseigne"}</td>
+                      <td>{getLocation(s)}</td>
+                      <td style={{ fontSize: "0.79rem", color: "var(--muted)" }}>
+                        {s.type_nom || "Non renseigne"}
+                      </td>
+                      <td>
+                        <Badge s={s.statut} />
+                      </td>
+                      <td>
+                        <button className="act-btn" type="button">
+                          <IconEdit />
+                        </button>
+                        <button className="act-btn" type="button">
+                          <IconTrash />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
