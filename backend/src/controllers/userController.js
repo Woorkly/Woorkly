@@ -51,6 +51,18 @@ const updateUser = async (req, res) => {
     }
 };
 
+// modification partielle d'un utilisateur (ex: rôle uniquement)
+const patchUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await User.patch(id, req.body);
+        res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur lors de la mise à jour de l'utilisateur" });
+    }
+};
+
 // suppression d'un utilisateur
 const deleteUser = async (req, res) => {
     try {
@@ -69,6 +81,7 @@ module.exports = {
     getUserDetails,
     createUser,
     updateUser,
+    patchUser,
     deleteUser
 };
  

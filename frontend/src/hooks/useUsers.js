@@ -38,5 +38,9 @@ export default function useUsers() {
     fetchUsers()
   }, [])
 
-  return { users, loading, error }
+  const updateUserInList = (id, role) => {
+    setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, role } : u)))
+  }
+
+  return { users, loading, error, updateUserInList }
 }

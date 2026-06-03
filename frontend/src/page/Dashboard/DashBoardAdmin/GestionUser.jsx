@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./AdminStyle.css";
 import useUsers from "../../../hooks/useUsers";
+import userService from "../../../services/userService";
 
 const NAV_ROUTES = {
   Dashboard: "/dashboardAdmin",
@@ -181,6 +182,93 @@ function UserDetail({ user, onClose }) {
   );
 }
 
+// ── Modal édition du rôle ─────────────────────────────────
+function EditRoleModal({ user, onClose, onSaved }) {
+  const backendRole = user.role === "Admin" ? "admin" : "user";
+  const [role, setRole] = useState(backendRole);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      await userService.updateUserRole(user.id, role);
+      onSaved(user.id, role === "admin" ? "Admin" : "Utilisateur");
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="ud-overlay" onClick={onClose}>
+      <div
+        className="ud-panel"
+        style={{ maxWidth: 420 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button className="ud-close" onClick={onClose}>✕</button>
+
+        <div className="ud-header">
+          <Avatar initiales={user.initiales} couleur={user.couleur} size={52} />
+          <div className="ud-header-info">
+            <h2 className="ud-name">{user.nom}</h2>
+            <p className="ud-email">{user.email}</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ marginTop: "1.5rem" }}>
+          <div style={{ marginBottom: "1.2rem" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.4rem",
+                fontSize: "0.82rem",
+                color: "var(--muted)",
+              }}
+            >
+              Rôle
+            </label>
+            <select
+              className="flt-select"
+              style={{ width: "100%" }}
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <option value="user">Utilisateur</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
+          {error && (
+            <p style={{ color: "var(--danger, #ef4444)", fontSize: "0.8rem", marginBottom: "0.8rem" }}>
+              {error}
+            </p>
+          )}
+
+          <div className="ud-actions">
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={saving}
+              style={{ fontSize: "0.82rem", display: "flex", alignItems: "center", gap: "0.4rem" }}
+            >
+              <IconEdit /> {saving ? "Enregistrement…" : "Enregistrer"}
+            </button>
+            <button type="button" className="ud-btn-ghost" onClick={onClose}>
+              Annuler
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ── Page principale ────────────────────────────────────────
 export default function GestionUtilisateurs() {
   const navigate = useNavigate();
@@ -188,7 +276,8 @@ export default function GestionUtilisateurs() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [selected, setSelected] = useState(null);
-  const { users, loading, error } = useUsers();
+  const [editing, setEditing] = useState(null);
+  const { users, loading, error, updateUserInList } = useUsers();
 
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
@@ -333,7 +422,10 @@ export default function GestionUtilisateurs() {
                     >
                       <IconEye />
                     </button>
-                    <button className="act-btn act-edit">
+                    <button
+                      className="act-btn act-edit"
+                      onClick={() => setEditing(u)}
+                    >
                       <IconEdit />
                     </button>
                     <button className="act-btn act-del">
@@ -351,6 +443,18 @@ export default function GestionUtilisateurs() {
       {/* Fiche détaillée */}
       {selected && (
         <UserDetail user={selected} onClose={() => setSelected(null)} />
+      )}
+
+      {/* Modal édition du rôle */}
+      {editing && (
+        <EditRoleModal
+          user={editing}
+          onClose={() => setEditing(null)}
+          onSaved={(id, role) => {
+            updateUserInList(id, role);
+            setEditing(null);
+          }}
+        />
       )}
     </>
   );

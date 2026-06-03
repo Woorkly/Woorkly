@@ -15,4 +15,9 @@ const getAllUsers = async () => {
   return res.data
 }
 
-export default { register, getAllUsers }
+const updateUserRole = async (id, role) => {
+  const res = await API.patch(`/users/${id}`, { role })
+  return res.data
+}
+
+export default { register, getAllUsers, updateUserRole }
