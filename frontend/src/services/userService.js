@@ -10,4 +10,9 @@ const register = async ({ nom, email, password }) => {
   return res.data
 }
 
-export default { register }
+const getAllUsers = async () => {
+  const res = await API.get('/users')
+  return res.data
+}
+
+export default { register, getAllUsers }
