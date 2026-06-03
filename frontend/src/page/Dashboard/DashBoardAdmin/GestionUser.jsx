@@ -289,7 +289,6 @@ export default function GestionUtilisateurs() {
   const { pathname } = useLocation();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
-  const [statFilter, setStatFilter] = useState("");
   const [selected, setSelected] = useState(null);
 
   const filtered = usersData.filter((u) => {
@@ -297,8 +296,7 @@ export default function GestionUtilisateurs() {
     const matchSearch =
       u.nom.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
     const matchRole = roleFilter ? u.role === roleFilter : true;
-    const matchStat = statFilter ? u.statut === statFilter : true;
-    return matchSearch && matchRole && matchStat;
+    return matchSearch && matchRole;
   });
 
   return (
@@ -384,15 +382,6 @@ export default function GestionUtilisateurs() {
             <option value="Admin">Admin</option>
             <option value="Utilisateur">Utilisateur</option>
           </select>
-          <select
-            className="flt-select"
-            value={statFilter}
-            onChange={(e) => setStatFilter(e.target.value)}
-          >
-            <option value="">Statut ▾</option>
-            <option value="Actif">Actif</option>
-            <option value="Inactif">Inactif</option>
-          </select>
           <span
             style={{
               marginLeft: "auto",
@@ -414,7 +403,6 @@ export default function GestionUtilisateurs() {
                 <th>Nom</th>
                 <th>Email</th>
                 <th>Rôle</th>
-                <th>Statut</th>
                 <th>Inscription</th>
                 <th>Réservations</th>
                 <th>Actions</th>
@@ -432,9 +420,6 @@ export default function GestionUtilisateurs() {
                   </td>
                   <td>
                     <BadgeRole role={u.role} />
-                  </td>
-                  <td>
-                    <BadgeStatut statut={u.statut} />
                   </td>
                   <td style={{ color: "var(--muted)", fontSize: "0.8rem" }}>
                     {u.inscription}
