@@ -23,9 +23,26 @@ class Room extends BaseModel {
       params.push(Number(filters.capacite_min));
     }
 
+    if (filters.capacite_max) {
+      where.push('s.capacite <= ?');
+      params.push(Number(filters.capacite_max));
+    }
+
     if (filters.type_id) {
       where.push('s.type_id = ?');
       params.push(Number(filters.type_id));
+    }
+
+    if (filters.equipement_id) {
+      where.push(`
+        EXISTS (
+          SELECT 1
+          FROM salle_equipements filter_se
+          WHERE filter_se.salle_id = s.id
+          AND filter_se.equipement_id = ?
+        )
+      `);
+      params.push(Number(filters.equipement_id));
     }
 
     const sql = `

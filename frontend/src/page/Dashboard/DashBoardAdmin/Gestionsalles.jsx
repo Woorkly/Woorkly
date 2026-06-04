@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { equipmentService } from "../../../services/equipmentService";
 import { roomService } from "../../../services/roomService";
 import { typeService } from "../../../services/typeService";
 import "./AdminStyle.css";
@@ -193,8 +194,16 @@ const buildRoomForm = (room) => ({
   type_id: toFormValue(room.type_id),
 });
 
+const capacityFilters = {
+  small: { capacite_max: 12 },
+  medium: { capacite_min: 13, capacite_max: 20 },
+  large: { capacite_min: 21 },
+};
+
 export default function GestionSalles() {
   const [search, setSearch] = useState("");
+  const [capacityFilter, setCapacityFilter] = useState("");
+  const [equipmentFilter, setEquipmentFilter] = useState("");
   const [salles, setSalles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -214,6 +223,21 @@ export default function GestionSalles() {
   const [roomTypes, setRoomTypes] = useState([]);
   const [loadingTypes, setLoadingTypes] = useState(true);
   const [typesError, setTypesError] = useState(null);
+  const [equipments, setEquipments] = useState([]);
+  const [loadingEquipments, setLoadingEquipments] = useState(true);
+  const [equipmentsError, setEquipmentsError] = useState(null);
+
+  const getRoomFilters = () => {
+    const filters = {
+      ...(capacityFilters[capacityFilter] || {}),
+    };
+
+    if (equipmentFilter) {
+      filters.equipement_id = equipmentFilter;
+    }
+
+    return filters;
+  };
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -221,7 +245,15 @@ export default function GestionSalles() {
       setError(null);
 
       try {
-        const data = await roomService.getRooms();
+        const filters = {
+          ...(capacityFilters[capacityFilter] || {}),
+        };
+
+        if (equipmentFilter) {
+          filters.equipement_id = equipmentFilter;
+        }
+
+        const data = await roomService.getRooms(filters);
         setSalles(Array.isArray(data) ? data : []);
       } catch (err) {
         setError(err.message || "Erreur lors du chargement des salles");
@@ -231,7 +263,7 @@ export default function GestionSalles() {
     };
 
     fetchRooms();
-  }, []);
+  }, [capacityFilter, equipmentFilter]);
 
   useEffect(() => {
     const fetchTypes = async () => {
@@ -251,12 +283,30 @@ export default function GestionSalles() {
     fetchTypes();
   }, []);
 
+  useEffect(() => {
+    const fetchEquipments = async () => {
+      setLoadingEquipments(true);
+      setEquipmentsError(null);
+
+      try {
+        const data = await equipmentService.getEquipments();
+        setEquipments(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setEquipmentsError(err.message || "Erreur lors du chargement des equipements");
+      } finally {
+        setLoadingEquipments(false);
+      }
+    };
+
+    fetchEquipments();
+  }, []);
+
   const refreshRooms = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const data = await roomService.getRooms();
+      const data = await roomService.getRooms(getRoomFilters());
       setSalles(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err.message || "Erreur lors du chargement des salles");
@@ -446,22 +496,53 @@ export default function GestionSalles() {
             />
           </div>
           <span className="flt-label">Filtres :</span>
-          <select className="flt-select">
-            <option>Capacité ▾</option>
-            <option>≤ 12</option>
-            <option>13–20</option>
-            <option>&gt; 20</option>
+          <select
+            className="flt-select"
+            value={capacityFilter}
+            onChange={(event) => setCapacityFilter(event.target.value)}
+          >
+            <option value="">Capacite</option>
+            <option value="small">12 ou moins</option>
+            <option value="medium">13 a 20</option>
+            <option value="large">Plus de 20</option>
           </select>
-          <select className="flt-select">
-            <option>Équipements ▾</option>
-            <option>Projector</option>
-            <option>Screen</option>
-            <option>Whiteboard</option>
+          <select
+            className="flt-select"
+            value={equipmentFilter}
+            onChange={(event) => setEquipmentFilter(event.target.value)}
+            disabled={loadingEquipments}
+          >
+            <option value="">
+              {loadingEquipments ? "Chargement..." : "Equipements"}
+            </option>
+            {equipments.map((equipment) => (
+              <option key={equipment.id} value={equipment.id}>
+                {equipment.nom}
+              </option>
+            ))}
           </select>
+          {(capacityFilter || equipmentFilter) && (
+            <button
+              className="flt-clear"
+              type="button"
+              onClick={() => {
+                setCapacityFilter("");
+                setEquipmentFilter("");
+              }}
+            >
+              Reinitialiser
+            </button>
+          )}
           <select className="flt-select" style={{ marginLeft: "auto" }}>
             <option>Ainas delive ▾</option>
           </select>
         </div>
+
+        {equipmentsError && (
+          <p className="room-form-error">
+            {equipmentsError}
+          </p>
+        )}
 
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
           <div className="table-scroll">
