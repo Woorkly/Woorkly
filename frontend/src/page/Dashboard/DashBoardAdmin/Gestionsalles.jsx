@@ -208,6 +208,8 @@ export default function GestionSalles() {
   const [savingEditRoom, setSavingEditRoom] = useState(false);
   const [editFormError, setEditFormError] = useState(null);
   const [roomToDelete, setRoomToDelete] = useState(null);
+  const [deletingRoom, setDeletingRoom] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -301,11 +303,14 @@ export default function GestionSalles() {
   };
 
   const openDeleteConfirm = (room) => {
+    setDeleteError(null);
     setRoomToDelete(room);
   };
 
   const closeDeleteConfirm = () => {
+    if (deletingRoom) return;
     setRoomToDelete(null);
+    setDeleteError(null);
   };
 
   const handleCreateRoom = async (event) => {
@@ -365,6 +370,23 @@ export default function GestionSalles() {
       setEditFormError(err.response?.data?.message || err.message || "Erreur lors de la modification de la salle");
     } finally {
       setSavingEditRoom(false);
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    if (!roomToDelete) return;
+
+    setDeletingRoom(true);
+    setDeleteError(null);
+
+    try {
+      await roomService.deleteRoom(roomToDelete.id);
+      setRoomToDelete(null);
+      await refreshRooms();
+    } catch (err) {
+      setDeleteError(err.response?.data?.message || err.message || "Erreur lors de la suppression de la salle");
+    } finally {
+      setDeletingRoom(false);
     }
   };
 
@@ -894,7 +916,7 @@ export default function GestionSalles() {
 
             <div>
               <h3 className="ud-name">Supprimer une salle</h3>
-              <p className="ud-email">Confirme la salle avant de brancher la suppression au backend.</p>
+              <p className="ud-email">Cette action supprimera vraiment la salle.</p>
             </div>
 
             <div className="room-delete-box">
@@ -903,12 +925,18 @@ export default function GestionSalles() {
               <p>{getLocation(roomToDelete)}</p>
             </div>
 
+            {deleteError && (
+              <p className="room-form-error">
+                {deleteError}
+              </p>
+            )}
+
             <div className="room-form-actions">
-              <button className="ud-btn-ghost" type="button" onClick={closeDeleteConfirm}>
+              <button className="ud-btn-ghost" type="button" onClick={closeDeleteConfirm} disabled={deletingRoom}>
                 Annuler
               </button>
-              <button className="ud-btn-danger" type="button" disabled>
-                Supprimer bientot
+              <button className="ud-btn-danger" type="button" onClick={handleDeleteRoom} disabled={deletingRoom}>
+                {deletingRoom ? "Suppression..." : "Supprimer"}
               </button>
             </div>
           </div>

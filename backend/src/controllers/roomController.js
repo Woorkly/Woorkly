@@ -108,10 +108,27 @@ const updateRoom = async (req, res) => {
     }
 };
 
+const deleteRoom = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleted = await Room.delete(id);
+
+        if (!deleted) {
+            return res.status(404).json({ message: "Salle introuvable" });
+        }
+
+        res.status(200).json({ message: "Salle supprimee avec succes" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur lors de la suppression de la salle" });
+    }
+};
+
 module.exports = {
     getAllRooms,
     getAvailableRooms,
     getRoomDetails,
     createRoom,
-    updateRoom
+    updateRoom,
+    deleteRoom
 };
