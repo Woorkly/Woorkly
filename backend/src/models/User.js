@@ -67,8 +67,16 @@ class User extends BaseModel {
     const connection = await super.getConnection();
     try {
       const entries = Object.entries(fields);
-      const set = entries.map(([col]) => `${col} = ?`).join(', ');
-      const params = [...entries.map(([, val]) => val), id];
+      const processedEntries = await Promise.all(
+        entries.map(async ([col, val]) => {
+          if (col === 'password' && val) {
+            return [col, await bcrypt.hash(val, 10)];
+          }
+          return [col, val];
+        })
+      );
+      const set = processedEntries.map(([col]) => `${col} = ?`).join(', ');
+      const params = [...processedEntries.map(([, val]) => val), id];
       const [result] = await connection.execute(
         `UPDATE utilisateurs SET ${set} WHERE id = ?`,
         params

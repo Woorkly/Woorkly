@@ -30,4 +30,9 @@ const getUserReservations = async (id) => {
   return res.data
 }
 
-export default { register, getAllUsers, updateUserRole, deleteUser, getUserReservations }
+const updateMyProfile = async (id, data) => {
+  const res = await API.patch(`/users/${id}`, data)
+  return res.data
+}
+
+export default { register, getAllUsers, updateUserRole, deleteUser, getUserReservations, updateMyProfile }

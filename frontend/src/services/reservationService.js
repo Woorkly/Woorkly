@@ -5,4 +5,19 @@ const createReservation = async (reservationData) => {
   return res.data
 }
 
-export default { createReservation }
+const getMyUpcoming = async () => {
+  const res = await API.get('/reservations/me/upcoming')
+  return res.data
+}
+
+const getMyHistory = async () => {
+  const res = await API.get('/reservations/me/history')
+  return res.data
+}
+
+const getMyStats = async () => {
+  const res = await API.get('/reservations/me/stats')
+  return res.data
+}
+
+export default { createReservation, getMyUpcoming, getMyHistory, getMyStats }

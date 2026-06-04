@@ -43,11 +43,21 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const refreshUser = async () => {
+    try {
+      const userData = await authService.me()
+      setUser(userData)
+    } catch (err) {
+      console.error('Erreur refresh user:', err)
+    }
+  }
+
   const value = {
     user,
     loading,
     login,
     logout,
+    refreshUser,
     isAuthenticated: !!user
   }
 

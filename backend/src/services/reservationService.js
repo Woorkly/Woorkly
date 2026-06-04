@@ -110,6 +110,64 @@ const createReservation = async (data, userId) => {
 };
 
 
+const VALID_STATUTS = ['en-attente', 'confirmee', 'annulee', 'terminee', 'abandonne'];
+
+// Agrège toutes les stats du dashboard utilisateur en un seul appel
+const getDashboardStats = async (userId) => {
+    const now = new Date();
+    const year  = now.getFullYear();
+    const month = now.getMonth() + 1;
+
+    const [monthly, typeUsage, heures_ce_mois, taux_presence] = await Promise.all([
+        Reservation.getMonthlyStats(userId, year),
+        Reservation.getTypeUsage(userId),
+        Reservation.getMonthlyHours(userId, month, year),
+        Reservation.getPresenceRate(userId),
+    ]);
+
+    return {
+        kpis: {
+            heures_ce_mois: Math.round(heures_ce_mois * 10) / 10,
+            taux_presence,
+        },
+        monthly,
+        type_usage: typeUsage,
+    };
+};
+
+// Réservations à venir de l'utilisateur (auto-mise à jour des statuts expirés avant)
+const getUpcomingReservations = async (userId) => {
+    await Reservation.autoUpdateExpiredStatuses();
+    return Reservation.getUpcoming(userId);
+};
+
+// Historique des réservations de l'utilisateur
+const getHistoryReservations = async (userId) => {
+    await Reservation.autoUpdateExpiredStatuses();
+    return Reservation.getHistory(userId);
+};
+
+// Met à jour le statut d'une réservation (admin uniquement)
+const updateReservationStatut = async (reservationId, statut, isAdmin) => {
+    if (!VALID_STATUTS.includes(statut)) {
+        throw createHttpError(`Statut invalide: ${statut}`, 400);
+    }
+
+    const reservation = await Reservation.getById(reservationId);
+    if (!reservation) {
+        throw createHttpError('Réservation introuvable', 404);
+    }
+
+    if (!isAdmin) {
+        throw createHttpError('Accès refusé — modification de statut réservée aux administrateurs', 403);
+    }
+
+    const updated = await Reservation.updateStatut(reservationId, statut);
+    if (!updated) {
+        throw createHttpError('Erreur lors de la mise à jour du statut', 500);
+    }
+};
+
 // Annule une réservation
 const cancelReservation = async (reservationId, userId, isAdmin = false) => {
     const reservation = await Reservation.getById(reservationId);
@@ -141,7 +199,11 @@ module.exports = {
     getUserReservations,
     getAllReservations,
     getReservationById,
+    getUpcomingReservations,
+    getHistoryReservations,
+    getDashboardStats,
     createReservation,
     cancelReservation,
+    updateReservationStatut,
     calculatePrice
 };

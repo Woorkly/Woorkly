@@ -52,11 +52,33 @@ const updateUser = async (req, res) => {
     }
 };
 
-// modification partielle d'un utilisateur (ex: rôle uniquement)
+// modification partielle d'un utilisateur (ex: rôle uniquement, ou profil personnel)
 const patchUser = async (req, res) => {
     try {
         const { id } = req.params;
         await User.patch(id, req.body);
+
+        // Re-émettre le JWT si des champs de profil changent (nom/email)
+        if (req.body.nom !== undefined || req.body.email !== undefined) {
+            const updatedUser = await User.findById(id);
+            if (updatedUser) {
+                const authService = require('../services/authService');
+                const token = authService.generateToken(updatedUser);
+                const isProduction = process.env.NODE_ENV === 'production';
+                res.cookie('token', token, {
+                    httpOnly: true,
+                    secure: isProduction,
+                    sameSite: isProduction ? 'none' : 'strict',
+                    maxAge: 7 * 24 * 60 * 60 * 1000,
+                    path: '/',
+                });
+                return res.status(200).json({
+                    message: "Utilisateur mis à jour avec succès",
+                    user: { userId: updatedUser.id, nom: updatedUser.nom, email: updatedUser.email, role: updatedUser.role },
+                });
+            }
+        }
+
         res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
     } catch (error) {
         console.error(error);
