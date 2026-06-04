@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { roomService } from "../../../services/roomService";
+import { typeService } from "../../../services/typeService";
 import "./AdminStyle.css";
 
 // Icônes SVG par type de salle
@@ -210,6 +211,9 @@ export default function GestionSalles() {
   const [roomToDelete, setRoomToDelete] = useState(null);
   const [deletingRoom, setDeletingRoom] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
+  const [roomTypes, setRoomTypes] = useState([]);
+  const [loadingTypes, setLoadingTypes] = useState(true);
+  const [typesError, setTypesError] = useState(null);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -227,6 +231,24 @@ export default function GestionSalles() {
     };
 
     fetchRooms();
+  }, []);
+
+  useEffect(() => {
+    const fetchTypes = async () => {
+      setLoadingTypes(true);
+      setTypesError(null);
+
+      try {
+        const data = await typeService.getTypes();
+        setRoomTypes(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setTypesError(err.message || "Erreur lors du chargement des types");
+      } finally {
+        setLoadingTypes(false);
+      }
+    };
+
+    fetchTypes();
   }, []);
 
   const refreshRooms = async () => {
@@ -652,15 +674,22 @@ export default function GestionSalles() {
               </label>
 
               <label>
-                Type ID
-                <input
+                Type de salle
+                <select
                   required
-                  type="number"
-                  min="1"
                   value={roomForm.type_id}
                   onChange={(event) => updateRoomForm("type_id", event.target.value)}
-                  placeholder="2"
-                />
+                  disabled={loadingTypes}
+                >
+                  <option value="">
+                    {loadingTypes ? "Chargement des types..." : "Choisir un type"}
+                  </option>
+                  {roomTypes.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.nom}
+                    </option>
+                  ))}
+                </select>
               </label>
 
               <label className="room-form-wide">
@@ -685,6 +714,12 @@ export default function GestionSalles() {
               {formError && (
                 <p className="room-form-error">
                   {formError}
+                </p>
+              )}
+
+              {typesError && (
+                <p className="room-form-error">
+                  {typesError}
                 </p>
               )}
 
@@ -846,14 +881,22 @@ export default function GestionSalles() {
                   </label>
 
                   <label>
-                    Type ID
-                    <input
+                    Type de salle
+                    <select
                       required
-                      type="number"
-                      min="1"
                       value={editRoomForm.type_id}
                       onChange={(event) => updateEditRoomForm("type_id", event.target.value)}
-                    />
+                      disabled={loadingTypes}
+                    >
+                      <option value="">
+                        {loadingTypes ? "Chargement des types..." : "Choisir un type"}
+                      </option>
+                      {roomTypes.map((type) => (
+                        <option key={type.id} value={type.id}>
+                          {type.nom}
+                        </option>
+                      ))}
+                    </select>
                   </label>
 
                   <label className="room-form-wide">
@@ -876,6 +919,12 @@ export default function GestionSalles() {
                   {editFormError && (
                     <p className="room-form-error">
                       {editFormError}
+                    </p>
+                  )}
+
+                  {typesError && (
+                    <p className="room-form-error">
+                      {typesError}
                     </p>
                   )}
 
