@@ -18,12 +18,20 @@ const MONTH_LABELS = [
 const formatMonth = (monthNumber) => MONTH_LABELS[monthNumber - 1] || String(monthNumber);
 
 const getAdminDashboardStats = async () => {
-  const [kpiRows, monthlyRows, typeRows, recentRows] = await Promise.all([
+  const [
+    totalSallesRows,
+    reservationsTodayRows,
+    totalUtilisateursRows,
+    occupationRows,
+    monthlyRows,
+    typeRows,
+    recentRows,
+  ] = await Promise.all([
+    db.execute('SELECT COUNT(*) AS total_salles FROM salles'),
+    db.execute("SELECT COUNT(*) AS reservations_today FROM reservations WHERE date = CURDATE() AND statut <> 'annulee'"),
+    db.execute('SELECT COUNT(*) AS total_utilisateurs FROM utilisateurs'),
     db.execute(`
       SELECT
-        (SELECT COUNT(*) FROM salles) AS total_salles,
-        (SELECT COUNT(*) FROM reservations WHERE date = CURDATE() AND statut <> 'annulee') AS reservations_today,
-        (SELECT COUNT(*) FROM utilisateurs) AS total_utilisateurs,
         COALESCE(
           ROUND(
             (
@@ -76,7 +84,10 @@ const getAdminDashboardStats = async () => {
     `),
   ]);
 
-  const [kpiResult] = kpiRows;
+  const [totalSallesResult] = totalSallesRows;
+  const [reservationsTodayResult] = reservationsTodayRows;
+  const [totalUtilisateursResult] = totalUtilisateursRows;
+  const [occupationResult] = occupationRows;
   const [monthlyResult] = monthlyRows;
   const [typeResult] = typeRows;
   const [recentResult] = recentRows;
@@ -105,10 +116,10 @@ const getAdminDashboardStats = async () => {
 
   return {
     kpis: {
-      total_salles: Number(kpiResult?.total_salles || 0),
-      reservations_today: Number(kpiResult?.reservations_today || 0),
-      total_utilisateurs: Number(kpiResult?.total_utilisateurs || 0),
-      taux_occupation: Number(kpiResult?.taux_occupation || 0),
+      total_salles: Number(totalSallesResult?.total_salles || 0),
+      reservations_today: Number(reservationsTodayResult?.reservations_today || 0),
+      total_utilisateurs: Number(totalUtilisateursResult?.total_utilisateurs || 0),
+      taux_occupation: Number(occupationResult?.taux_occupation || 0),
     },
     monthly_trends,
     type_usage,
