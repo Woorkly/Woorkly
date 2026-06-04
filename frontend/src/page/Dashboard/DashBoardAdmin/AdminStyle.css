@@ -416,6 +416,22 @@ body { font-family: var(--font); }
   cursor: pointer;
 }
 
+.flt-clear {
+  padding: 0.38rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font: 500 0.8rem/1 var(--font);
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.flt-clear:hover {
+  background: #f1f5f9;
+  color: var(--text);
+}
+
 /* ══════════════════════════════════════
    ROOM THUMBNAIL (Gestion Salles)
 ══════════════════════════════════════ */
@@ -629,6 +645,13 @@ body { font-family: var(--font); }
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.room-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
 }
 
 .dash-main {
@@ -989,6 +1012,187 @@ body { font-family: var(--font); }
   overflow-y: auto;
 }
 
+.room-form-panel {
+  max-width: 760px;
+}
+
+.room-detail-panel {
+  max-width: 680px;
+}
+
+.room-delete-panel {
+  max-width: 460px;
+}
+
+.room-delete-box {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.room-delete-box strong {
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.room-delete-box p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.room-detail-admin-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.room-detail-admin-thumb {
+  width: 96px;
+  height: 72px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #f0f6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.room-detail-admin-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.room-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.room-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.room-form input,
+.room-form select,
+.room-form textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 0.52rem 0.7rem;
+  font: 400 0.82rem/1.4 var(--font);
+  color: var(--text);
+  background: var(--card);
+  outline: none;
+}
+
+.room-form textarea {
+  resize: vertical;
+}
+
+.room-form input:focus,
+.room-form select:focus,
+.room-form textarea:focus {
+  border-color: var(--primary);
+}
+
+.room-equipment-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.room-equipment-field > span {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.room-equipment-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #f8fafc;
+}
+
+.room-equipment-choice {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.45rem !important;
+  color: var(--text) !important;
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+}
+
+.room-equipment-choice input {
+  width: auto;
+  accent-color: var(--primary);
+}
+
+.room-equipment-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.room-equipment-preset {
+  border: 1px solid #bfdbfe;
+  border-radius: 20px;
+  background: #eff6ff;
+  color: var(--primary);
+  padding: 0.28rem 0.65rem;
+  font: 600 0.75rem/1 var(--font);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.room-equipment-preset:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.room-equipment-create {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+}
+
+.room-form-wide,
+.room-form-error,
+.room-form-actions {
+  grid-column: 1 / -1;
+}
+
+.room-form-error {
+  margin: 0;
+  color: var(--red);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.room-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--border);
+}
+
 .ud-close {
   position: absolute;
   top: 1rem;
@@ -1084,3 +1288,25 @@ body { font-family: var(--font); }
   margin-left: auto;
 }
 .ud-btn-ghost:hover { background: #f1f5f9; color: var(--text); }
+
+@media (max-width: 640px) {
+  .room-form {
+    grid-template-columns: 1fr;
+  }
+
+  .room-equipment-list {
+    grid-template-columns: 1fr;
+  }
+
+  .room-equipment-create {
+    grid-template-columns: 1fr;
+  }
+
+  .room-form-actions {
+    justify-content: stretch;
+  }
+
+  .room-form-actions button {
+    flex: 1;
+  }
+}

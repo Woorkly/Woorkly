@@ -18,4 +18,8 @@ router.get('/:id', roomController.getRoomDetails);
 // URL : POST http://localhost:3000/api/rooms/
 router.post('/', roomController.createRoom);
 
+router.put('/:id', roomController.updateRoom);
+
+router.delete('/:id', roomController.deleteRoom);
+
 module.exports = router;

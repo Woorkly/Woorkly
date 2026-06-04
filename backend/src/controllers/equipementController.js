@@ -35,10 +35,23 @@ const getEquipementDetails = async (req, res) => {
 // créée un nouvel equipement
 const createEquipement = async (req, res) => {
   try {
-    const equipementId = await Equipements.create(req.body);
+    const nom = req.body.nom?.trim();
+
+    if (!nom) {
+      return res.status(400).json({ message: "Le nom de l'equipement est obligatoire" });
+    }
+
+    const existingEquipement = await Equipements.findByName(nom);
+    if (existingEquipement) {
+      return res
+        .status(200)
+        .json({ id: existingEquipement.id, nom: existingEquipement.nom, message: "Equipement deja existant" });
+    }
+
+    const equipementId = await Equipements.create({ nom });
     res
       .status(201)
-      .json({ id: equipementId, message: "Equipement créé avec succès" });
+      .json({ id: equipementId, nom, message: "Equipement cree avec succes" });
   } catch (error) {
     console.error(error);
     res
