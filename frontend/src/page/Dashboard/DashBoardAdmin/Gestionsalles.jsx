@@ -133,7 +133,11 @@ function Badge({ s }) {
     "hors-service": "Hors service",
   };
 
-  return <span className={`badge ${m[s] || ""}`}>{labels[s] || s || "Non renseigne"}</span>;
+  return (
+    <span className={`badge ${m[s] || ""}`}>
+      {labels[s] || s || "Non renseigne"}
+    </span>
+  );
 }
 
 const initialRoomForm = {
@@ -177,7 +181,8 @@ const buildRoomPayload = (form) => ({
   equipement_ids: form.equipement_ids.map((id) => Number(id)),
 });
 
-const toFormValue = (value) => (value === null || value === undefined ? "" : String(value));
+const toFormValue = (value) =>
+  value === null || value === undefined ? "" : String(value);
 
 const buildRoomForm = (room) => ({
   nom: toFormValue(room.nom),
@@ -194,7 +199,9 @@ const buildRoomForm = (room) => ({
   prix_journee: toFormValue(room.prix_journee),
   image_principale: toFormValue(room.image_principale),
   type_id: toFormValue(room.type_id),
-  equipement_ids: Array.isArray(room.equipement_ids) ? room.equipement_ids.map(String) : [],
+  equipement_ids: Array.isArray(room.equipement_ids)
+    ? room.equipement_ids.map(String)
+    : [],
 });
 
 const capacityFilters = {
@@ -307,7 +314,9 @@ export default function GestionSalles() {
         const data = await equipmentService.getEquipments();
         setEquipments(Array.isArray(data) ? data : []);
       } catch (err) {
-        setEquipmentsError(err.message || "Erreur lors du chargement des equipements");
+        setEquipmentsError(
+          err.message || "Erreur lors du chargement des equipements",
+        );
       } finally {
         setLoadingEquipments(false);
       }
@@ -332,9 +341,11 @@ export default function GestionSalles() {
 
   const normalizeEquipmentName = (name) => name.trim().toLowerCase();
 
-  const findEquipmentByName = (name) => (
-    equipments.find((equipment) => normalizeEquipmentName(equipment.nom) === normalizeEquipmentName(name))
-  );
+  const findEquipmentByName = (name) =>
+    equipments.find(
+      (equipment) =>
+        normalizeEquipmentName(equipment.nom) === normalizeEquipmentName(name),
+    );
 
   const selectEquipmentInForm = (equipmentId, target) => {
     if (!equipmentId) return;
@@ -369,18 +380,25 @@ export default function GestionSalles() {
     setAddingEquipment(true);
 
     try {
-      const createdEquipment = await equipmentService.createEquipment(cleanName);
+      const createdEquipment =
+        await equipmentService.createEquipment(cleanName);
       const data = await equipmentService.getEquipments();
       const nextEquipments = Array.isArray(data) ? data : [];
       const freshEquipment = nextEquipments.find(
-        (equipment) => normalizeEquipmentName(equipment.nom) === normalizeEquipmentName(cleanName),
+        (equipment) =>
+          normalizeEquipmentName(equipment.nom) ===
+          normalizeEquipmentName(cleanName),
       );
 
       setEquipments(nextEquipments);
       selectEquipmentInForm(createdEquipment.id || freshEquipment?.id, target);
       setNewEquipmentName("");
     } catch (err) {
-      setEquipmentCreateError(err.response?.data?.message || err.message || "Erreur lors de la creation de l'equipement");
+      setEquipmentCreateError(
+        err.response?.data?.message ||
+          err.message ||
+          "Erreur lors de la creation de l'equipement",
+      );
     } finally {
       setAddingEquipment(false);
     }
@@ -398,7 +416,8 @@ export default function GestionSalles() {
   };
 
   const getLocation = (room) =>
-    [room.adresse, room.code_postal, room.ville].filter(Boolean).join(", ") || "Non renseigne";
+    [room.adresse, room.code_postal, room.ville].filter(Boolean).join(", ") ||
+    "Non renseigne";
 
   const openCreateForm = () => {
     setRoomForm(initialRoomForm);
@@ -444,7 +463,11 @@ export default function GestionSalles() {
       setSelectedRoom(data);
       setEditRoomForm(buildRoomForm(data));
     } catch (err) {
-      setDetailError(err.response?.data?.message || err.message || "Erreur lors du chargement de la salle");
+      setDetailError(
+        err.response?.data?.message ||
+          err.message ||
+          "Erreur lors du chargement de la salle",
+      );
     } finally {
       setLoadingRoom(false);
     }
@@ -512,7 +535,11 @@ export default function GestionSalles() {
       setRoomForm(initialRoomForm);
       await refreshRooms();
     } catch (err) {
-      setFormError(err.response?.data?.message || err.message || "Erreur lors de la creation de la salle");
+      setFormError(
+        err.response?.data?.message ||
+          err.message ||
+          "Erreur lors de la creation de la salle",
+      );
     } finally {
       setSavingRoom(false);
     }
@@ -544,7 +571,11 @@ export default function GestionSalles() {
       setEditRoomForm(buildRoomForm(updatedRoom));
       await refreshRooms();
     } catch (err) {
-      setEditFormError(err.response?.data?.message || err.message || "Erreur lors de la modification de la salle");
+      setEditFormError(
+        err.response?.data?.message ||
+          err.message ||
+          "Erreur lors de la modification de la salle",
+      );
     } finally {
       setSavingEditRoom(false);
     }
@@ -561,7 +592,11 @@ export default function GestionSalles() {
       setRoomToDelete(null);
       await refreshRooms();
     } catch (err) {
-      setDeleteError(err.response?.data?.message || err.message || "Erreur lors de la suppression de la salle");
+      setDeleteError(
+        err.response?.data?.message ||
+          err.message ||
+          "Erreur lors de la suppression de la salle",
+      );
     } finally {
       setDeletingRoom(false);
     }
@@ -573,7 +608,11 @@ export default function GestionSalles() {
       <div className="page-body">
         <div className="page-header">
           <h2 className="page-title">Gestion Salles</h2>
-          <button className="btn-primary" type="button" onClick={openCreateForm}>
+          <button
+            className="btn-primary"
+            type="button"
+            onClick={openCreateForm}
+          >
             + Ajouter une salle
           </button>
         </div>
@@ -644,9 +683,7 @@ export default function GestionSalles() {
         </div>
 
         {equipmentsError && (
-          <p className="room-form-error">
-            {equipmentsError}
-          </p>
+          <p className="room-form-error">{equipmentsError}</p>
         )}
 
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
@@ -666,7 +703,10 @@ export default function GestionSalles() {
               <tbody>
                 {loading && (
                   <tr>
-                    <td colSpan="7" style={{ textAlign: "center", padding: 24 }}>
+                    <td
+                      colSpan="7"
+                      style={{ textAlign: "center", padding: 24 }}
+                    >
                       Chargement des salles...
                     </td>
                   </tr>
@@ -674,7 +714,14 @@ export default function GestionSalles() {
 
                 {!loading && error && (
                   <tr>
-                    <td colSpan="7" style={{ textAlign: "center", padding: 24, color: "var(--red)" }}>
+                    <td
+                      colSpan="7"
+                      style={{
+                        textAlign: "center",
+                        padding: 24,
+                        color: "var(--red)",
+                      }}
+                    >
                       {error}
                     </td>
                   </tr>
@@ -682,46 +729,61 @@ export default function GestionSalles() {
 
                 {!loading && !error && filtered.length === 0 && (
                   <tr>
-                    <td colSpan="7" style={{ textAlign: "center", padding: 24 }}>
+                    <td
+                      colSpan="7"
+                      style={{ textAlign: "center", padding: 24 }}
+                    >
                       Aucune salle trouvee.
                     </td>
                   </tr>
                 )}
 
-                {!loading && !error && filtered.map((s) => {
-                  const imageSrc = getRoomImageSrc(s.image_principale);
+                {!loading &&
+                  !error &&
+                  filtered.map((s) => {
+                    const imageSrc = getRoomImageSrc(s.image_principale);
 
-                  return (
-                    <tr key={s.id}>
-                      <td>
-                        <div className="room-thumb">
-                          {imageSrc ? (
-                            <img src={imageSrc} alt={s.nom} />
-                          ) : (
-                            icons.boardroom
-                          )}
-                        </div>
-                      </td>
-                      <td style={{ fontWeight: 500 }}>{s.nom}</td>
-                      <td>{s.capacite || "Non renseigne"}</td>
-                      <td>{getLocation(s)}</td>
-                      <td style={{ fontSize: "0.79rem", color: "var(--muted)" }}>
-                        {s.equipements || "Non renseigne"}
-                      </td>
-                      <td>
-                        <Badge s={s.statut} />
-                      </td>
-                      <td>
-                        <button className="act-btn act-edit" type="button" onClick={() => openRoomDetails(s.id)}>
-                          <IconEdit />
-                        </button>
-                        <button className="act-btn act-del" type="button" onClick={() => openDeleteConfirm(s)}>
-                          <IconTrash />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                    return (
+                      <tr key={s.id}>
+                        <td>
+                          <div className="room-thumb">
+                            {imageSrc ? (
+                              <img src={imageSrc} alt={s.nom} />
+                            ) : (
+                              icons.boardroom
+                            )}
+                          </div>
+                        </td>
+                        <td style={{ fontWeight: 500 }}>{s.nom}</td>
+                        <td>{s.capacite || "Non renseigne"}</td>
+                        <td>{getLocation(s)}</td>
+                        <td
+                          style={{ fontSize: "0.79rem", color: "var(--muted)" }}
+                        >
+                          {s.equipements || "Non renseigne"}
+                        </td>
+                        <td>
+                          <Badge s={s.statut} />
+                        </td>
+                        <td>
+                          <button
+                            className="act-btn act-edit"
+                            type="button"
+                            onClick={() => openRoomDetails(s.id)}
+                          >
+                            <IconEdit />
+                          </button>
+                          <button
+                            className="act-btn act-del"
+                            type="button"
+                            onClick={() => openDeleteConfirm(s)}
+                          >
+                            <IconTrash />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>
@@ -730,14 +792,24 @@ export default function GestionSalles() {
 
       {isCreateOpen && (
         <div className="ud-overlay" onClick={closeCreateForm}>
-          <div className="ud-panel room-form-panel" onClick={(event) => event.stopPropagation()}>
-            <button className="ud-close" type="button" onClick={closeCreateForm} disabled={savingRoom}>
+          <div
+            className="ud-panel room-form-panel"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              className="ud-close"
+              type="button"
+              onClick={closeCreateForm}
+              disabled={savingRoom}
+            >
               x
             </button>
 
             <div>
               <h3 className="ud-name">Ajouter une salle</h3>
-              <p className="ud-email">Prepare les informations de la salle avant enregistrement.</p>
+              <p className="ud-email">
+                Prepare les informations de la salle avant enregistrement.
+              </p>
             </div>
 
             <form className="room-form" onSubmit={handleCreateRoom}>
@@ -746,7 +818,9 @@ export default function GestionSalles() {
                 <input
                   required
                   value={roomForm.nom}
-                  onChange={(event) => updateRoomForm("nom", event.target.value)}
+                  onChange={(event) =>
+                    updateRoomForm("nom", event.target.value)
+                  }
                   placeholder="Nom de la salle"
                 />
               </label>
@@ -755,7 +829,9 @@ export default function GestionSalles() {
                 Statut
                 <select
                   value={roomForm.statut}
-                  onChange={(event) => updateRoomForm("statut", event.target.value)}
+                  onChange={(event) =>
+                    updateRoomForm("statut", event.target.value)
+                  }
                 >
                   <option value="disponible">Disponible</option>
                   <option value="reservee">Reservee</option>
@@ -766,8 +842,11 @@ export default function GestionSalles() {
               <label>
                 Adresse
                 <input
+                  required
                   value={roomForm.adresse}
-                  onChange={(event) => updateRoomForm("adresse", event.target.value)}
+                  onChange={(event) =>
+                    updateRoomForm("adresse", event.target.value)
+                  }
                   placeholder="Adresse"
                 />
               </label>
@@ -776,7 +855,9 @@ export default function GestionSalles() {
                 Code postal
                 <input
                   value={roomForm.code_postal}
-                  onChange={(event) => updateRoomForm("code_postal", event.target.value)}
+                  onChange={(event) =>
+                    updateRoomForm("code_postal", event.target.value)
+                  }
                   placeholder="13001"
                 />
               </label>
@@ -785,7 +866,9 @@ export default function GestionSalles() {
                 Ville
                 <input
                   value={roomForm.ville}
-                  onChange={(event) => updateRoomForm("ville", event.target.value)}
+                  onChange={(event) =>
+                    updateRoomForm("ville", event.target.value)
+                  }
                   placeholder="Marseille"
                 />
               </label>
@@ -796,7 +879,9 @@ export default function GestionSalles() {
                   type="number"
                   min="1"
                   value={roomForm.capacite}
-                  onChange={(event) => updateRoomForm("capacite", event.target.value)}
+                  onChange={(event) =>
+                    updateRoomForm("capacite", event.target.value)
+                  }
                   placeholder="12"
                 />
               </label>
@@ -808,7 +893,9 @@ export default function GestionSalles() {
                   min="0"
                   step="0.01"
                   value={roomForm.prix_heure}
-                  onChange={(event) => updateRoomForm("prix_heure", event.target.value)}
+                  onChange={(event) =>
+                    updateRoomForm("prix_heure", event.target.value)
+                  }
                   placeholder="25.00"
                 />
               </label>
@@ -820,7 +907,9 @@ export default function GestionSalles() {
                   min="0"
                   step="0.01"
                   value={roomForm.prix_demi_journee}
-                  onChange={(event) => updateRoomForm("prix_demi_journee", event.target.value)}
+                  onChange={(event) =>
+                    updateRoomForm("prix_demi_journee", event.target.value)
+                  }
                   placeholder="90.00"
                 />
               </label>
@@ -832,7 +921,9 @@ export default function GestionSalles() {
                   min="0"
                   step="0.01"
                   value={roomForm.prix_journee}
-                  onChange={(event) => updateRoomForm("prix_journee", event.target.value)}
+                  onChange={(event) =>
+                    updateRoomForm("prix_journee", event.target.value)
+                  }
                   placeholder="160.00"
                 />
               </label>
@@ -842,11 +933,15 @@ export default function GestionSalles() {
                 <select
                   required
                   value={roomForm.type_id}
-                  onChange={(event) => updateRoomForm("type_id", event.target.value)}
+                  onChange={(event) =>
+                    updateRoomForm("type_id", event.target.value)
+                  }
                   disabled={loadingTypes}
                 >
                   <option value="">
-                    {loadingTypes ? "Chargement des types..." : "Choisir un type"}
+                    {loadingTypes
+                      ? "Chargement des types..."
+                      : "Choisir un type"}
                   </option>
                   {roomTypes.map((type) => (
                     <option key={type.id} value={type.id}>
@@ -867,27 +962,37 @@ export default function GestionSalles() {
                     <p className="ud-empty">Aucun equipement disponible.</p>
                   )}
 
-                  {!loadingEquipments && equipments.map((equipment) => (
-                    <label key={equipment.id} className="room-equipment-choice">
-                      <input
-                        type="checkbox"
-                        checked={roomForm.equipement_ids.includes(String(equipment.id))}
-                        onChange={() => toggleRoomEquipment(equipment.id)}
-                      />
-                      <span>{equipment.nom}</span>
-                    </label>
-                  ))}
+                  {!loadingEquipments &&
+                    equipments.map((equipment) => (
+                      <label
+                        key={equipment.id}
+                        className="room-equipment-choice"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={roomForm.equipement_ids.includes(
+                            String(equipment.id),
+                          )}
+                          onChange={() => toggleRoomEquipment(equipment.id)}
+                        />
+                        <span>{equipment.nom}</span>
+                      </label>
+                    ))}
                 </div>
 
                 <div className="room-equipment-presets">
                   {predefinedEquipmentNames
-                    .filter((equipmentName) => !findEquipmentByName(equipmentName))
+                    .filter(
+                      (equipmentName) => !findEquipmentByName(equipmentName),
+                    )
                     .map((equipmentName) => (
                       <button
                         key={equipmentName}
                         className="room-equipment-preset"
                         type="button"
-                        onClick={() => handleCreateEquipment(equipmentName, "create")}
+                        onClick={() =>
+                          handleCreateEquipment(equipmentName, "create")
+                        }
                         disabled={addingEquipment}
                       >
                         + {equipmentName}
@@ -898,13 +1003,17 @@ export default function GestionSalles() {
                 <div className="room-equipment-create">
                   <input
                     value={newEquipmentName}
-                    onChange={(event) => setNewEquipmentName(event.target.value)}
+                    onChange={(event) =>
+                      setNewEquipmentName(event.target.value)
+                    }
                     placeholder="Nouvel equipement"
                   />
                   <button
                     className="btn-primary"
                     type="button"
-                    onClick={() => handleCreateEquipment(newEquipmentName, "create")}
+                    onClick={() =>
+                      handleCreateEquipment(newEquipmentName, "create")
+                    }
                     disabled={addingEquipment}
                   >
                     {addingEquipment ? "Ajout..." : "Ajouter"}
@@ -916,7 +1025,9 @@ export default function GestionSalles() {
                 Image principale
                 <input
                   value={roomForm.image_principale}
-                  onChange={(event) => updateRoomForm("image_principale", event.target.value)}
+                  onChange={(event) =>
+                    updateRoomForm("image_principale", event.target.value)
+                  }
                   placeholder="default-room.jpg"
                 />
               </label>
@@ -925,35 +1036,36 @@ export default function GestionSalles() {
                 Description
                 <textarea
                   value={roomForm.description}
-                  onChange={(event) => updateRoomForm("description", event.target.value)}
+                  onChange={(event) =>
+                    updateRoomForm("description", event.target.value)
+                  }
                   placeholder="Description de la salle"
                   rows="4"
                 />
               </label>
 
-              {formError && (
-                <p className="room-form-error">
-                  {formError}
-                </p>
-              )}
+              {formError && <p className="room-form-error">{formError}</p>}
 
-              {typesError && (
-                <p className="room-form-error">
-                  {typesError}
-                </p>
-              )}
+              {typesError && <p className="room-form-error">{typesError}</p>}
 
               {equipmentCreateError && (
-                <p className="room-form-error">
-                  {equipmentCreateError}
-                </p>
+                <p className="room-form-error">{equipmentCreateError}</p>
               )}
 
               <div className="room-form-actions">
-                <button className="ud-btn-ghost" type="button" onClick={closeCreateForm} disabled={savingRoom}>
+                <button
+                  className="ud-btn-ghost"
+                  type="button"
+                  onClick={closeCreateForm}
+                  disabled={savingRoom}
+                >
                   Annuler
                 </button>
-                <button className="btn-primary" type="submit" disabled={savingRoom}>
+                <button
+                  className="btn-primary"
+                  type="submit"
+                  disabled={savingRoom}
+                >
                   {savingRoom ? "Enregistrement..." : "Enregistrer"}
                 </button>
               </div>
@@ -964,8 +1076,16 @@ export default function GestionSalles() {
 
       {(loadingRoom || detailError || selectedRoom) && (
         <div className="ud-overlay" onClick={closeRoomDetails}>
-          <div className="ud-panel room-detail-panel" onClick={(event) => event.stopPropagation()}>
-            <button className="ud-close" type="button" onClick={closeRoomDetails} disabled={savingEditRoom}>
+          <div
+            className="ud-panel room-detail-panel"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              className="ud-close"
+              type="button"
+              onClick={closeRoomDetails}
+              disabled={savingEditRoom}
+            >
               x
             </button>
 
@@ -982,7 +1102,10 @@ export default function GestionSalles() {
                 <div className="room-detail-admin-head">
                   <div className="room-detail-admin-thumb">
                     {getRoomImageSrc(selectedRoom.image_principale) ? (
-                      <img src={getRoomImageSrc(selectedRoom.image_principale)} alt={selectedRoom.nom} />
+                      <img
+                        src={getRoomImageSrc(selectedRoom.image_principale)}
+                        alt={selectedRoom.nom}
+                      />
                     ) : (
                       icons.boardroom
                     )}
@@ -992,7 +1115,11 @@ export default function GestionSalles() {
                     <p className="ud-email">{getLocation(selectedRoom)}</p>
                     <div className="ud-badges">
                       <Badge s={selectedRoom.statut} />
-                      {selectedRoom.type_nom && <span className="badge b-blue">{selectedRoom.type_nom}</span>}
+                      {selectedRoom.type_nom && (
+                        <span className="badge b-blue">
+                          {selectedRoom.type_nom}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1003,7 +1130,9 @@ export default function GestionSalles() {
                     <input
                       required
                       value={editRoomForm.nom}
-                      onChange={(event) => updateEditRoomForm("nom", event.target.value)}
+                      onChange={(event) =>
+                        updateEditRoomForm("nom", event.target.value)
+                      }
                     />
                   </label>
 
@@ -1011,7 +1140,9 @@ export default function GestionSalles() {
                     Statut
                     <select
                       value={editRoomForm.statut}
-                      onChange={(event) => updateEditRoomForm("statut", event.target.value)}
+                      onChange={(event) =>
+                        updateEditRoomForm("statut", event.target.value)
+                      }
                     >
                       <option value="disponible">Disponible</option>
                       <option value="reservee">Reservee</option>
@@ -1023,7 +1154,9 @@ export default function GestionSalles() {
                     Adresse
                     <input
                       value={editRoomForm.adresse}
-                      onChange={(event) => updateEditRoomForm("adresse", event.target.value)}
+                      onChange={(event) =>
+                        updateEditRoomForm("adresse", event.target.value)
+                      }
                     />
                   </label>
 
@@ -1031,7 +1164,9 @@ export default function GestionSalles() {
                     Code postal
                     <input
                       value={editRoomForm.code_postal}
-                      onChange={(event) => updateEditRoomForm("code_postal", event.target.value)}
+                      onChange={(event) =>
+                        updateEditRoomForm("code_postal", event.target.value)
+                      }
                     />
                   </label>
 
@@ -1039,7 +1174,9 @@ export default function GestionSalles() {
                     Ville
                     <input
                       value={editRoomForm.ville}
-                      onChange={(event) => updateEditRoomForm("ville", event.target.value)}
+                      onChange={(event) =>
+                        updateEditRoomForm("ville", event.target.value)
+                      }
                     />
                   </label>
 
@@ -1049,7 +1186,9 @@ export default function GestionSalles() {
                       type="number"
                       min="1"
                       value={editRoomForm.capacite}
-                      onChange={(event) => updateEditRoomForm("capacite", event.target.value)}
+                      onChange={(event) =>
+                        updateEditRoomForm("capacite", event.target.value)
+                      }
                     />
                   </label>
 
@@ -1060,7 +1199,9 @@ export default function GestionSalles() {
                       min="0"
                       step="0.01"
                       value={editRoomForm.prix_heure}
-                      onChange={(event) => updateEditRoomForm("prix_heure", event.target.value)}
+                      onChange={(event) =>
+                        updateEditRoomForm("prix_heure", event.target.value)
+                      }
                     />
                   </label>
 
@@ -1071,7 +1212,12 @@ export default function GestionSalles() {
                       min="0"
                       step="0.01"
                       value={editRoomForm.prix_demi_journee}
-                      onChange={(event) => updateEditRoomForm("prix_demi_journee", event.target.value)}
+                      onChange={(event) =>
+                        updateEditRoomForm(
+                          "prix_demi_journee",
+                          event.target.value,
+                        )
+                      }
                     />
                   </label>
 
@@ -1082,7 +1228,9 @@ export default function GestionSalles() {
                       min="0"
                       step="0.01"
                       value={editRoomForm.prix_journee}
-                      onChange={(event) => updateEditRoomForm("prix_journee", event.target.value)}
+                      onChange={(event) =>
+                        updateEditRoomForm("prix_journee", event.target.value)
+                      }
                     />
                   </label>
 
@@ -1091,11 +1239,15 @@ export default function GestionSalles() {
                     <select
                       required
                       value={editRoomForm.type_id}
-                      onChange={(event) => updateEditRoomForm("type_id", event.target.value)}
+                      onChange={(event) =>
+                        updateEditRoomForm("type_id", event.target.value)
+                      }
                       disabled={loadingTypes}
                     >
                       <option value="">
-                        {loadingTypes ? "Chargement des types..." : "Choisir un type"}
+                        {loadingTypes
+                          ? "Chargement des types..."
+                          : "Choisir un type"}
                       </option>
                       {roomTypes.map((type) => (
                         <option key={type.id} value={type.id}>
@@ -1109,34 +1261,49 @@ export default function GestionSalles() {
                     <span>Equipements</span>
                     <div className="room-equipment-list">
                       {loadingEquipments && (
-                        <p className="ud-empty">Chargement des equipements...</p>
+                        <p className="ud-empty">
+                          Chargement des equipements...
+                        </p>
                       )}
 
                       {!loadingEquipments && equipments.length === 0 && (
                         <p className="ud-empty">Aucun equipement disponible.</p>
                       )}
 
-                      {!loadingEquipments && equipments.map((equipment) => (
-                        <label key={equipment.id} className="room-equipment-choice">
-                          <input
-                            type="checkbox"
-                            checked={editRoomForm.equipement_ids.includes(String(equipment.id))}
-                            onChange={() => toggleEditRoomEquipment(equipment.id)}
-                          />
-                          <span>{equipment.nom}</span>
-                        </label>
-                      ))}
+                      {!loadingEquipments &&
+                        equipments.map((equipment) => (
+                          <label
+                            key={equipment.id}
+                            className="room-equipment-choice"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={editRoomForm.equipement_ids.includes(
+                                String(equipment.id),
+                              )}
+                              onChange={() =>
+                                toggleEditRoomEquipment(equipment.id)
+                              }
+                            />
+                            <span>{equipment.nom}</span>
+                          </label>
+                        ))}
                     </div>
 
                     <div className="room-equipment-presets">
                       {predefinedEquipmentNames
-                        .filter((equipmentName) => !findEquipmentByName(equipmentName))
+                        .filter(
+                          (equipmentName) =>
+                            !findEquipmentByName(equipmentName),
+                        )
                         .map((equipmentName) => (
                           <button
                             key={equipmentName}
                             className="room-equipment-preset"
                             type="button"
-                            onClick={() => handleCreateEquipment(equipmentName, "edit")}
+                            onClick={() =>
+                              handleCreateEquipment(equipmentName, "edit")
+                            }
                             disabled={addingEquipment}
                           >
                             + {equipmentName}
@@ -1147,13 +1314,17 @@ export default function GestionSalles() {
                     <div className="room-equipment-create">
                       <input
                         value={newEquipmentName}
-                        onChange={(event) => setNewEquipmentName(event.target.value)}
+                        onChange={(event) =>
+                          setNewEquipmentName(event.target.value)
+                        }
                         placeholder="Nouvel equipement"
                       />
                       <button
                         className="btn-primary"
                         type="button"
-                        onClick={() => handleCreateEquipment(newEquipmentName, "edit")}
+                        onClick={() =>
+                          handleCreateEquipment(newEquipmentName, "edit")
+                        }
                         disabled={addingEquipment}
                       >
                         {addingEquipment ? "Ajout..." : "Ajouter"}
@@ -1165,7 +1336,12 @@ export default function GestionSalles() {
                     Image principale
                     <input
                       value={editRoomForm.image_principale}
-                      onChange={(event) => updateEditRoomForm("image_principale", event.target.value)}
+                      onChange={(event) =>
+                        updateEditRoomForm(
+                          "image_principale",
+                          event.target.value,
+                        )
+                      }
                     />
                   </label>
 
@@ -1173,34 +1349,39 @@ export default function GestionSalles() {
                     Description
                     <textarea
                       value={editRoomForm.description}
-                      onChange={(event) => updateEditRoomForm("description", event.target.value)}
+                      onChange={(event) =>
+                        updateEditRoomForm("description", event.target.value)
+                      }
                       rows="4"
                     />
                   </label>
 
                   {editFormError && (
-                    <p className="room-form-error">
-                      {editFormError}
-                    </p>
+                    <p className="room-form-error">{editFormError}</p>
                   )}
 
                   {typesError && (
-                    <p className="room-form-error">
-                      {typesError}
-                    </p>
+                    <p className="room-form-error">{typesError}</p>
                   )}
 
                   {equipmentCreateError && (
-                    <p className="room-form-error">
-                      {equipmentCreateError}
-                    </p>
+                    <p className="room-form-error">{equipmentCreateError}</p>
                   )}
 
                   <div className="room-form-actions">
-                    <button className="ud-btn-ghost" type="button" onClick={closeRoomDetails} disabled={savingEditRoom}>
+                    <button
+                      className="ud-btn-ghost"
+                      type="button"
+                      onClick={closeRoomDetails}
+                      disabled={savingEditRoom}
+                    >
                       Fermer
                     </button>
-                    <button className="btn-primary" type="submit" disabled={savingEditRoom}>
+                    <button
+                      className="btn-primary"
+                      type="submit"
+                      disabled={savingEditRoom}
+                    >
                       {savingEditRoom ? "Modification..." : "Enregistrer"}
                     </button>
                   </div>
@@ -1211,7 +1392,9 @@ export default function GestionSalles() {
                   {selectedRoom.equipements?.length ? (
                     <div className="ud-badges">
                       {selectedRoom.equipements.map((equipment) => (
-                        <span key={equipment} className="badge b-done">{equipment}</span>
+                        <span key={equipment} className="badge b-done">
+                          {equipment}
+                        </span>
                       ))}
                     </div>
                   ) : (
@@ -1226,14 +1409,23 @@ export default function GestionSalles() {
 
       {roomToDelete && (
         <div className="ud-overlay" onClick={closeDeleteConfirm}>
-          <div className="ud-panel room-delete-panel" onClick={(event) => event.stopPropagation()}>
-            <button className="ud-close" type="button" onClick={closeDeleteConfirm}>
+          <div
+            className="ud-panel room-delete-panel"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              className="ud-close"
+              type="button"
+              onClick={closeDeleteConfirm}
+            >
               x
             </button>
 
             <div>
               <h3 className="ud-name">Supprimer une salle</h3>
-              <p className="ud-email">Cette action supprimera vraiment la salle.</p>
+              <p className="ud-email">
+                Cette action supprimera vraiment la salle.
+              </p>
             </div>
 
             <div className="room-delete-box">
@@ -1242,17 +1434,23 @@ export default function GestionSalles() {
               <p>{getLocation(roomToDelete)}</p>
             </div>
 
-            {deleteError && (
-              <p className="room-form-error">
-                {deleteError}
-              </p>
-            )}
+            {deleteError && <p className="room-form-error">{deleteError}</p>}
 
             <div className="room-form-actions">
-              <button className="ud-btn-ghost" type="button" onClick={closeDeleteConfirm} disabled={deletingRoom}>
+              <button
+                className="ud-btn-ghost"
+                type="button"
+                onClick={closeDeleteConfirm}
+                disabled={deletingRoom}
+              >
                 Annuler
               </button>
-              <button className="ud-btn-danger" type="button" onClick={handleDeleteRoom} disabled={deletingRoom}>
+              <button
+                className="ud-btn-danger"
+                type="button"
+                onClick={handleDeleteRoom}
+                disabled={deletingRoom}
+              >
                 {deletingRoom ? "Suppression..." : "Supprimer"}
               </button>
             </div>

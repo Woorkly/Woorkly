@@ -1,5 +1,34 @@
 const Room = require('../models/Room');
 
+const geocodeAddress = async ({ adresse, code_postal, ville }) => {
+    const address = [adresse, code_postal, ville].filter(Boolean).join(" ");
+
+    if (!address.trim()) {
+        throw new Error("ADDRESS_REQUIRED");
+    }
+
+    const searchParams = new URLSearchParams({
+        q: address,
+        limit: "1"
+    });
+
+    const response = await fetch(`https://api-adresse.data.gouv.fr/search/?${searchParams.toString()}`);
+
+    if (!response.ok) {
+        throw new Error("GEOCODING_FAILED");
+    }
+
+    const data = await response.json();
+    const feature = data.features?.[0];
+
+    if (!feature?.geometry?.coordinates?.length) {
+        throw new Error("ADDRESS_NOT_FOUND");
+    }
+
+    const [longitude, latitude] = feature.geometry.coordinates;
+    return { latitude, longitude };
+};
+
 const normalizeIds = (ids = []) => {
     const values = Array.isArray(ids) ? ids : [ids];
     return [...new Set(values.map((id) => Number(id)).filter(Boolean))];
@@ -90,12 +119,35 @@ const createRoom = async (req, res) => {
     try {
         const { photos, equipement_ids, ...roomData } = req.body; // On separe les photos/equipements du reste des donnees
 
+        if (!roomData.adresse) {
+            return res.status(400).json({ message: "L'adresse est obligatoire." });
+        }
+
+        const coordinates = await geocodeAddress(roomData);
+        const roomDataWithCoordinates = {
+            ...roomData,
+            latitude: coordinates.latitude,
+            longitude: coordinates.longitude
+        };
+
         const equipmentIds = normalizeIds(equipement_ids);
-        const newRoomId = await Room.create(roomData, photos, equipmentIds);
-        res.status(201).json({ id: newRoomId, ...roomData, photos, equipement_ids: equipmentIds });
+        const newRoomId = await Room.create(roomDataWithCoordinates, photos, equipmentIds);
+        res.status(201).json({ id: newRoomId, ...roomDataWithCoordinates, photos, equipement_ids: equipmentIds });
     } catch (error) {
+        if (error.message === "ADDRESS_REQUIRED") {
+            return res.status(400).json({ message: "L'adresse est obligatoire." });
+        }
+
+        if (error.message === "ADDRESS_NOT_FOUND") {
+            return res.status(400).json({ message: "Impossible de localiser cette adresse. Veuillez verifier la saisie." });
+        }
+
+        if (error.message === "GEOCODING_FAILED") {
+            return res.status(502).json({ message: "Le service de geocodage est indisponible." });
+        }
+
         console.error(error);
-        res.status(500).json({ message: "Erreur lors de la création de la salle" });
+        res.status(500).json({ message: "Erreur lors de la creation de la salle" });
     }
 };
 
