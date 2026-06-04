@@ -6,7 +6,11 @@ import reservationService from '../services/reservationService'
 
 const getIsoDateKey = (value) => String(value || '').slice(0, 10)
 
-const getTodayKey = () => new Date().toISOString().slice(0, 10)
+const getTodayKey = () => {
+  const today = new Date()
+  today.setMinutes(today.getMinutes() - today.getTimezoneOffset())
+  return today.toISOString().slice(0, 10)
+}
 
 const DAILY_AVAILABLE_HOURS = 10
 
@@ -57,7 +61,7 @@ const computeKpis = (rooms = [], users = [], reservations = []) => {
     const rDate = String(reservation.date || '').slice(0, 10)
     if (!rDate) return false
     const [y, m] = rDate.split('-')
-    return Number(y) === yearKey && Number(m) === monthKey && rDate <= today.toISOString().slice(0, 10) && reservation.statut !== 'annulee'
+    return Number(y) === yearKey && Number(m) === monthKey && rDate <= todayKey && reservation.statut !== 'annulee'
   })
 
   const totalReservedHoursMonthToDate = monthReservations.reduce(
