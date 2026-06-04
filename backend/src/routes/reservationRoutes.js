@@ -7,6 +7,10 @@ const { authRequired, requireRole } = require('../middlewares/auth');
 // Retourne les réservations de l'utilisateur connecté
 router.get('/me', authRequired, reservationController.getMyReservations);
 
+// GET /api/reservations/me/stats
+// Retourne les statistiques du dashboard (KPIs + graphes)
+router.get('/me/stats', authRequired, reservationController.getMyDashboardStats);
+
 // GET /api/reservations/me/upcoming
 // Retourne les réservations à venir de l'utilisateur connecté
 router.get('/me/upcoming', authRequired, reservationController.getMyUpcoming);

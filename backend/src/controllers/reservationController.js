@@ -74,6 +74,18 @@ const cancelReservation = async (req, res) => {
 
 
 
+// GET /api/reservations/me/stats
+// Retourne les statistiques du dashboard pour l'utilisateur courant
+const getMyDashboardStats = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const stats = await reservationService.getDashboardStats(userId);
+        res.status(200).json(stats);
+    } catch (error) {
+        sendError(res, error);
+    }
+};
+
 // GET /api/reservations/me/upcoming
 // Retourne les réservations à venir de l'utilisateur courant
 const getMyUpcoming = async (req, res) => {
@@ -127,6 +139,7 @@ const getUserReservationsAdmin = async (req, res) => {
 
 module.exports = {
     getMyReservations,
+    getMyDashboardStats,
     getMyUpcoming,
     getMyHistory,
     getAllReservations,
