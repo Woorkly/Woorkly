@@ -17,6 +17,8 @@ const MONTH_LABELS = [
 
 const formatMonth = (monthNumber) => MONTH_LABELS[monthNumber - 1] || String(monthNumber);
 
+const DAILY_AVAILABLE_HOURS = 10;
+
 const getAdminDashboardStats = async () => {
   const [
     totalSallesRows,
@@ -32,18 +34,18 @@ const getAdminDashboardStats = async () => {
     db.execute('SELECT COUNT(*) AS total_utilisateurs FROM utilisateurs'),
     db.execute(`
       SELECT
-        COALESCE(
-          ROUND(
-            (
-              SELECT COUNT(DISTINCT salle_id)
-              FROM reservations
-              WHERE date = CURDATE()
-                AND statut <> 'annulee'
-            ) / NULLIF((SELECT COUNT(*) FROM salles), 0) * 100,
-            1
-          ),
-          0
-        ) AS taux_occupation
+          COALESCE(
+            ROUND(
+              (
+                SELECT COALESCE(SUM(TIME_TO_SEC(TIMEDIFF(heure_fin, heure_debut)) / 3600), 0)
+                FROM reservations
+                WHERE date = CURDATE()
+                  AND statut <> 'annulee'
+              ) / NULLIF((SELECT COUNT(*) * ${DAILY_AVAILABLE_HOURS} FROM salles), 0) * 100,
+              1
+            ),
+            0
+          ) AS taux_occupation
     `),
     db.execute(`
       SELECT

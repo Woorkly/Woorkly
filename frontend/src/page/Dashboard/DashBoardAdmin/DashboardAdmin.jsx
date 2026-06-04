@@ -1,7 +1,7 @@
 import {
   ResponsiveContainer,
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -41,15 +41,39 @@ const STATUS_CLASS = {
 
 const PIE_COLORS = ['#1A56A0', '#38BDF8', '#10B981', '#F59E0B', '#7C3AED', '#EF4444'];
 
+const MONTH_NAMES = {
+  '01': 'janv.',
+  '02': 'févr.',
+  '03': 'mars',
+  '04': 'avr.',
+  '05': 'mai',
+  '06': 'juin',
+  '07': 'juil.',
+  '08': 'août',
+  '09': 'sept.',
+  '10': 'oct.',
+  '11': 'nov.',
+  '12': 'déc.',
+};
+
 const formatDate = (dateValue) => {
   if (!dateValue) return '-';
-  const date = new Date(`${dateValue}T00:00:00`);
-  return new Intl.DateTimeFormat('fr-FR', {
-    weekday: 'short',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
+  // If it's a Date object, normalize to ISO date
+  if (dateValue instanceof Date && !Number.isNaN(dateValue.getTime())) {
+    return dateValue.toISOString().slice(0, 10)
+  }
+
+  const rawValue = String(dateValue).trim();
+  // If it's an ISO-like string, return YYYY-MM-DD
+  const isoMatch = rawValue.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (isoMatch) return isoMatch[1]
+
+  // Fallback: try to parse YYYY-MM-DD from the start
+  const normalized = rawValue.split(' ')[0];
+  const match = normalized.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (match) return `${match[1]}-${match[2]}-${match[3]}`;
+
+  return rawValue || '-';
 };
 
 const formatTime = (timeValue) => {
@@ -72,44 +96,50 @@ function ChartShell({ title, subtitle, children, rightSlot }) {
   );
 }
 
-function TrendChart({ data }) {
+function AreaTrendChart({ data }) {
   return (
     <div className="chart-viewport">
       <ResponsiveContainer>
-        <LineChart data={data} margin={{ top: 20, right: 20, left: 12, bottom: 8 }}>
+        <AreaChart data={data} margin={{ top: 20, right: 20, left: 48, bottom: 28 }}>
           <defs>
-            <linearGradient id="gTotal" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#38BDF8" stopOpacity={0.9} />
-              <stop offset="100%" stopColor="#7C3AED" stopOpacity={0.9} />
+            <linearGradient id="gTotal" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#38BDF8" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="#38BDF8" stopOpacity={0.02} />
             </linearGradient>
-            <linearGradient id="gConfirmees" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#1A56A0" stopOpacity={0.9} />
-              <stop offset="100%" stopColor="#10B981" stopOpacity={0.9} />
+            <linearGradient id="gConfirmees" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#1A56A0" stopOpacity={0.45} />
+              <stop offset="100%" stopColor="#1A56A0" stopOpacity={0.03} />
             </linearGradient>
           </defs>
-          <CartesianGrid stroke="#e8eef7" vertical={false} />
+          <CartesianGrid stroke="#e6eef9" vertical={false} />
           <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-          <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            tick={{ fontSize: 12, fill: '#64748b' }}
+            domain={[0, 10]}
+            allowDecimals={false}
+          />
           <Tooltip
             contentStyle={{ borderRadius: 14, border: '1px solid #e2e8f0', boxShadow: '0 16px 40px rgba(15,23,42,0.12)' }}
             labelStyle={{ fontWeight: 600, color: '#0f172a' }}
           />
           <Legend verticalAlign="top" height={28} iconType="circle" />
-          <Line type="monotone" dataKey="total_reservations" name="Total réservations" stroke="url(#gTotal)" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-          <Line type="monotone" dataKey="confirmees" name="Réservations confirmées" stroke="url(#gConfirmees)" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-        </LineChart>
+          <Area type="monotone" dataKey="total_reservations" name="Total réservations" stroke="#38BDF8" fill="url(#gTotal)" strokeWidth={2} dot={{ r: 3.5 }} />
+          <Area type="monotone" dataKey="confirmees" name="Réservations confirmées" stroke="#1A56A0" fill="url(#gConfirmees)" strokeWidth={2} dot={{ r: 3.5 }} />
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );
 }
 
-function UsagePie({ data }) {
+function DonutChart({ data }) {
   return (
-    <div className="usage-layout">
-      <div className="usage-chart">
+    <div className="donut-wrap" style={{ alignItems: 'flex-start' }}>
+      <div className="donut-chart-shell">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={data} dataKey="total" nameKey="type" innerRadius={58} outerRadius={92} paddingAngle={4}>
+            <Pie data={data} dataKey="total" nameKey="type" innerRadius={44} outerRadius={68} startAngle={90} endAngle={-270} paddingAngle={2}>
               {data.map((entry, index) => (
                 <Cell key={`cell-${entry.type}-${index}`} fill={entry.color} />
               ))}
@@ -122,18 +152,17 @@ function UsagePie({ data }) {
         </ResponsiveContainer>
       </div>
 
-      <div className="usage-list">
+      <div className="donut-legend" style={{ marginLeft: 8 }}>
         {data.length === 0 ? (
           <p className="empty-state">Aucune donnée de réservation à afficher.</p>
         ) : (
           data.map((item, index) => (
-            <div key={item.type} className="usage-item">
-              <span className="leg-dot" style={{ background: item.color || PIE_COLORS[index % PIE_COLORS.length] }} />
-              <div className="usage-item__content">
-                <span className="usage-item__label">{item.type}</span>
-                <span className="usage-item__meta">{item.total} réservations</span>
+            <div key={item.type} className="leg-item">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className="leg-dot" style={{ background: item.color || PIE_COLORS[index % PIE_COLORS.length] }} />
+                <span className="leg-label">{item.type}</span>
               </div>
-              <span className="usage-item__pct">{item.percentage}%</span>
+              <div className="leg-pct">{item.percentage}%</div>
             </div>
           ))
         )}
@@ -205,7 +234,7 @@ export default function DashboardAdmin() {
           title="Tendance des réservations"
           subtitle="Total des réservations et réservations confirmées par mois sur l’année en cours"
         >
-          <TrendChart data={chartData} />
+          <AreaTrendChart data={chartData} />
         </ChartShell>
 
         <div className="dashboard-split">
@@ -213,7 +242,7 @@ export default function DashboardAdmin() {
             title="Usage des salles par type"
             subtitle="Répartition des réservations par type de salle"
           >
-            <UsagePie data={pieData} />
+            <DonutChart data={pieData} />
           </ChartShell>
 
           <section className="card recent-card">

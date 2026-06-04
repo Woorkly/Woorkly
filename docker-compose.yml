@@ -23,8 +23,6 @@ services:
     env_file:
       - ./backend/src/.env.docker
 
-    command: sh -c "node database/setup.js && npm start"
-
     depends_on:
       - mysql
 
