@@ -32,7 +32,7 @@ function App() {
 
         <Route element={<ProtectedRoute allowRoles={['user', 'admin']} />}>
           <Route element={<PublicLayout />}>
-            <Route path="/reservation" element={<FormReservation />} />
+            <Route path="/reservation/:roomId" element={<FormReservation />} />
           </Route>
         </Route>
 
