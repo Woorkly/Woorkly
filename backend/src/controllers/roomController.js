@@ -1,5 +1,10 @@
 const Room = require('../models/Room');
 
+const normalizeIds = (ids = []) => {
+    const values = Array.isArray(ids) ? ids : [ids];
+    return [...new Set(values.map((id) => Number(id)).filter(Boolean))];
+};
+
 // Récupérer toutes les salles
 const getAllRooms = async (req, res) => {
     try {
@@ -44,7 +49,8 @@ const getRoomDetails = async (req, res) => {
         const fullRoomData = {
             ...room,
             galerie: photos.map(p => p.url), // On simplifie pour n'avoir qu'un tableau de strings
-            equipements: equipments.map(e => e.nom)
+            equipements: equipments.map(e => e.nom),
+            equipement_ids: equipments.map(e => e.id)
         };
 
         res.status(200).json(fullRoomData);
@@ -82,10 +88,11 @@ const getRoomDetails = async (req, res) => {
 // Création d'une salle (Admin)
 const createRoom = async (req, res) => {
     try {
-        const { photos, ...roomData } = req.body; // On sépare les photos du reste des données
+        const { photos, equipement_ids, ...roomData } = req.body; // On separe les photos/equipements du reste des donnees
 
-        const newRoomId = await Room.create(roomData, photos);
-        res.status(201).json({ id: newRoomId, ...roomData, photos });
+        const equipmentIds = normalizeIds(equipement_ids);
+        const newRoomId = await Room.create(roomData, photos, equipmentIds);
+        res.status(201).json({ id: newRoomId, ...roomData, photos, equipement_ids: equipmentIds });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Erreur lors de la création de la salle" });
@@ -95,13 +102,15 @@ const createRoom = async (req, res) => {
 const updateRoom = async (req, res) => {
     try {
         const { id } = req.params;
-        const affectedRows = await Room.update(id, req.body);
+        const { equipement_ids, ...roomData } = req.body;
+        const equipmentIds = normalizeIds(equipement_ids);
+        const affectedRows = await Room.update(id, roomData, equipmentIds);
 
         if (affectedRows === 0) {
             return res.status(404).json({ message: "Salle introuvable" });
         }
 
-        res.status(200).json({ id: Number(id), ...req.body });
+        res.status(200).json({ id: Number(id), ...roomData, equipement_ids: equipmentIds });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Erreur lors de la mise a jour de la salle" });

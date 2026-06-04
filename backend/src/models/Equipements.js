@@ -3,6 +3,15 @@ const db = require("../config/db");
 
 class Equipements extends BaseModel {
   static table = "equipements";
+
+  static async findByName(name) {
+    const [rows] = await db.execute(
+      "SELECT * FROM equipements WHERE LOWER(nom) = LOWER(?) LIMIT 1",
+      [name],
+    );
+    return rows[0];
+  }
+
   constructor(data) {
     super("equipements"); // On dit à la classe mère qu'on gère la table 'equipements'
     Object.assign(this, data); // Astuce pour assigner tous les champs d'un coup

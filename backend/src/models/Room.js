@@ -110,7 +110,7 @@ class Room extends BaseModel {
   }
 
   // La création utilise l'outil getConnection de la classe mère
-  static async create(data, photos = []) {
+  static async create(data, photos = [], equipmentIds = []) {
     const connection = await super.getConnection();
     try {
       await connection.beginTransaction();
@@ -148,6 +148,14 @@ class Room extends BaseModel {
         }
       }
 
+      if (equipmentIds.length > 0) {
+        const equipmentSql =
+          "INSERT INTO salle_equipements (salle_id, equipement_id) VALUES (?, ?)";
+        for (const equipmentId of equipmentIds) {
+          await connection.execute(equipmentSql, [newId, equipmentId]);
+        }
+      }
+
       await connection.commit();
       return newId;
     } catch (error) {
@@ -160,7 +168,7 @@ class Room extends BaseModel {
 
   static async getEquipments(roomId) {
     const sql = `
-            SELECT e.nom 
+            SELECT e.id, e.nom 
             FROM equipements e
             JOIN salle_equipements se ON e.id = se.equipement_id
             WHERE se.salle_id = ?
@@ -169,45 +177,73 @@ class Room extends BaseModel {
     return rows;
   }
 
-  static async update(id, data) {
-    const sql = `
-            UPDATE salles
-            SET nom = ?,
-                statut = ?,
-                adresse = ?,
-                code_postal = ?,
-                ville = ?,
-                latitude = ?,
-                longitude = ?,
-                capacite = ?,
-                description = ?,
-                prix_heure = ?,
-                prix_demi_journee = ?,
-                prix_journee = ?,
-                image_principale = ?,
-                type_id = ?
-            WHERE id = ?
-        `;
-    const params = [
-      data.nom,
-      data.statut,
-      data.adresse,
-      data.code_postal,
-      data.ville,
-      data.latitude,
-      data.longitude,
-      data.capacite,
-      data.description,
-      data.prix_heure,
-      data.prix_demi_journee,
-      data.prix_journee,
-      data.image_principale,
-      data.type_id,
-      id,
-    ];
+  static async update(id, data, equipmentIds = []) {
+    const connection = await super.getConnection();
+    try {
+      await connection.beginTransaction();
 
-    const [result] = await db.execute(sql, params);
-    return result.affectedRows;
+      const [existingRows] = await connection.execute("SELECT id FROM salles WHERE id = ?", [id]);
+      if (existingRows.length === 0) {
+        await connection.rollback();
+        return 0;
+      }
+
+      const sql = `
+              UPDATE salles
+              SET nom = ?,
+                  statut = ?,
+                  adresse = ?,
+                  code_postal = ?,
+                  ville = ?,
+                  latitude = ?,
+                  longitude = ?,
+                  capacite = ?,
+                  description = ?,
+                  prix_heure = ?,
+                  prix_demi_journee = ?,
+                  prix_journee = ?,
+                  image_principale = ?,
+                  type_id = ?
+              WHERE id = ?
+          `;
+      const params = [
+        data.nom,
+        data.statut,
+        data.adresse,
+        data.code_postal,
+        data.ville,
+        data.latitude,
+        data.longitude,
+        data.capacite,
+        data.description,
+        data.prix_heure,
+        data.prix_demi_journee,
+        data.prix_journee,
+        data.image_principale,
+        data.type_id,
+        id,
+      ];
+
+      const [result] = await connection.execute(sql, params);
+
+      await connection.execute("DELETE FROM salle_equipements WHERE salle_id = ?", [id]);
+
+      if (equipmentIds.length > 0) {
+        const equipmentSql =
+          "INSERT INTO salle_equipements (salle_id, equipement_id) VALUES (?, ?)";
+        for (const equipmentId of equipmentIds) {
+          await connection.execute(equipmentSql, [id, equipmentId]);
+        }
+      }
+
+      await connection.commit();
+      return result.affectedRows || 1;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   }
 }
 

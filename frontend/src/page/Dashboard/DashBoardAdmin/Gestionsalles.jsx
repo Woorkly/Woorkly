@@ -151,6 +151,7 @@ const initialRoomForm = {
   prix_journee: "",
   image_principale: "",
   type_id: "",
+  equipement_ids: [],
 };
 
 const optionalNumber = (value) => {
@@ -173,6 +174,7 @@ const buildRoomPayload = (form) => ({
   prix_journee: optionalNumber(form.prix_journee),
   image_principale: form.image_principale.trim() || "default-room.jpg",
   type_id: optionalNumber(form.type_id),
+  equipement_ids: form.equipement_ids.map((id) => Number(id)),
 });
 
 const toFormValue = (value) => (value === null || value === undefined ? "" : String(value));
@@ -192,6 +194,7 @@ const buildRoomForm = (room) => ({
   prix_journee: toFormValue(room.prix_journee),
   image_principale: toFormValue(room.image_principale),
   type_id: toFormValue(room.type_id),
+  equipement_ids: Array.isArray(room.equipement_ids) ? room.equipement_ids.map(String) : [],
 });
 
 const capacityFilters = {
@@ -199,6 +202,15 @@ const capacityFilters = {
   medium: { capacite_min: 13, capacite_max: 20 },
   large: { capacite_min: 21 },
 };
+
+const predefinedEquipmentNames = [
+  "Projecteur",
+  "Ecran",
+  "Tableau blanc",
+  "Paperboard",
+  "Visioconference",
+  "Wifi",
+];
 
 export default function GestionSalles() {
   const [search, setSearch] = useState("");
@@ -226,6 +238,9 @@ export default function GestionSalles() {
   const [equipments, setEquipments] = useState([]);
   const [loadingEquipments, setLoadingEquipments] = useState(true);
   const [equipmentsError, setEquipmentsError] = useState(null);
+  const [newEquipmentName, setNewEquipmentName] = useState("");
+  const [addingEquipment, setAddingEquipment] = useState(false);
+  const [equipmentCreateError, setEquipmentCreateError] = useState(null);
 
   const getRoomFilters = () => {
     const filters = {
@@ -315,6 +330,62 @@ export default function GestionSalles() {
     }
   };
 
+  const normalizeEquipmentName = (name) => name.trim().toLowerCase();
+
+  const findEquipmentByName = (name) => (
+    equipments.find((equipment) => normalizeEquipmentName(equipment.nom) === normalizeEquipmentName(name))
+  );
+
+  const selectEquipmentInForm = (equipmentId, target) => {
+    if (!equipmentId) return;
+
+    const value = String(equipmentId);
+    const setter = target === "edit" ? setEditRoomForm : setRoomForm;
+
+    setter((current) => ({
+      ...current,
+      equipement_ids: current.equipement_ids.includes(value)
+        ? current.equipement_ids
+        : [...current.equipement_ids, value],
+    }));
+  };
+
+  const handleCreateEquipment = async (name, target) => {
+    const cleanName = name.trim();
+    setEquipmentCreateError(null);
+
+    if (!cleanName) {
+      setEquipmentCreateError("Le nom de l'equipement est obligatoire.");
+      return;
+    }
+
+    const existingEquipment = findEquipmentByName(cleanName);
+    if (existingEquipment) {
+      selectEquipmentInForm(existingEquipment.id, target);
+      setNewEquipmentName("");
+      return;
+    }
+
+    setAddingEquipment(true);
+
+    try {
+      const createdEquipment = await equipmentService.createEquipment(cleanName);
+      const data = await equipmentService.getEquipments();
+      const nextEquipments = Array.isArray(data) ? data : [];
+      const freshEquipment = nextEquipments.find(
+        (equipment) => normalizeEquipmentName(equipment.nom) === normalizeEquipmentName(cleanName),
+      );
+
+      setEquipments(nextEquipments);
+      selectEquipmentInForm(createdEquipment.id || freshEquipment?.id, target);
+      setNewEquipmentName("");
+    } catch (err) {
+      setEquipmentCreateError(err.response?.data?.message || err.message || "Erreur lors de la creation de l'equipement");
+    } finally {
+      setAddingEquipment(false);
+    }
+  };
+
   const filtered = salles.filter((s) =>
     s.nom?.toLowerCase().includes(search.toLowerCase()),
   );
@@ -332,6 +403,8 @@ export default function GestionSalles() {
   const openCreateForm = () => {
     setRoomForm(initialRoomForm);
     setFormError(null);
+    setEquipmentCreateError(null);
+    setNewEquipmentName("");
     setIsCreateOpen(true);
   };
 
@@ -344,10 +417,26 @@ export default function GestionSalles() {
     setRoomForm((current) => ({ ...current, [field]: value }));
   };
 
+  const toggleRoomEquipment = (equipmentId) => {
+    const value = String(equipmentId);
+
+    setRoomForm((current) => {
+      const selected = current.equipement_ids.includes(value);
+      return {
+        ...current,
+        equipement_ids: selected
+          ? current.equipement_ids.filter((id) => id !== value)
+          : [...current.equipement_ids, value],
+      };
+    });
+  };
+
   const openRoomDetails = async (roomId) => {
     setSelectedRoom(null);
     setDetailError(null);
     setEditFormError(null);
+    setEquipmentCreateError(null);
+    setNewEquipmentName("");
     setLoadingRoom(true);
 
     try {
@@ -368,10 +457,26 @@ export default function GestionSalles() {
     setLoadingRoom(false);
     setEditRoomForm(initialRoomForm);
     setEditFormError(null);
+    setEquipmentCreateError(null);
+    setNewEquipmentName("");
   };
 
   const updateEditRoomForm = (field, value) => {
     setEditRoomForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const toggleEditRoomEquipment = (equipmentId) => {
+    const value = String(equipmentId);
+
+    setEditRoomForm((current) => {
+      const selected = current.equipement_ids.includes(value);
+      return {
+        ...current,
+        equipement_ids: selected
+          ? current.equipement_ids.filter((id) => id !== value)
+          : [...current.equipement_ids, value],
+      };
+    });
   };
 
   const openDeleteConfirm = (room) => {
@@ -697,28 +802,6 @@ export default function GestionSalles() {
               </label>
 
               <label>
-                Latitude
-                <input
-                  type="number"
-                  step="any"
-                  value={roomForm.latitude}
-                  onChange={(event) => updateRoomForm("latitude", event.target.value)}
-                  placeholder="43.296"
-                />
-              </label>
-
-              <label>
-                Longitude
-                <input
-                  type="number"
-                  step="any"
-                  value={roomForm.longitude}
-                  onChange={(event) => updateRoomForm("longitude", event.target.value)}
-                  placeholder="5.376"
-                />
-              </label>
-
-              <label>
                 Prix heure
                 <input
                   type="number"
@@ -773,6 +856,62 @@ export default function GestionSalles() {
                 </select>
               </label>
 
+              <div className="room-form-wide room-equipment-field">
+                <span>Equipements</span>
+                <div className="room-equipment-list">
+                  {loadingEquipments && (
+                    <p className="ud-empty">Chargement des equipements...</p>
+                  )}
+
+                  {!loadingEquipments && equipments.length === 0 && (
+                    <p className="ud-empty">Aucun equipement disponible.</p>
+                  )}
+
+                  {!loadingEquipments && equipments.map((equipment) => (
+                    <label key={equipment.id} className="room-equipment-choice">
+                      <input
+                        type="checkbox"
+                        checked={roomForm.equipement_ids.includes(String(equipment.id))}
+                        onChange={() => toggleRoomEquipment(equipment.id)}
+                      />
+                      <span>{equipment.nom}</span>
+                    </label>
+                  ))}
+                </div>
+
+                <div className="room-equipment-presets">
+                  {predefinedEquipmentNames
+                    .filter((equipmentName) => !findEquipmentByName(equipmentName))
+                    .map((equipmentName) => (
+                      <button
+                        key={equipmentName}
+                        className="room-equipment-preset"
+                        type="button"
+                        onClick={() => handleCreateEquipment(equipmentName, "create")}
+                        disabled={addingEquipment}
+                      >
+                        + {equipmentName}
+                      </button>
+                    ))}
+                </div>
+
+                <div className="room-equipment-create">
+                  <input
+                    value={newEquipmentName}
+                    onChange={(event) => setNewEquipmentName(event.target.value)}
+                    placeholder="Nouvel equipement"
+                  />
+                  <button
+                    className="btn-primary"
+                    type="button"
+                    onClick={() => handleCreateEquipment(newEquipmentName, "create")}
+                    disabled={addingEquipment}
+                  >
+                    {addingEquipment ? "Ajout..." : "Ajouter"}
+                  </button>
+                </div>
+              </div>
+
               <label className="room-form-wide">
                 Image principale
                 <input
@@ -801,6 +940,12 @@ export default function GestionSalles() {
               {typesError && (
                 <p className="room-form-error">
                   {typesError}
+                </p>
+              )}
+
+              {equipmentCreateError && (
+                <p className="room-form-error">
+                  {equipmentCreateError}
                 </p>
               )}
 
@@ -909,26 +1054,6 @@ export default function GestionSalles() {
                   </label>
 
                   <label>
-                    Latitude
-                    <input
-                      type="number"
-                      step="any"
-                      value={editRoomForm.latitude}
-                      onChange={(event) => updateEditRoomForm("latitude", event.target.value)}
-                    />
-                  </label>
-
-                  <label>
-                    Longitude
-                    <input
-                      type="number"
-                      step="any"
-                      value={editRoomForm.longitude}
-                      onChange={(event) => updateEditRoomForm("longitude", event.target.value)}
-                    />
-                  </label>
-
-                  <label>
                     Prix heure
                     <input
                       type="number"
@@ -980,6 +1105,62 @@ export default function GestionSalles() {
                     </select>
                   </label>
 
+                  <div className="room-form-wide room-equipment-field">
+                    <span>Equipements</span>
+                    <div className="room-equipment-list">
+                      {loadingEquipments && (
+                        <p className="ud-empty">Chargement des equipements...</p>
+                      )}
+
+                      {!loadingEquipments && equipments.length === 0 && (
+                        <p className="ud-empty">Aucun equipement disponible.</p>
+                      )}
+
+                      {!loadingEquipments && equipments.map((equipment) => (
+                        <label key={equipment.id} className="room-equipment-choice">
+                          <input
+                            type="checkbox"
+                            checked={editRoomForm.equipement_ids.includes(String(equipment.id))}
+                            onChange={() => toggleEditRoomEquipment(equipment.id)}
+                          />
+                          <span>{equipment.nom}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    <div className="room-equipment-presets">
+                      {predefinedEquipmentNames
+                        .filter((equipmentName) => !findEquipmentByName(equipmentName))
+                        .map((equipmentName) => (
+                          <button
+                            key={equipmentName}
+                            className="room-equipment-preset"
+                            type="button"
+                            onClick={() => handleCreateEquipment(equipmentName, "edit")}
+                            disabled={addingEquipment}
+                          >
+                            + {equipmentName}
+                          </button>
+                        ))}
+                    </div>
+
+                    <div className="room-equipment-create">
+                      <input
+                        value={newEquipmentName}
+                        onChange={(event) => setNewEquipmentName(event.target.value)}
+                        placeholder="Nouvel equipement"
+                      />
+                      <button
+                        className="btn-primary"
+                        type="button"
+                        onClick={() => handleCreateEquipment(newEquipmentName, "edit")}
+                        disabled={addingEquipment}
+                      >
+                        {addingEquipment ? "Ajout..." : "Ajouter"}
+                      </button>
+                    </div>
+                  </div>
+
                   <label className="room-form-wide">
                     Image principale
                     <input
@@ -1006,6 +1187,12 @@ export default function GestionSalles() {
                   {typesError && (
                     <p className="room-form-error">
                       {typesError}
+                    </p>
+                  )}
+
+                  {equipmentCreateError && (
+                    <p className="room-form-error">
+                      {equipmentCreateError}
                     </p>
                   )}
 
