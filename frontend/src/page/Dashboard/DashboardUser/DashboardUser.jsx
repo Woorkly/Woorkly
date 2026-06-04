@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from '../../../hooks/useAuth';
 import reservationService from '../../../services/reservationService';
+import userService from '../../../services/userService';
 import "./DashboardUser.css";
 import {
   ResponsiveContainer,
@@ -173,23 +174,143 @@ function Pagination({ page, total, onChange }) {
   );
 }
 
+// ─── Modal édition profil ─────────────────────────────────────────────────────
+
+function EditProfileModal({ user, onClose, onSave }) {
+  const [form, setForm] = useState({
+    nom:        user?.nom        || '',
+    email:      user?.email      || '',
+    password:   '',
+    avatar_url: user?.avatar_url || '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error,  setError]  = useState('');
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSaving(true);
+    try {
+      const payload = { nom: form.nom, email: form.email };
+      if (form.password)   payload.password   = form.password;
+      if (form.avatar_url) payload.avatar_url = form.avatar_url;
+      await onSave(payload);
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Erreur lors de la mise à jour.');
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="ep-overlay" onClick={onClose}>
+      <div className="ep-panel" onClick={e => e.stopPropagation()}>
+        <div className="ep-header">
+          <h2 className="ep-title">Modifier mon profil</h2>
+          <button className="ep-close" onClick={onClose} aria-label="Fermer">✕</button>
+        </div>
+
+        <form className="ep-form" onSubmit={handleSubmit} noValidate>
+          <div className="ep-field">
+            <label htmlFor="ep-nom">Nom complet</label>
+            <input
+              id="ep-nom"
+              type="text"
+              name="nom"
+              value={form.nom}
+              onChange={handleChange}
+              required
+              autoFocus
+            />
+          </div>
+
+          <div className="ep-field">
+            <label htmlFor="ep-email">Adresse e-mail</label>
+            <input
+              id="ep-email"
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="ep-field">
+            <label htmlFor="ep-password">
+              Nouveau mot de passe
+              <span className="ep-optional"> — laisser vide pour ne pas changer</span>
+            </label>
+            <input
+              id="ep-password"
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div className="ep-field">
+            <label htmlFor="ep-avatar">
+              Avatar URL
+              <span className="ep-optional"> — fonctionnalité à venir</span>
+            </label>
+            <input
+              id="ep-avatar"
+              type="text"
+              name="avatar_url"
+              value={form.avatar_url}
+              onChange={handleChange}
+              disabled
+              placeholder="Upload bientôt disponible"
+            />
+          </div>
+
+          {error && <p className="ep-error">{error}</p>}
+
+          <div className="ep-actions">
+            <button type="button" className="ep-btn-ghost" onClick={onClose} disabled={saving}>
+              Annuler
+            </button>
+            <button type="submit" className="ep-btn-primary" disabled={saving}>
+              {saving ? 'Enregistrement…' : 'Enregistrer'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ─── Page principale ──────────────────────────────────────────────────────────
 
 const DEFAULT_MONTHLY = MONTHS_FR.map(month => ({ month, reservations: 0, annulations: 0 }));
 const DEFAULT_USAGE   = Object.entries(TYPE_CONFIG).map(([, cfg]) => ({ label: cfg.label, percent: 0, color: cfg.color }));
 
 export default function DashboardUser() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
 
-  const [upcoming,      setUpcoming]      = useState([]);
-  const [history,       setHistory]       = useState([]);
-  const [monthlyData,   setMonthlyData]   = useState(DEFAULT_MONTHLY);
-  const [usageData,     setUsageData]     = useState(DEFAULT_USAGE);
-  const [heuresMois,    setHeuresMois]    = useState(null);
-  const [tauxPresence,  setTauxPresence]  = useState(null);
-  const [loading,       setLoading]       = useState(true);
-  const [upcomingPage,  setUpcomingPage]  = useState(1);
-  const [historyPage,   setHistoryPage]   = useState(1);
+  const [upcoming,          setUpcoming]          = useState([]);
+  const [history,           setHistory]           = useState([]);
+  const [monthlyData,       setMonthlyData]       = useState(DEFAULT_MONTHLY);
+  const [usageData,         setUsageData]         = useState(DEFAULT_USAGE);
+  const [heuresMois,        setHeuresMois]        = useState(null);
+  const [tauxPresence,      setTauxPresence]      = useState(null);
+  const [loading,           setLoading]           = useState(true);
+  const [upcomingPage,      setUpcomingPage]      = useState(1);
+  const [historyPage,       setHistoryPage]       = useState(1);
+  const [showProfileModal,  setShowProfileModal]  = useState(false);
+
+  const handleSaveProfile = async (payload) => {
+    await userService.updateMyProfile(user.userId, payload);
+    await refreshUser();
+    setShowProfileModal(false);
+  };
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -232,10 +353,22 @@ export default function DashboardUser() {
           <span className="dash-logo">Woorkly</span>
           <span className="dash-title">Dashboard de {dashboardName}</span>
         </div>
-        <div className="dash-avatar">
+        <div
+          className="dash-avatar dash-avatar--clickable"
+          onClick={() => setShowProfileModal(true)}
+          title="Modifier mon profil"
+        >
           <span>{avatarLabel || 'U'}</span>
         </div>
       </header>
+
+      {showProfileModal && (
+        <EditProfileModal
+          user={user}
+          onClose={() => setShowProfileModal(false)}
+          onSave={handleSaveProfile}
+        />
+      )}
 
       <div className="dashboard-subtitle">
         {dashboardEmail ? `Connecté en tant que ${dashboardEmail}` : 'Compte connecté'}
