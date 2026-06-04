@@ -393,6 +393,48 @@
   color: #6b21a8;
 }
 
+/* ─── Pagination ─── */
+.dashboard .pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.dashboard .page-btn {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  font-family: var(--font);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--primary);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.dashboard .page-btn:hover:not(:disabled) {
+  background: var(--primary-light);
+  border-color: var(--primary);
+}
+
+.dashboard .page-btn:disabled {
+  color: var(--text-light);
+  cursor: default;
+  opacity: 0.5;
+}
+
+.dashboard .page-info {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  min-width: 40px;
+  text-align: center;
+}
+
 @media (max-width: 640px) {
   .dash-header {
     padding: 0 1rem;

@@ -145,6 +145,34 @@ function ReservationsBarChart({ data }) {
   );
 }
 
+// ─── Pagination ───────────────────────────────────────────────────────────────
+
+const PAGE_SIZE = 5;
+
+function Pagination({ page, total, onChange }) {
+  const pageCount = Math.ceil(total / PAGE_SIZE);
+  if (pageCount <= 1) return null;
+  return (
+    <div className="pagination">
+      <button
+        className="page-btn"
+        onClick={() => onChange(page - 1)}
+        disabled={page === 1}
+      >
+        ‹ Précédent
+      </button>
+      <span className="page-info">{page} / {pageCount}</span>
+      <button
+        className="page-btn"
+        onClick={() => onChange(page + 1)}
+        disabled={page === pageCount}
+      >
+        Suivant ›
+      </button>
+    </div>
+  );
+}
+
 // ─── Page principale ──────────────────────────────────────────────────────────
 
 const DEFAULT_MONTHLY = MONTHS_FR.map(month => ({ month, reservations: 0, annulations: 0 }));
@@ -160,6 +188,8 @@ export default function DashboardUser() {
   const [heuresMois,    setHeuresMois]    = useState(null);
   const [tauxPresence,  setTauxPresence]  = useState(null);
   const [loading,       setLoading]       = useState(true);
+  const [upcomingPage,  setUpcomingPage]  = useState(1);
+  const [historyPage,   setHistoryPage]   = useState(1);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -259,6 +289,7 @@ export default function DashboardUser() {
 
         {/* ── Tableaux ── */}
         <section className="tables-row">
+          {/* Card Réservations à venir */}
           <div className="card table-card">
             <h3 className="card-title">Réservations — À Venir</h3>
             {loading ? (
@@ -266,24 +297,34 @@ export default function DashboardUser() {
             ) : upcoming.length === 0 ? (
               <p style={{ color:'var(--text-muted)', fontSize:'0.85rem', padding:'1rem 0' }}>Aucune réservation à venir.</p>
             ) : (
-              <table className="resa-table">
-                <thead>
-                  <tr><th>Date</th><th>Salle</th><th>Heure</th><th>Statut</th></tr>
-                </thead>
-                <tbody>
-                  {upcoming.map(r => (
-                    <tr key={r.id}>
-                      <td>{formatDate(r.date)}</td>
-                      <td>{r.salle_nom}</td>
-                      <td>{formatTime(r.heure_debut)} – {formatTime(r.heure_fin)}</td>
-                      <td><StatutBadge statut={r.statut} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <>
+                <table className="resa-table">
+                  <thead>
+                    <tr><th>Date</th><th>Salle</th><th>Heure</th><th>Statut</th></tr>
+                  </thead>
+                  <tbody>
+                    {upcoming
+                      .slice((upcomingPage - 1) * PAGE_SIZE, upcomingPage * PAGE_SIZE)
+                      .map(r => (
+                        <tr key={r.id}>
+                          <td>{formatDate(r.date)}</td>
+                          <td>{r.salle_nom}</td>
+                          <td>{formatTime(r.heure_debut)} – {formatTime(r.heure_fin)}</td>
+                          <td><StatutBadge statut={r.statut} /></td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+                <Pagination
+                  page={upcomingPage}
+                  total={upcoming.length}
+                  onChange={setUpcomingPage}
+                />
+              </>
             )}
           </div>
 
+          {/* Card Historique */}
           <div className="card table-card">
             <h3 className="card-title">Historique Complet</h3>
             {loading ? (
@@ -291,21 +332,30 @@ export default function DashboardUser() {
             ) : history.length === 0 ? (
               <p style={{ color:'var(--text-muted)', fontSize:'0.85rem', padding:'1rem 0' }}>Aucun historique de réservation.</p>
             ) : (
-              <table className="resa-table">
-                <thead>
-                  <tr><th>Date</th><th>Salle</th><th>Heure</th><th>Statut</th></tr>
-                </thead>
-                <tbody>
-                  {history.map(r => (
-                    <tr key={r.id}>
-                      <td>{formatDate(r.date)}</td>
-                      <td>{r.salle_nom}</td>
-                      <td>{formatTime(r.heure_debut)} – {formatTime(r.heure_fin)}</td>
-                      <td><StatutBadge statut={r.statut} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <>
+                <table className="resa-table">
+                  <thead>
+                    <tr><th>Date</th><th>Salle</th><th>Heure</th><th>Statut</th></tr>
+                  </thead>
+                  <tbody>
+                    {history
+                      .slice((historyPage - 1) * PAGE_SIZE, historyPage * PAGE_SIZE)
+                      .map(r => (
+                        <tr key={r.id}>
+                          <td>{formatDate(r.date)}</td>
+                          <td>{r.salle_nom}</td>
+                          <td>{formatTime(r.heure_debut)} – {formatTime(r.heure_fin)}</td>
+                          <td><StatutBadge statut={r.statut} /></td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+                <Pagination
+                  page={historyPage}
+                  total={history.length}
+                  onChange={setHistoryPage}
+                />
+              </>
             )}
           </div>
         </section>
