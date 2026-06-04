@@ -15,4 +15,9 @@ const getMyHistory = async () => {
   return res.data
 }
 
-export default { createReservation, getMyUpcoming, getMyHistory }
+const getMyStats = async () => {
+  const res = await API.get('/reservations/me/stats')
+  return res.data
+}
+
+export default { createReservation, getMyUpcoming, getMyHistory, getMyStats }

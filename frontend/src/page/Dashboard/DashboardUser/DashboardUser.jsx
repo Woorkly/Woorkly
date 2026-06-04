@@ -15,25 +15,41 @@ import {
   Cell
 } from 'recharts';
 
-const monthlyData = [
-  { month: "Jan", reservations: 40, annulations: 20 },
-  { month: "Fév", reservations: 30, annulations: 25 },
-  { month: "Mar", reservations: 90, annulations: 15 },
-  { month: "Avr", reservations: 60, annulations: 30 },
-  { month: "Mai", reservations: 30, annulations: 20 },
-  { month: "Jun", reservations: 40, annulations: 10 },
-  { month: "Jul", reservations: 50, annulations: 25 },
-  { month: "Aoû", reservations: 80, annulations: 20 },
-  { month: "Sep", reservations: 80, annulations: 15 },
-  { month: "Oct", reservations: 6,  annulations: 5  },
-];
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const usageData = [
-  { label: "Team Syncs",   percent: 50, color: "#1A56A0" },
-  { label: "Client Calls", percent: 30, color: "#38BDF8" },
-  { label: "Planning",     percent: 20, color: "#10B981" },
-  { label: "Ateliers",     percent: 10, color: "#F59E0B" },
-];
+const MONTHS_FR = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+
+const TYPE_CONFIG = {
+  'heure':        { label: "À l'heure",       color: '#1A56A0' },
+  'demi-journee': { label: 'Demi-journée',     color: '#38BDF8' },
+  'journee':      { label: 'Journée entière',  color: '#10B981' },
+};
+
+// Remplit les 12 mois à partir des données API (months manquants = 0)
+function buildMonthlyData(monthly) {
+  const byMonth = {};
+  monthly.forEach(m => { byMonth[m.mois] = m; });
+  return MONTHS_FR.map((month, i) => ({
+    month,
+    reservations: Number(byMonth[i + 1]?.reservations) || 0,
+    annulations:  Number(byMonth[i + 1]?.annulations)  || 0,
+  }));
+}
+
+// Transforme type_usage en format donut (percent arrondi)
+function buildUsageData(typeUsage) {
+  const total = typeUsage.reduce((s, t) => s + Number(t.total), 0);
+  if (total === 0) {
+    return Object.entries(TYPE_CONFIG).map(([, cfg]) => ({
+      label: cfg.label, percent: 0, color: cfg.color,
+    }));
+  }
+  return typeUsage.map(t => ({
+    label:   TYPE_CONFIG[t.type_reservation]?.label || t.type_reservation,
+    percent: Math.round((Number(t.total) / total) * 100),
+    color:   TYPE_CONFIG[t.type_reservation]?.color || '#888',
+  }));
+}
 
 const STATUT_MAP = {
   'en-attente': { cls: 'badge-pending', label: 'En attente' },
@@ -59,26 +75,35 @@ function formatTime(timeStr) {
   return timeStr.substring(0, 5);
 }
 
+// ─── Composants graphes ───────────────────────────────────────────────────────
+
 function DonutChart({ data }) {
+  const hasData = data.some(d => d.percent > 0);
   return (
     <div className="donut-wrapper">
       <div className="donut-visual">
-        <PieChart width={180} height={180}>
-          <Pie
-            data={data}
-            dataKey="percent"
-            nameKey="label"
-            innerRadius={48}
-            outerRadius={72}
-            startAngle={90}
-            endAngle={-270}
-            paddingAngle={2}
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-        </PieChart>
+        {hasData ? (
+          <PieChart width={180} height={180}>
+            <Pie
+              data={data}
+              dataKey="percent"
+              nameKey="label"
+              innerRadius={48}
+              outerRadius={72}
+              startAngle={90}
+              endAngle={-270}
+              paddingAngle={2}
+            >
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+          </PieChart>
+        ) : (
+          <div style={{ width: 180, height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center' }}>
+            Aucune donnée
+          </div>
+        )}
       </div>
       <div className="donut-legend">
         {data.map((item, i) => (
@@ -110,7 +135,7 @@ function ReservationsBarChart({ data }) {
           </defs>
           <CartesianGrid stroke="#e2e8f0" vertical={false} />
           <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#94a3b8' }} />
-          <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
+          <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} allowDecimals={false} />
           <Tooltip formatter={(value) => [value, '']} />
           <Bar dataKey="reservations" name="Total réservations" barSize={18} fill="url(#barGradReservations)" />
           <Bar dataKey="annulations"  name="Annulations"        barSize={18} fill="url(#barGradAnnulations)" />
@@ -120,28 +145,44 @@ function ReservationsBarChart({ data }) {
   );
 }
 
+// ─── Page principale ──────────────────────────────────────────────────────────
+
+const DEFAULT_MONTHLY = MONTHS_FR.map(month => ({ month, reservations: 0, annulations: 0 }));
+const DEFAULT_USAGE   = Object.entries(TYPE_CONFIG).map(([, cfg]) => ({ label: cfg.label, percent: 0, color: cfg.color }));
+
 export default function DashboardUser() {
   const { user } = useAuth();
-  const [upcoming, setUpcoming]           = useState([]);
-  const [history, setHistory]             = useState([]);
-  const [loadingTables, setLoadingTables] = useState(true);
+
+  const [upcoming,      setUpcoming]      = useState([]);
+  const [history,       setHistory]       = useState([]);
+  const [monthlyData,   setMonthlyData]   = useState(DEFAULT_MONTHLY);
+  const [usageData,     setUsageData]     = useState(DEFAULT_USAGE);
+  const [heuresMois,    setHeuresMois]    = useState(null);
+  const [tauxPresence,  setTauxPresence]  = useState(null);
+  const [loading,       setLoading]       = useState(true);
 
   useEffect(() => {
-    const fetchReservations = async () => {
+    const fetchAll = async () => {
       try {
-        const [upcomingData, historyData] = await Promise.all([
+        const [upcomingData, historyData, statsData] = await Promise.all([
           reservationService.getMyUpcoming(),
           reservationService.getMyHistory(),
+          reservationService.getMyStats(),
         ]);
+
         setUpcoming(upcomingData);
         setHistory(historyData);
+        setHeuresMois(statsData.kpis.heures_ce_mois);
+        setTauxPresence(statsData.kpis.taux_presence);
+        setMonthlyData(buildMonthlyData(statsData.monthly));
+        setUsageData(buildUsageData(statsData.type_usage));
       } catch (err) {
-        console.error('Erreur lors du chargement des réservations', err);
+        console.error('Erreur lors du chargement des données du dashboard', err);
       } finally {
-        setLoadingTables(false);
+        setLoading(false);
       }
     };
-    fetchReservations();
+    fetchAll();
   }, []);
 
   const dashboardName  = user?.nom || user?.email || 'Utilisateur';
@@ -150,7 +191,7 @@ export default function DashboardUser() {
     .split(' ')
     .filter(Boolean)
     .slice(0, 2)
-    .map((part) => part[0])
+    .map(part => part[0])
     .join('')
     .toUpperCase();
 
@@ -171,24 +212,33 @@ export default function DashboardUser() {
       </div>
 
       <main className="dash-main">
+        {/* ── KPIs ── */}
         <section className="kpi-row">
           <div className="kpi-card kpi-accent">
             <p className="kpi-label">Mes Réservations à Venir</p>
             <p style={{ fontSize:"1.55rem", fontWeight:700, color:"var(--text)", letterSpacing:"-0.03em", lineHeight:1 }}>
-              {loadingTables ? '—' : upcoming.length}{' '}
+              {loading ? '—' : upcoming.length}{' '}
               <span className="kpi-unit">{upcoming.length <= 1 ? 'salle' : 'salles'}</span>
             </p>
           </div>
+
           <div className="kpi-card kpi-blue">
             <p className="kpi-label">Heures en Réunion</p>
-            <p style={{ fontSize:"1.55rem", fontWeight:700, color:"var(--text)", letterSpacing:"-0.03em", lineHeight:1 }}>32h <span className="kpi-unit">ce mois</span></p>
+            <p style={{ fontSize:"1.55rem", fontWeight:700, color:"var(--text)", letterSpacing:"-0.03em", lineHeight:1 }}>
+              {loading || heuresMois === null ? '—' : `${heuresMois}h`}{' '}
+              <span className="kpi-unit">ce mois</span>
+            </p>
           </div>
+
           <div className="kpi-card kpi-green">
             <p className="kpi-label">Taux de Présence</p>
-            <p style={{ fontSize:"1.55rem", fontWeight:700, color:"var(--text)", letterSpacing:"-0.03em", lineHeight:1 }}>98%</p>
+            <p style={{ fontSize:"1.55rem", fontWeight:700, color:"var(--text)", letterSpacing:"-0.03em", lineHeight:1 }}>
+              {loading || tauxPresence === null ? '—' : `${tauxPresence}%`}
+            </p>
           </div>
         </section>
 
+        {/* ── Graphes ── */}
         <section className="charts-row">
           <div className="card chart-card">
             <h3 className="card-title">Mon Activité de Réservation (Annuel)</h3>
@@ -207,25 +257,21 @@ export default function DashboardUser() {
           </div>
         </section>
 
+        {/* ── Tableaux ── */}
         <section className="tables-row">
           <div className="card table-card">
             <h3 className="card-title">Réservations — À Venir</h3>
-            {loadingTables ? (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '1rem 0' }}>Chargement…</p>
+            {loading ? (
+              <p style={{ color:'var(--text-muted)', fontSize:'0.85rem', padding:'1rem 0' }}>Chargement…</p>
             ) : upcoming.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '1rem 0' }}>Aucune réservation à venir.</p>
+              <p style={{ color:'var(--text-muted)', fontSize:'0.85rem', padding:'1rem 0' }}>Aucune réservation à venir.</p>
             ) : (
               <table className="resa-table">
                 <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Salle</th>
-                    <th>Heure</th>
-                    <th>Statut</th>
-                  </tr>
+                  <tr><th>Date</th><th>Salle</th><th>Heure</th><th>Statut</th></tr>
                 </thead>
                 <tbody>
-                  {upcoming.map((r) => (
+                  {upcoming.map(r => (
                     <tr key={r.id}>
                       <td>{formatDate(r.date)}</td>
                       <td>{r.salle_nom}</td>
@@ -240,22 +286,17 @@ export default function DashboardUser() {
 
           <div className="card table-card">
             <h3 className="card-title">Historique Complet</h3>
-            {loadingTables ? (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '1rem 0' }}>Chargement…</p>
+            {loading ? (
+              <p style={{ color:'var(--text-muted)', fontSize:'0.85rem', padding:'1rem 0' }}>Chargement…</p>
             ) : history.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '1rem 0' }}>Aucun historique de réservation.</p>
+              <p style={{ color:'var(--text-muted)', fontSize:'0.85rem', padding:'1rem 0' }}>Aucun historique de réservation.</p>
             ) : (
               <table className="resa-table">
                 <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Salle</th>
-                    <th>Heure</th>
-                    <th>Statut</th>
-                  </tr>
+                  <tr><th>Date</th><th>Salle</th><th>Heure</th><th>Statut</th></tr>
                 </thead>
                 <tbody>
-                  {history.map((r) => (
+                  {history.map(r => (
                     <tr key={r.id}>
                       <td>{formatDate(r.date)}</td>
                       <td>{r.salle_nom}</td>
