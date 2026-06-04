@@ -114,7 +114,60 @@ class Reservation extends BaseModel {
         const sql = 'UPDATE reservations SET statut = ? WHERE id = ?';
         const [result] = await db.execute(sql, ['annulee', id]);
         return result.affectedRows > 0;
-    }   
+    }
+
+    // Met à jour le statut d'une réservation
+    static async updateStatut(id, statut) {
+        const sql = 'UPDATE reservations SET statut = ? WHERE id = ?';
+        const [result] = await db.execute(sql, [statut, id]);
+        return result.affectedRows > 0;
+    }
+
+    // Transitions automatiques des statuts expirés :
+    // en-attente expiré → abandonne (personne non présentée)
+    // confirmee expirée → terminee (créneau passé)
+    static async autoUpdateExpiredStatuses() {
+        const sql = `
+            UPDATE reservations
+            SET statut = CASE
+                WHEN statut = 'en-attente' THEN 'abandonne'
+                WHEN statut = 'confirmee'  THEN 'terminee'
+                ELSE statut
+            END
+            WHERE statut IN ('en-attente', 'confirmee')
+              AND (date < CURDATE() OR (date = CURDATE() AND heure_fin < CURTIME()))
+        `;
+        await db.execute(sql);
+    }
+
+    // Réservations à venir de l'utilisateur (date >= aujourd'hui, statut actif)
+    static async getUpcoming(userId) {
+        const sql = `
+            SELECT r.*, s.nom as salle_nom
+            FROM reservations r
+            JOIN salles s ON r.salle_id = s.id
+            WHERE r.utilisateur_id = ?
+              AND r.date >= CURDATE()
+              AND r.statut IN ('en-attente', 'confirmee')
+            ORDER BY r.date ASC, r.heure_debut ASC
+        `;
+        const [rows] = await db.execute(sql, [userId]);
+        return rows;
+    }
+
+    // Historique des réservations de l'utilisateur (annulé, terminé, abandonné)
+    static async getHistory(userId) {
+        const sql = `
+            SELECT r.*, s.nom as salle_nom
+            FROM reservations r
+            JOIN salles s ON r.salle_id = s.id
+            WHERE r.utilisateur_id = ?
+              AND r.statut IN ('annulee', 'terminee', 'abandonne')
+            ORDER BY r.date DESC, r.heure_debut DESC
+        `;
+        const [rows] = await db.execute(sql, [userId]);
+        return rows;
+    }
 }
 
 module.exports = Reservation;

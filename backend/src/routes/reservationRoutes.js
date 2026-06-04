@@ -7,6 +7,14 @@ const { authRequired, requireRole } = require('../middlewares/auth');
 // Retourne les réservations de l'utilisateur connecté
 router.get('/me', authRequired, reservationController.getMyReservations);
 
+// GET /api/reservations/me/upcoming
+// Retourne les réservations à venir de l'utilisateur connecté
+router.get('/me/upcoming', authRequired, reservationController.getMyUpcoming);
+
+// GET /api/reservations/me/history
+// Retourne l'historique des réservations de l'utilisateur connecté
+router.get('/me/history', authRequired, reservationController.getMyHistory);
+
 // GET /api/reservations (admin only)
 // Retourne toutes les réservations
 router.get('/', authRequired, requireRole('admin'), reservationController.getAllReservations);
@@ -26,5 +34,9 @@ router.post('/', authRequired, reservationController.createReservation);
 // PATCH /api/reservations/:id/cancel
 // Annule une réservation
 router.patch('/:id/cancel', authRequired, reservationController.cancelReservation);
+
+// PATCH /api/reservations/:id/statut (admin only)
+// Met à jour le statut d'une réservation
+router.patch('/:id/statut', authRequired, requireRole('admin'), reservationController.updateStatut);
 
 module.exports = router;

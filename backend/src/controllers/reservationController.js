@@ -74,6 +74,45 @@ const cancelReservation = async (req, res) => {
 
 
 
+// GET /api/reservations/me/upcoming
+// Retourne les réservations à venir de l'utilisateur courant
+const getMyUpcoming = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const reservations = await reservationService.getUpcomingReservations(userId);
+        res.status(200).json(reservations);
+    } catch (error) {
+        sendError(res, error);
+    }
+};
+
+// GET /api/reservations/me/history
+// Retourne l'historique des réservations de l'utilisateur courant
+const getMyHistory = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const reservations = await reservationService.getHistoryReservations(userId);
+        res.status(200).json(reservations);
+    } catch (error) {
+        sendError(res, error);
+    }
+};
+
+// PATCH /api/reservations/:id/statut (admin uniquement)
+// Met à jour le statut d'une réservation
+const updateStatut = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { statut } = req.body;
+        const isAdmin = req.user.role === 'admin';
+
+        await reservationService.updateReservationStatut(id, statut, isAdmin);
+        res.status(200).json({ message: 'Statut mis à jour avec succès' });
+    } catch (error) {
+        sendError(res, error);
+    }
+};
+
 // GET /api/reservations/user/:userId (admin only)
 // Retourne les réservations d'un utilisateur spécifique
 const getUserReservationsAdmin = async (req, res) => {
@@ -88,9 +127,12 @@ const getUserReservationsAdmin = async (req, res) => {
 
 module.exports = {
     getMyReservations,
+    getMyUpcoming,
+    getMyHistory,
     getAllReservations,
     getReservationDetails,
     createReservation,
     cancelReservation,
+    updateStatut,
     getUserReservationsAdmin
 };
