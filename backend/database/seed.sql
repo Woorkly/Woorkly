@@ -17,11 +17,15 @@ SELECT * FROM (SELECT 'Vidéoprojecteur') AS tmp WHERE NOT EXISTS (SELECT nom FR
 INSERT INTO `equipements` (nom) 
 SELECT * FROM (SELECT 'Machine à café') AS tmp WHERE NOT EXISTS (SELECT nom FROM `equipements` WHERE nom = 'Machine à café') LIMIT 1;
 
--- 3. Insertion d'un utilisateur de test (password: password123)
--- 3. Insertion d'un utilisateur de test (Mise à jour avec avatar)
+-- 3. Utilisateur de test Jean Workly (password: password123 — plain, non bcrypt)
 INSERT INTO `utilisateurs` (nom, email, password, avatar_url, role)
-SELECT * FROM (SELECT 'Jean Workly', 'jean@workly.fr', 'password123', 'avatar1.png', 'user') AS tmp 
+SELECT * FROM (SELECT 'Jean Workly', 'jean@workly.fr', 'password123', 'avatar1.png', 'user') AS tmp
 WHERE NOT EXISTS (SELECT email FROM `utilisateurs` WHERE email = 'jean@workly.fr') LIMIT 1;
+
+-- 3b. Utilisateur partagé équipe (password: AZERTY!123)
+INSERT INTO `utilisateurs` (nom, email, password, avatar_url, role)
+SELECT * FROM (SELECT 'Gadjou Bernard', 'gadjou@gmail.com', '$2b$10$mMcGbxB6yDwa.E8T6Uvs0e80gaYEGSn1rEu8IMR6IKGVipIXK74mG', 'default-avatar.png', 'user') AS tmp
+WHERE NOT EXISTS (SELECT email FROM `utilisateurs` WHERE email = 'gadjou@gmail.com') LIMIT 1;
 
 -- 4. Insertion d'une salle de test
 INSERT INTO `salles` (nom, statut, adresse, code_postal, ville, capacite, prix_heure, prix_demi_journee, prix_journee, image_principale, type_id)
@@ -37,7 +41,7 @@ WHERE nom = 'La Station' AND (prix_demi_journee IS NULL OR prix_journee IS NULL)
 INSERT INTO `reservations` (date, heure_debut, heure_fin, type_reservation, statut, prix_total, salle_id, utilisateur_id)
 SELECT d, hd, hf, tr, st, pt,
     (SELECT id FROM salles       WHERE nom   = 'La Station'    LIMIT 1) AS salle_id,
-    (SELECT id FROM utilisateurs WHERE email = 'jean@workly.fr' LIMIT 1) AS utilisateur_id
+    (SELECT id FROM utilisateurs WHERE email = 'gadjou@gmail.com' LIMIT 1) AS utilisateur_id
 FROM (
     -- ── Janvier 2026 : 3 réservations, 1 annulation ──
     SELECT '2026-01-08' d, '09:00:00' hd, '12:00:00' hf, 'demi-journee' tr, 'terminee'   st,  75.00 pt UNION ALL
@@ -73,5 +77,5 @@ FROM (
 ) AS data
 WHERE NOT EXISTS (
     SELECT 1 FROM reservations
-    WHERE utilisateur_id = (SELECT id FROM utilisateurs WHERE email = 'jean@workly.fr' LIMIT 1)
+    WHERE utilisateur_id = (SELECT id FROM utilisateurs WHERE email = 'gadjou@gmail.com' LIMIT 1)
 );
