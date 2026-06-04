@@ -1,6 +1,6 @@
-import { /* no local state needed for tables */ } from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from '../../../hooks/useAuth';
+import reservationService from '../../../services/reservationService';
 import "./DashboardUser.css";
 import {
   ResponsiveContainer,
@@ -15,19 +15,6 @@ import {
   Cell
 } from 'recharts';
 
-const upcomingReservations = [
-  { date: "Oct 15 14:00", salle: "Innovation Hub", utilisateur: "Sarah Dupont", statut: "Confirmé" },
-  { date: "Oct 16 09:00", salle: "Boardroom A", utilisateur: "Marc Lemoine", statut: "Confirmé" },
-  { date: "Oct 17 11:00", salle: "Boardroom B", utilisateur: "Sarah Dupont", statut: "Confirmé" },
-];
-
-const historyReservations = [
-  { date: "Oct 15 11:30", salle: "Boardroom A", utilisateur: "Marc Lemoine", statut: "Terminé" },
-  { date: "Oct 15 11:30", salle: "Boardroom A", utilisateur: "Marc Lemoine", statut: "Annulé" },
-  { date: "Oct 14 10:00", salle: "Innovation Hub", utilisateur: "Sarah Dupont", statut: "Terminé" },
-  { date: "Oct 13 15:00", salle: "Boardroom B", utilisateur: "Marc Lemoine", statut: "Terminé" },
-];
-
 const monthlyData = [
   { month: "Jan", reservations: 40, annulations: 20 },
   { month: "Fév", reservations: 30, annulations: 25 },
@@ -38,15 +25,39 @@ const monthlyData = [
   { month: "Jul", reservations: 50, annulations: 25 },
   { month: "Aoû", reservations: 80, annulations: 20 },
   { month: "Sep", reservations: 80, annulations: 15 },
-  { month: "Oct", reservations: 6, annulations: 5 },
+  { month: "Oct", reservations: 6,  annulations: 5  },
 ];
 
 const usageData = [
-  { label: "Team Syncs", percent: 50, color: "#1A56A0" },
+  { label: "Team Syncs",   percent: 50, color: "#1A56A0" },
   { label: "Client Calls", percent: 30, color: "#38BDF8" },
-  { label: "Planning", percent: 20, color: "#10B981" },
-  { label: "Ateliers", percent: 10, color: "#F59E0B" },
+  { label: "Planning",     percent: 20, color: "#10B981" },
+  { label: "Ateliers",     percent: 10, color: "#F59E0B" },
 ];
+
+const STATUT_MAP = {
+  'en-attente': { cls: 'badge-pending', label: 'En attente' },
+  'confirmee':  { cls: 'badge-confirm', label: 'Confirmé'  },
+  'annulee':    { cls: 'badge-cancel',  label: 'Annulé'    },
+  'terminee':   { cls: 'badge-done',    label: 'Terminé'   },
+  'abandonne':  { cls: 'badge-abandon', label: 'Abandonné' },
+};
+
+function StatutBadge({ statut }) {
+  const entry = STATUT_MAP[statut] || { cls: '', label: statut };
+  return <span className={`badge ${entry.cls}`}>{entry.label}</span>;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function formatTime(timeStr) {
+  if (!timeStr) return '';
+  return timeStr.substring(0, 5);
+}
 
 function DonutChart({ data }) {
   return (
@@ -89,11 +100,11 @@ function ReservationsBarChart({ data }) {
         <BarChart data={data} margin={{ top: 12, right: 20, left: 8, bottom: 12 }}>
           <defs>
             <linearGradient id="barGradReservations" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#60A5FA" stopOpacity={0.9} />
+              <stop offset="5%"  stopColor="#60A5FA" stopOpacity={0.9} />
               <stop offset="95%" stopColor="#60A5FA" stopOpacity={0.2} />
             </linearGradient>
             <linearGradient id="barGradAnnulations" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#1A56A0" stopOpacity={0.9} />
+              <stop offset="5%"  stopColor="#1A56A0" stopOpacity={0.9} />
               <stop offset="95%" stopColor="#1A56A0" stopOpacity={0.12} />
             </linearGradient>
           </defs>
@@ -102,25 +113,38 @@ function ReservationsBarChart({ data }) {
           <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} />
           <Tooltip formatter={(value) => [value, '']} />
           <Bar dataKey="reservations" name="Total réservations" barSize={18} fill="url(#barGradReservations)" />
-          <Bar dataKey="annulations" name="Annulations" barSize={18} fill="url(#barGradAnnulations)" />
+          <Bar dataKey="annulations"  name="Annulations"        barSize={18} fill="url(#barGradAnnulations)" />
         </BarChart>
       </ResponsiveContainer>
     </div>
   );
 }
 
-function StatutBadge({ statut }) {
-  const map = {
-    Confirmé: "badge-confirm",
-    Terminé: "badge-done",
-    Annulé: "badge-cancel",
-  };
-  return <span className={`badge ${map[statut] || ""}`}>{statut}</span>;
-}
-
 export default function DashboardUser() {
   const { user } = useAuth();
-  const dashboardName = user?.nom || user?.email || 'Utilisateur';
+  const [upcoming, setUpcoming]           = useState([]);
+  const [history, setHistory]             = useState([]);
+  const [loadingTables, setLoadingTables] = useState(true);
+
+  useEffect(() => {
+    const fetchReservations = async () => {
+      try {
+        const [upcomingData, historyData] = await Promise.all([
+          reservationService.getMyUpcoming(),
+          reservationService.getMyHistory(),
+        ]);
+        setUpcoming(upcomingData);
+        setHistory(historyData);
+      } catch (err) {
+        console.error('Erreur lors du chargement des réservations', err);
+      } finally {
+        setLoadingTables(false);
+      }
+    };
+    fetchReservations();
+  }, []);
+
+  const dashboardName  = user?.nom || user?.email || 'Utilisateur';
   const dashboardEmail = user?.email || '';
   const avatarLabel = dashboardName
     .split(' ')
@@ -150,7 +174,10 @@ export default function DashboardUser() {
         <section className="kpi-row">
           <div className="kpi-card kpi-accent">
             <p className="kpi-label">Mes Réservations à Venir</p>
-            <p style={{ fontSize:"1.55rem", fontWeight:700, color:"var(--text)", letterSpacing:"-0.03em", lineHeight:1 }}>4 <span className="kpi-unit">salles</span></p>
+            <p style={{ fontSize:"1.55rem", fontWeight:700, color:"var(--text)", letterSpacing:"-0.03em", lineHeight:1 }}>
+              {loadingTables ? '—' : upcoming.length}{' '}
+              <span className="kpi-unit">{upcoming.length <= 1 ? 'salle' : 'salles'}</span>
+            </p>
           </div>
           <div className="kpi-card kpi-blue">
             <p className="kpi-label">Heures en Réunion</p>
@@ -183,50 +210,62 @@ export default function DashboardUser() {
         <section className="tables-row">
           <div className="card table-card">
             <h3 className="card-title">Réservations — À Venir</h3>
-            <table className="resa-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Salle</th>
-                  <th>Utilisateur</th>
-                  <th>Statut</th>
-                </tr>
-              </thead>
-              <tbody>
-                {upcomingReservations.map((r, i) => (
-                  <tr key={i}>
-                    <td>{r.date}</td>
-                    <td>{r.salle}</td>
-                    <td>{r.utilisateur}</td>
-                    <td><StatutBadge statut={r.statut} /></td>
+            {loadingTables ? (
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '1rem 0' }}>Chargement…</p>
+            ) : upcoming.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '1rem 0' }}>Aucune réservation à venir.</p>
+            ) : (
+              <table className="resa-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Salle</th>
+                    <th>Heure</th>
+                    <th>Statut</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {upcoming.map((r) => (
+                    <tr key={r.id}>
+                      <td>{formatDate(r.date)}</td>
+                      <td>{r.salle_nom}</td>
+                      <td>{formatTime(r.heure_debut)} – {formatTime(r.heure_fin)}</td>
+                      <td><StatutBadge statut={r.statut} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
 
           <div className="card table-card">
             <h3 className="card-title">Historique Complet</h3>
-            <table className="resa-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Salle</th>
-                  <th>Utilisateur</th>
-                  <th>Statut</th>
-                </tr>
-              </thead>
-              <tbody>
-                {historyReservations.map((r, i) => (
-                  <tr key={i}>
-                    <td>{r.date}</td>
-                    <td>{r.salle}</td>
-                    <td>{r.utilisateur}</td>
-                    <td><StatutBadge statut={r.statut} /></td>
+            {loadingTables ? (
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '1rem 0' }}>Chargement…</p>
+            ) : history.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '1rem 0' }}>Aucun historique de réservation.</p>
+            ) : (
+              <table className="resa-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Salle</th>
+                    <th>Heure</th>
+                    <th>Statut</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {history.map((r) => (
+                    <tr key={r.id}>
+                      <td>{formatDate(r.date)}</td>
+                      <td>{r.salle_nom}</td>
+                      <td>{formatTime(r.heure_debut)} – {formatTime(r.heure_fin)}</td>
+                      <td><StatutBadge statut={r.statut} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </section>
       </main>

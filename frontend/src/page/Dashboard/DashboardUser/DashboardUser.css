@@ -383,6 +383,16 @@
   color: #b91c1c;
 }
 
+.dashboard .badge-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.dashboard .badge-abandon {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+
 @media (max-width: 640px) {
   .dash-header {
     padding: 0 1rem;
