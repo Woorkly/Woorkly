@@ -467,7 +467,7 @@ export default function GestionSalles() {
                       <td>{s.capacite || "Non renseigne"}</td>
                       <td>{getLocation(s)}</td>
                       <td style={{ fontSize: "0.79rem", color: "var(--muted)" }}>
-                        {s.type_nom || "Non renseigne"}
+                        {s.equipements || "Non renseigne"}
                       </td>
                       <td>
                         <Badge s={s.statut} />

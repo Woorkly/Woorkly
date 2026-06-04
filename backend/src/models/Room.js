@@ -29,11 +29,17 @@ class Room extends BaseModel {
     }
 
     const sql = `
-            SELECT s.*, t.nom as type_nom 
-            FROM salles s
-            JOIN types t ON s.type_id = t.id
-            ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
-        `;
+    SELECT 
+        s.*, 
+        t.nom as type_nom,
+        GROUP_CONCAT(e.nom SEPARATOR ', ') as equipements
+    FROM salles s
+    JOIN types t ON s.type_id = t.id
+    LEFT JOIN salle_equipements se ON s.id = se.salle_id
+    LEFT JOIN equipements e ON se.equipement_id = e.id
+    ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
+    GROUP BY s.id
+`;
     const [rows] = await db.execute(sql, params);
     return rows;
   }
