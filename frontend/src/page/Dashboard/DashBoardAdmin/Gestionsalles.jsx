@@ -207,6 +207,7 @@ export default function GestionSalles() {
   const [editRoomForm, setEditRoomForm] = useState(initialRoomForm);
   const [savingEditRoom, setSavingEditRoom] = useState(false);
   const [editFormError, setEditFormError] = useState(null);
+  const [roomToDelete, setRoomToDelete] = useState(null);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -297,6 +298,14 @@ export default function GestionSalles() {
 
   const updateEditRoomForm = (field, value) => {
     setEditRoomForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const openDeleteConfirm = (room) => {
+    setRoomToDelete(room);
+  };
+
+  const closeDeleteConfirm = () => {
+    setRoomToDelete(null);
   };
 
   const handleCreateRoom = async (event) => {
@@ -473,10 +482,10 @@ export default function GestionSalles() {
                         <Badge s={s.statut} />
                       </td>
                       <td>
-                        <button className="act-btn" type="button" onClick={() => openRoomDetails(s.id)}>
+                        <button className="act-btn act-edit" type="button" onClick={() => openRoomDetails(s.id)}>
                           <IconEdit />
                         </button>
-                        <button className="act-btn" type="button">
+                        <button className="act-btn act-del" type="button" onClick={() => openDeleteConfirm(s)}>
                           <IconTrash />
                         </button>
                       </td>
@@ -872,6 +881,36 @@ export default function GestionSalles() {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {roomToDelete && (
+        <div className="ud-overlay" onClick={closeDeleteConfirm}>
+          <div className="ud-panel room-delete-panel" onClick={(event) => event.stopPropagation()}>
+            <button className="ud-close" type="button" onClick={closeDeleteConfirm}>
+              x
+            </button>
+
+            <div>
+              <h3 className="ud-name">Supprimer une salle</h3>
+              <p className="ud-email">Confirme la salle avant de brancher la suppression au backend.</p>
+            </div>
+
+            <div className="room-delete-box">
+              <span className="ud-meta-label">Salle selectionnee</span>
+              <strong>{roomToDelete.nom}</strong>
+              <p>{getLocation(roomToDelete)}</p>
+            </div>
+
+            <div className="room-form-actions">
+              <button className="ud-btn-ghost" type="button" onClick={closeDeleteConfirm}>
+                Annuler
+              </button>
+              <button className="ud-btn-danger" type="button" disabled>
+                Supprimer bientot
+              </button>
+            </div>
           </div>
         </div>
       )}

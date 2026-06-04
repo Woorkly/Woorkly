@@ -1004,6 +1004,31 @@ body { font-family: var(--font); }
   max-width: 680px;
 }
 
+.room-delete-panel {
+  max-width: 460px;
+}
+
+.room-delete-box {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.room-delete-box strong {
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.room-delete-box p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .room-detail-admin-head {
   display: flex;
   align-items: center;
