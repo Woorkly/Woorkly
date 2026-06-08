@@ -20,4 +20,9 @@ const getMyStats = async () => {
   return res.data
 }
 
-export default { createReservation, getMyUpcoming, getMyHistory, getMyStats }
+const getAllReservations = async () => {
+  const res = await API.get('/reservations')
+  return res.data
+}
+
+export default { createReservation, getMyUpcoming, getMyHistory, getMyStats, getAllReservations }

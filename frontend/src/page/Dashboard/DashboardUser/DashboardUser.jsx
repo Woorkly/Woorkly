@@ -67,13 +67,15 @@ function StatutBadge({ statut }) {
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
-  const d = new Date(dateStr + 'T00:00:00');
+  // On extrait la partie date (YYYY-MM-DD) au cas où dateStr est déjà un format ISO complet
+  const datePart = String(dateStr).split('T')[0];
+  const d = new Date(datePart + 'T00:00:00');
   return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 function formatTime(timeStr) {
   if (!timeStr) return '';
-  return timeStr.substring(0, 5);
+  return String(timeStr).substring(0, 5);
 }
 
 // ─── Composants graphes ───────────────────────────────────────────────────────

@@ -23,18 +23,18 @@ const getTypesDetails = async (req, res) => {
 
         res.status(200).json(type);
     } catch (error) {
-        console.error(error);
+        console.error("ERREUR SQL :", error);
         res.status(500).json({ message: "Erreur lors de la récupération des détails" });
     }
 };
 
-// créée un nouvel Type
+// Créer un nouveau Type
 const createType = async (req, res) => {
     try {
         const typeId = await Types.create(req.body);
         res.status(201).json({ id: typeId, message: "type créé avec succès" });
     } catch (error) {
-        console.error(error);
+        console.error("ERREUR SQL :", error);
         res.status(500).json({ message: "Erreur lors de la création du type" });
     }
 };
@@ -46,19 +46,19 @@ const updateType = async (req, res) => {
         await Types.update(id, req.body);
         res.status(200).json({ message: "type mis à jour avec succès" });
     } catch (error) {
-        console.error(error);
+        console.error("ERREUR SQL :", error);
         res.status(500).json({ message: "Erreur lors de la mise à jour du type" });
     }
 };
 
-// suppression d'un Type
+// Supprimer un type
 const deleteType = async (req, res) => {
     try {
         const { id } = req.params;
         await Types.delete(id);
         res.status(200).json({ message: "type supprimé avec succès" });
     } catch (error) {
-        console.error(error);
+        console.error("ERREUR SQL :", error);
         res.status(500).json({ message: "Erreur lors de la suppression du Type" });
     }
 };

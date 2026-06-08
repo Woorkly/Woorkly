@@ -15,6 +15,7 @@ const userRoutes = require('./routes/userRoutes');
 const typeRoutes = require('./routes/typeRoutes');
 const autRoutes = require('./routes/authRoute');
 const reservationRoutes = require('./routes/reservationRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
@@ -61,6 +62,8 @@ app.use('/api/types',typeRoutes);
 app.use('/api/auth', autRoutes);
 
 app.use('/api/reservations', reservationRoutes);
+
+app.use('/api/admin', adminRoutes);
 // --- LANCEMENT ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT,"0.0.0.0", () => {
