@@ -25,7 +25,7 @@ class Reservation extends BaseModel {
     // Récupère toutes les réservations (admin)
     static async getAll() {
         const sql = `
-            SELECT r.*, s.nom as salle_nom, u.email as user_email
+            SELECT r.*, s.nom as salle_nom, u.nom as utilisateur_nom, u.email as utilisateur_email
             FROM reservations r
             JOIN salles s ON r.salle_id = s.id
             JOIN utilisateurs u ON r.utilisateur_id = u.id
