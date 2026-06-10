@@ -8,6 +8,18 @@ const sendError = (res, error) => {
 };
 
 
+// GET /api/reservations/disponibilite?salle_id=X&date=Y
+// Retourne la disponibilité des créneaux pour une salle et une date
+const getDisponibilite = async (req, res) => {
+    try {
+        const { salle_id, date } = req.query;
+        const result = await reservationService.getDisponibilite(salle_id, date);
+        res.status(200).json(result);
+    } catch (error) {
+        sendError(res, error);
+    }
+};
+
 // GET /api/reservations/me
 // Retourne les réservations de l'utilisateur courant
 const getMyReservations = async (req, res) => {
@@ -147,5 +159,6 @@ module.exports = {
     createReservation,
     cancelReservation,
     updateStatut,
-    getUserReservationsAdmin
+    getUserReservationsAdmin,
+    getDisponibilite,
 };

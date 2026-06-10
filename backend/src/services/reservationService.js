@@ -37,6 +37,26 @@ const calculatePrice = (room, typeReservation, heureDebut, heureFin) => {
     }
 };
 
+// MySQL TIME retourne "HH:MM:SS" — on normalise à "HH:MM" pour les comparaisons
+const norm = t => String(t).slice(0, 5);
+
+// Vérifie si un créneau [debut, fin) entre en conflit avec des réservations existantes
+const overlaps = (debut, fin, reservations) =>
+    reservations.some(r => !(norm(r.heure_fin) <= debut || norm(r.heure_debut) >= fin));
+
+// Retourne la disponibilité des créneaux pour une salle/date
+const getDisponibilite = async (salleId, date) => {
+    if (!salleId || !date) throw createHttpError('salle_id et date sont requis', 400);
+
+    const reservations = await Reservation.getByRoomAndDate(salleId, date);
+
+    return {
+        journee_disponible:    !overlaps('08:00', '18:00', reservations),
+        matin_disponible:      !overlaps('08:00', '12:00', reservations),
+        apres_midi_disponible: !overlaps('13:00', '18:00', reservations),
+    };
+};
+
 // Récupère les réservations de l'utilisateur courant
 const getUserReservations = async (userId) => {
     return Reservation.getByUserId(userId);
@@ -205,5 +225,6 @@ module.exports = {
     createReservation,
     cancelReservation,
     updateReservationStatut,
-    calculatePrice
+    calculatePrice,
+    getDisponibilite,
 };

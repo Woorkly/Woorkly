@@ -48,14 +48,29 @@ class Reservation extends BaseModel {
         return rows[0];
     }
 
+    // Retourne les réservations actives d'une salle pour une date donnée (pour le calcul de disponibilité)
+    // en-attente ET confirmée bloquent le créneau ; annulée et abandonnée le libèrent
+    static async getByRoomAndDate(salleId, date) {
+        const sql = `
+            SELECT heure_debut, heure_fin, type_reservation
+            FROM reservations
+            WHERE salle_id = ?
+            AND DATE(date) = ?
+            AND statut IN ('en-attente', 'confirmee')
+        `;
+        const [rows] = await db.execute(sql, [salleId, date]);
+        return rows;
+    }
+
      // Vérifie s'il y a un chevauchement horaire pour une salle à une date donnée
+    // en-attente ET confirmée génèrent un conflit ; annulée et abandonnée sont ignorées
     static async hasConflict(salleId, date, heureDebut, heureFin, excludeId = null) {
         let sql = `
             SELECT COUNT(*) as conflict
             FROM reservations
             WHERE salle_id = ?
             AND DATE(date) = ?
-            AND statut != 'annulee'
+            AND statut IN ('en-attente', 'confirmee')
             AND NOT (heure_fin <= ? OR heure_debut >= ?)
         `;
         const params = [salleId, date, heureDebut, heureFin];

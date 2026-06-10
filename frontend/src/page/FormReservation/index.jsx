@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import "./style.css";
 import useRooms from "../../hooks/useRooms";
 import useReservation from "../../hooks/useReservation";
+import reservationService from "../../services/reservationService";
 
 const DEMI_PERIODES = {
   matin:        { heureDebut: "08:00", heureFin: "12:00" },
@@ -27,8 +28,23 @@ export default function ReservationPage() {
   const [heureFin, setHeureFin]       = useState("10:00");
   const [successMessage, setSuccessMessage] = useState("");
   const [localError, setLocalError]         = useState("");
+  const [dispo, setDispo]               = useState(null);
+  const [dispoLoading, setDispoLoading] = useState(false);
 
   const minDate = getTodayInputValue();
+
+  const fetchDispo = useCallback(async (selectedDate) => {
+    if (!selectedDate || !room?.id) { setDispo(null); return; }
+    setDispoLoading(true);
+    try {
+      const data = await reservationService.getDisponibilite(room.id, selectedDate);
+      setDispo(data);
+    } catch {
+      setDispo(null);
+    } finally {
+      setDispoLoading(false);
+    }
+  }, [room?.id]);
 
   useEffect(() => {
     if (formule === "heure") {
@@ -39,11 +55,43 @@ export default function ReservationPage() {
       setHeureDebut(p.heureDebut);
       setHeureFin(p.heureFin);
     } else {
-      // journée : bloque l'intégralité de la journée de travail
       setHeureDebut("08:00");
       setHeureFin("18:00");
     }
   }, [formule, demiPeriode]);
+
+  useEffect(() => { fetchDispo(date); }, [date, fetchDispo]);
+
+  const prix = useMemo(() => {
+    if (!room) return null;
+    if (formule === "heure") {
+      if (!heureDebut || !heureFin) return null;
+      const [sh, sm] = heureDebut.split(":").map(Number);
+      const [eh, em] = heureFin.split(":").map(Number);
+      const duree = ((eh * 60 + em) - (sh * 60 + sm)) / 60;
+      if (duree <= 0) return null;
+      return Number(room.prix_heure || 0) * duree;
+    }
+    if (formule === "demi-journée") {
+      const p = Number(room.prix_demi_journee);
+      return isNaN(p) ? null : p;
+    }
+    if (formule === "journée") {
+      const p = Number(room.prix_journee);
+      return isNaN(p) ? null : p;
+    }
+    return null;
+  }, [room, formule, heureDebut, heureFin]);
+
+  // Quand la disponibilité change, réinitialise automatiquement la période ou la formule si elles deviennent bloquées
+  useEffect(() => {
+    if (!dispo) return;
+    if (formule === "demi-journée") {
+      if (!dispo.matin_disponible && dispo.apres_midi_disponible) setDemiPeriode("apres-midi");
+      if (!dispo.apres_midi_disponible && dispo.matin_disponible) setDemiPeriode("matin");
+    }
+    if (formule === "journée" && !dispo.journee_disponible) setFormule("heure");
+  }, [dispo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -155,9 +203,21 @@ export default function ReservationPage() {
             </label>
             <div className="radio-group">
               {[
-                { value: "heure",       label: "À l'heure" },
-                { value: "demi-journée", label: "À la demi-journée" },
-                { value: "journée",     label: "À la journée" },
+                {
+                  value: "heure",
+                  label: "À l'heure",
+                  blocked: dispoLoading,
+                },
+                {
+                  value: "demi-journée",
+                  label: "À la demi-journée",
+                  blocked: dispoLoading || (dispo ? (!dispo.matin_disponible && !dispo.apres_midi_disponible) : false),
+                },
+                {
+                  value: "journée",
+                  label: "À la journée",
+                  blocked: dispoLoading || (dispo ? !dispo.journee_disponible : false),
+                },
               ].map((f) => (
                 <div className="radio-option" key={f.value}>
                   <input
@@ -166,10 +226,15 @@ export default function ReservationPage() {
                     name="formule"
                     value={f.value}
                     checked={formule === f.value}
-                    onChange={() => setFormule(f.value)}
+                    disabled={f.blocked}
+                    onChange={() => !f.blocked && setFormule(f.value)}
                   />
-                  <label className="radio-label" htmlFor={f.value}>
-                    {f.label}
+                  <label
+                    className={`radio-label${f.blocked ? " radio-label--blocked" : ""}`}
+                    htmlFor={f.value}
+                  >
+                    {dispoLoading ? `${f.label}…` : f.label}
+                    {!dispoLoading && f.blocked && <span className="badge-complet">Complet</span>}
                   </label>
                 </div>
               ))}
@@ -188,8 +253,18 @@ export default function ReservationPage() {
                 value={demiPeriode}
                 onChange={(e) => setDemiPeriode(e.target.value)}
               >
-                <option value="matin">Matin (8h00 – 12h00)</option>
-                <option value="apres-midi">Après-midi (13h00 – 18h00)</option>
+                <option
+                  value="matin"
+                  disabled={dispo ? !dispo.matin_disponible : false}
+                >
+                  Matin (8h00 – 12h00){dispo && !dispo.matin_disponible ? " — Complet" : ""}
+                </option>
+                <option
+                  value="apres-midi"
+                  disabled={dispo ? !dispo.apres_midi_disponible : false}
+                >
+                  Après-midi (13h00 – 18h00){dispo && !dispo.apres_midi_disponible ? " — Complet" : ""}
+                </option>
               </select>
             </div>
           )}
@@ -267,6 +342,13 @@ export default function ReservationPage() {
             <p className="time-hint">
               Créneau réservé : <strong>{heureDebut} – {heureFin}</strong>
             </p>
+          )}
+
+          {prix !== null && (
+            <div className="prix-total">
+              <span className="prix-label">Total estimé</span>
+              <span className="prix-value">{prix.toFixed(2)} €</span>
+            </div>
           )}
 
           <button className="btn-submit" type="submit" disabled={submitting || roomLoading}>

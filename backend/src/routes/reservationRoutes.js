@@ -3,6 +3,10 @@ const router = express.Router();
 const reservationController = require('../controllers/reservationController');
 const { authRequired, requireRole } = require('../middlewares/auth');
 
+// GET /api/reservations/disponibilite?salle_id=X&date=Y
+// Retourne la disponibilité des créneaux (accessible aux utilisateurs connectés)
+router.get('/disponibilite', authRequired, reservationController.getDisponibilite);
+
 // GET /api/reservations/me
 // Retourne les réservations de l'utilisateur connecté
 router.get('/me', authRequired, reservationController.getMyReservations);
