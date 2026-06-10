@@ -4,10 +4,9 @@ import "./style.css";
 import useRooms from "../../hooks/useRooms";
 import useReservation from "../../hooks/useReservation";
 
-const DEFAULT_TIMES = {
-  heure: { heureDebut: "09:00", heureFin: "10:00" },
-  "demi-journée": { heureDebut: "09:00", heureFin: "12:00" },
-  journée: { heureDebut: "09:00", heureFin: "17:00" },
+const DEMI_PERIODES = {
+  matin:        { heureDebut: "08:00", heureFin: "12:00" },
+  "apres-midi": { heureDebut: "13:00", heureFin: "18:00" },
 };
 
 const getTodayInputValue = () => {
@@ -17,23 +16,34 @@ const getTodayInputValue = () => {
 };
 
 export default function ReservationPage() {
-  const {roomId} = useParams();
+  const { roomId } = useParams();
   const { room, loading: roomLoading, error: roomError } = useRooms({ roomId });
   const { createReservation, loading: submitting, error: reservationError } = useReservation();
-  const [formule, setFormule] = useState("heure");
-  const [date, setDate] = useState(""); 
-  const [heureDebut, setHeureDebut] = useState(DEFAULT_TIMES.heure.heureDebut);
-  const [heureFin, setHeureFin] = useState(DEFAULT_TIMES.heure.heureFin);
+
+  const [formule, setFormule]         = useState("heure");
+  const [demiPeriode, setDemiPeriode] = useState("matin");
+  const [date, setDate]               = useState("");
+  const [heureDebut, setHeureDebut]   = useState("08:00");
+  const [heureFin, setHeureFin]       = useState("10:00");
   const [successMessage, setSuccessMessage] = useState("");
-  const [localError, setLocalError] = useState("");
+  const [localError, setLocalError]         = useState("");
 
   const minDate = getTodayInputValue();
 
   useEffect(() => {
-    const defaultTimes = DEFAULT_TIMES[formule];
-    setHeureDebut(defaultTimes.heureDebut);
-    setHeureFin(defaultTimes.heureFin);
-  }, [formule]);
+    if (formule === "heure") {
+      setHeureDebut("08:00");
+      setHeureFin("10:00");
+    } else if (formule === "demi-journée") {
+      const p = DEMI_PERIODES[demiPeriode];
+      setHeureDebut(p.heureDebut);
+      setHeureFin(p.heureFin);
+    } else {
+      // journée : bloque l'intégralité de la journée de travail
+      setHeureDebut("08:00");
+      setHeureFin("18:00");
+    }
+  }, [formule, demiPeriode]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -55,6 +65,13 @@ export default function ReservationPage() {
       return;
     }
 
+    const [y, mo, d] = date.split("-").map(Number);
+    const weekday = new Date(y, mo - 1, d).getDay();
+    if (weekday === 0 || weekday === 6) {
+      setLocalError("Les réservations ne sont pas disponibles le week-end.");
+      return;
+    }
+
     if (!heureDebut || !heureFin) {
       setLocalError("Veuillez renseigner les horaires de réservation.");
       return;
@@ -65,18 +82,16 @@ export default function ReservationPage() {
         salle_id: room.id,
         date,
         heure_debut: heureDebut,
-        heure_fin: heureFin,
+        heure_fin:   heureFin,
         type_reservation: formule,
       };
 
       const created = await createReservation(payload);
       setSuccessMessage(`Réservation créée avec succès${created?.id ? ` (ID ${created.id})` : ""}.`);
     } catch (error) {
-      // L'erreur est déjà exposée via le hook, on garde aussi un message local pour l'UI.
       setLocalError(error.response?.data?.message || error.message || "Erreur lors de la création de la réservation");
     }
   };
-
 
   return (
     <div className="page">
@@ -114,7 +129,7 @@ export default function ReservationPage() {
             </div>
           </div>
 
-          {/* Notification */}
+          {/* Notification salle */}
           <div className="notif">
             {roomLoading
               ? "Chargement de la salle..."
@@ -123,7 +138,7 @@ export default function ReservationPage() {
                 : `Vous avez sélectionné la salle ${room?.nom ?? "—"}, sous réserve de disponibilité`}
           </div>
 
-          {reservationError || localError ? (
+          {(reservationError || localError) ? (
             <p className="form-message form-message-error">
               {localError || reservationError}
             </p>
@@ -140,9 +155,9 @@ export default function ReservationPage() {
             </label>
             <div className="radio-group">
               {[
-                { value: "heure", label: "À l'heure" },
+                { value: "heure",       label: "À l'heure" },
                 { value: "demi-journée", label: "À la demi-journée" },
-                { value: "journée", label: "À la journée" },
+                { value: "journée",     label: "À la journée" },
               ].map((f) => (
                 <div className="radio-option" key={f.value}>
                   <input
@@ -161,6 +176,24 @@ export default function ReservationPage() {
             </div>
           </div>
 
+          {/* Sélecteur matin / après-midi — visible uniquement pour demi-journée */}
+          {formule === "demi-journée" && (
+            <div className="form-group">
+              <label className="form-label" htmlFor="demiPeriode">
+                Période <span>*</span>
+              </label>
+              <select
+                id="demiPeriode"
+                className="form-input"
+                value={demiPeriode}
+                onChange={(e) => setDemiPeriode(e.target.value)}
+              >
+                <option value="matin">Matin (8h00 – 12h00)</option>
+                <option value="apres-midi">Après-midi (13h00 – 18h00)</option>
+              </select>
+            </div>
+          )}
+
           {/* Date */}
           <div className="form-group">
             <label className="form-label" htmlFor="date">
@@ -173,48 +206,74 @@ export default function ReservationPage() {
                 className="form-input"
                 value={date}
                 min={minDate}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setDate(val);
+                  if (val) {
+                    const [y, mo, d] = val.split("-").map(Number);
+                    const wd = new Date(y, mo - 1, d).getDay();
+                    setLocalError(
+                      wd === 0 || wd === 6
+                        ? "Les réservations ne sont pas disponibles le week-end."
+                        : ""
+                    );
+                  }
+                }}
               />
+              <p className="time-hint" style={{ marginTop: "0.4rem" }}>
+                Disponible du lundi au vendredi uniquement.
+              </p>
             </div>
           </div>
 
-          {/* Horaires */}
-          <div className="time-grid">
-            <div className="form-group">
-              <label className="form-label" htmlFor="heureDebut">
-                Heure de début <span>*</span>
-              </label>
-              <input
-                id="heureDebut"
-                type="time"
-                className="form-input"
-                value={heureDebut}
-                onChange={(e) => setHeureDebut(e.target.value)}
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label" htmlFor="heureFin">
-                Heure de fin <span>*</span>
-              </label>
-              <input
-                id="heureFin"
-                type="time"
-                className="form-input"
-                value={heureFin}
-                onChange={(e) => setHeureFin(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <p className="time-hint">
-            Les horaires sont ajustés automatiquement selon la formule choisie.
-          </p>
+          {/* Horaires libres pour "heure", récapitulatif fixe pour les autres */}
+          {formule === "heure" ? (
+            <>
+              <div className="time-grid">
+                <div className="form-group">
+                  <label className="form-label" htmlFor="heureDebut">
+                    Heure de début <span>*</span>
+                  </label>
+                  <input
+                    id="heureDebut"
+                    type="time"
+                    className="form-input"
+                    value={heureDebut}
+                    min="08:00"
+                    max="18:00"
+                    onChange={(e) => setHeureDebut(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="heureFin">
+                    Heure de fin <span>*</span>
+                  </label>
+                  <input
+                    id="heureFin"
+                    type="time"
+                    className="form-input"
+                    value={heureFin}
+                    min="08:00"
+                    max="18:00"
+                    onChange={(e) => setHeureFin(e.target.value)}
+                  />
+                </div>
+              </div>
+              <p className="time-hint">
+                Les horaires sont ajustés automatiquement selon la formule choisie.
+              </p>
+            </>
+          ) : (
+            <p className="time-hint">
+              Créneau réservé : <strong>{heureDebut} – {heureFin}</strong>
+            </p>
+          )}
 
           <button className="btn-submit" type="submit" disabled={submitting || roomLoading}>
             {submitting ? "Enregistrement..." : "Réserver"}
           </button>
         </form>
-      </div>   
+      </div>
     </div>
   );
 }
