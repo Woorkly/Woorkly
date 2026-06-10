@@ -25,4 +25,9 @@ const getAllReservations = async () => {
   return res.data
 }
 
-export default { createReservation, getMyUpcoming, getMyHistory, getMyStats, getAllReservations }
+const getDisponibilite = async (salleId, date) => {
+  const res = await API.get('/reservations/disponibilite', { params: { salle_id: salleId, date } })
+  return res.data
+}
+
+export default { createReservation, getMyUpcoming, getMyHistory, getMyStats, getAllReservations, getDisponibilite }
