@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
+const upload = require('../middlewares/upload');
 
 // Route pour récupérer tous les utilisateurs
 // URL : GET http://localhost:3000/api/users/
@@ -18,9 +19,9 @@ router.post('/', userController.createUser);
 // URL : PUT http://localhost:3000/api/users/1
 router.put('/:id', userController.updateUser);
 
-// Route pour modification partielle (ex: rôle)
+// Route pour modification partielle (ex: rôle, avatar)
 // URL : PATCH http://localhost:3000/api/users/1
-router.patch('/:id', userController.patchUser);
+router.patch('/:id', upload.single('avatar'), userController.patchUser);
 
 // Route pour supprimer un utilisateur
 // URL : DELETE http://localhost:3000/api/users/1

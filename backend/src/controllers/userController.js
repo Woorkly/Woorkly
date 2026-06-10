@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Reservation = require('../models/Reservation');
+const { uploadFromBuffer } = require('../services/uploadService');
 
 // Récupérer tous les utilisateurs
 const getAllUsers = async (req, res) => {
@@ -56,10 +57,17 @@ const updateUser = async (req, res) => {
 const patchUser = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Gestion de l'upload de l'avatar s'il y a un fichier
+        if (req.file) {
+            const result = await uploadFromBuffer(req.file.buffer, 'woorkly/avatars');
+            req.body.avatar_url = result.secure_url;
+        }
+
         await User.patch(id, req.body);
 
-        // Re-émettre le JWT si des champs de profil changent (nom/email)
-        if (req.body.nom !== undefined || req.body.email !== undefined) {
+        // Re-émettre le JWT si des champs de profil changent (nom/email/avatar_url)
+        if (req.body.nom !== undefined || req.body.email !== undefined || req.body.avatar_url !== undefined) {
             const updatedUser = await User.findById(id);
             if (updatedUser) {
                 const authService = require('../services/authService');
@@ -74,7 +82,7 @@ const patchUser = async (req, res) => {
                 });
                 return res.status(200).json({
                     message: "Utilisateur mis à jour avec succès",
-                    user: { userId: updatedUser.id, nom: updatedUser.nom, email: updatedUser.email, role: updatedUser.role },
+                    user: { userId: updatedUser.id, nom: updatedUser.nom, email: updatedUser.email, role: updatedUser.role, avatar_url: updatedUser.avatar_url },
                 });
             }
         }
