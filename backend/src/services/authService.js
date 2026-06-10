@@ -6,13 +6,14 @@ const User = require("../models/User");
 
 
 // Fonction pour générer un token JWT
-const generateToken = (user) => {   
+const generateToken = (user) => {
     return jwt.sign(
         {
             userId: user.id,
             email: user.email,
             nom: user.nom,
-            role: user.role
+            role: user.role,
+            avatar_url: user.avatar_url || null,
         },
         process.env.JWT_SECRET,
         { expiresIn: '7d' }

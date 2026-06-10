@@ -367,7 +367,11 @@ export default function DashboardUser() {
           onClick={() => setShowProfileModal(true)}
           title="Modifier mon profil"
         >
-          <span>{avatarLabel || 'U'}</span>
+          {user?.avatar_url && user.avatar_url !== 'default-avatar.png' ? (
+            <img src={user.avatar_url} alt={avatarLabel} className="dash-avatar__img" />
+          ) : (
+            <span>{avatarLabel || 'U'}</span>
+          )}
         </div>
       </header>
 

@@ -27,6 +27,7 @@ const login = async (req, res) => {
       email: user.email,
       nom: user.nom,
       role: user.role,
+      avatar_url: user.avatar_url || null,
     });
   } catch (error) {
     if (error.message === "Utilisateur non trouvé" || error.message === "Mot de passe incorrect") {
@@ -50,6 +51,7 @@ const me = (req, res) => {
       email: decoded.email,
       nom: decoded.nom,
       role: decoded.role,
+      avatar_url: decoded.avatar_url || null,
     });
   } catch (err) {
     return res.status(401).json({ message: 'Token invalide' });
