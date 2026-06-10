@@ -4,6 +4,7 @@ require("dotenv").config({
 });
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const cookieParser = require('cookie-parser');
 
 // 1. Importation des routes (on les créera juste après)
@@ -21,6 +22,7 @@ const app = express();
 const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
 
 // --- MIDDLEWARES ---
+app.use(helmet());
 // Allow the frontend (Vite) to send/receive cookies (HttpOnly token)
 // Permet d'autoriser localhost et TOUTES les URL de preview ou principales de Vercel
 const allowedOrigins = [
