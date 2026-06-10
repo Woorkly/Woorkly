@@ -4,6 +4,26 @@ const db = require("../config/db");
 
 class User extends BaseModel {
     static table='utilisateurs';
+
+  static normalizeFields(fields) {
+    const normalized = { ...fields };
+
+    if (normalized.avatar !== undefined && normalized.avatar_url === undefined) {
+      normalized.avatar_url = normalized.avatar;
+    }
+
+    delete normalized.avatar;
+    
+    if (typeof normalized.avatar_url === 'object' || normalized.avatar_url === '[object Object]' || normalized.avatar_url === '{}') {
+      delete normalized.avatar_url;
+    }
+
+    return Object.fromEntries(
+      Object.entries(normalized).filter(([key, value]) =>
+        ['nom', 'email', 'password', 'avatar_url', 'role'].includes(key) && value !== undefined
+      )
+    );
+  }
    
 
   constructor(data) {
@@ -42,17 +62,18 @@ class User extends BaseModel {
   static async update(id, data) {
     const connection = await super.getConnection();
     try {
+      const normalizedData = User.normalizeFields(data);
       const sql = `
                 UPDATE utilisateurs 
                 SET nom = ?, email = ?, password = ?, avatar_url = ?, role = ?
                 WHERE id = ?
             `;
       const params = [
-        data.nom,
-        data.email,
-        data.password,
-        data.avatar_url,
-        data.role,
+        normalizedData.nom !== undefined ? normalizedData.nom : data.nom,
+        normalizedData.email !== undefined ? normalizedData.email : data.email,
+        normalizedData.password !== undefined ? normalizedData.password : data.password,
+        normalizedData.avatar_url !== undefined ? normalizedData.avatar_url : data.avatar_url,
+        normalizedData.role !== undefined ? normalizedData.role : data.role,
         id,
       ];
 
@@ -66,7 +87,7 @@ class User extends BaseModel {
   static async patch(id, fields) {
     const connection = await super.getConnection();
     try {
-      const entries = Object.entries(fields);
+      const entries = Object.entries(User.normalizeFields(fields));
       const processedEntries = await Promise.all(
         entries.map(async ([col, val]) => {
           if (col === 'password' && val) {

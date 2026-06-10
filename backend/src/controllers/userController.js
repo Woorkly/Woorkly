@@ -61,7 +61,9 @@ const patchUser = async (req, res) => {
         // Gestion de l'upload de l'avatar s'il y a un fichier
         if (req.file) {
             const result = await uploadFromBuffer(req.file.buffer, 'woorkly/avatars');
-            req.body.avatar_url = result.secure_url;
+            if (result && (result.secure_url || result.url)) {
+                req.body.avatar_url = result.secure_url || result.url;
+            }
         }
 
         await User.patch(id, req.body);
