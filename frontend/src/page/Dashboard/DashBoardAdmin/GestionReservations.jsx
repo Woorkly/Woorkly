@@ -105,6 +105,25 @@ export default function GestionReservations() {
   const setFilter = (key, value) =>
     setFilters((prev) => ({ ...prev, [key]: value }))
 
+  const handleStatut = async (newStatut) => {
+    const id = selected.id
+    await reservationService.updateStatut(id, newStatut)
+    // Mise à jour locale : événement sur le calendrier + panel détail
+    setEvents((prev) =>
+      prev.map((ev) =>
+        Number(ev.id) === id
+          ? {
+              ...ev,
+              backgroundColor: STATUT_COLORS[newStatut] ?? ev.backgroundColor,
+              borderColor:     STATUT_COLORS[newStatut] ?? ev.borderColor,
+              extendedProps:   { ...ev.extendedProps, statut: newStatut },
+            }
+          : ev
+      )
+    )
+    setSelected((prev) => ({ ...prev, statut: newStatut }))
+  }
+
   return (
     <>
       <div className="topbar">Tableau de bord Admin</div>
@@ -285,6 +304,31 @@ export default function GestionReservations() {
                 </span>
               </div>
             </div>
+
+            {(selected.statut === "en-attente" || selected.statut === "confirmee") && (
+              <div style={{ display: "flex", gap: "0.6rem", marginTop: "1.25rem" }}>
+                {selected.statut === "en-attente" && (
+                  <button
+                    onClick={() => handleStatut("confirmee")}
+                    style={{
+                      flex: 1, padding: "0.55rem 0", borderRadius: 8, border: "none",
+                      background: "#10B981", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "0.85rem"
+                    }}
+                  >
+                    ✓ Confirmer
+                  </button>
+                )}
+                <button
+                  onClick={() => handleStatut("annulee")}
+                  style={{
+                    flex: 1, padding: "0.55rem 0", borderRadius: 8, border: "none",
+                    background: "#EF4444", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "0.85rem"
+                  }}
+                >
+                  ✕ Annuler
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

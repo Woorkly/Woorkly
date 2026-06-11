@@ -35,9 +35,14 @@ const getFiltersData = async () => {
   return res.data
 }
 
+const updateStatut = async (id, statut) => {
+  const res = await API.patch(`/reservations/${id}/statut`, { statut })
+  return res.data
+}
+
 const getDisponibilite = async (salleId, date) => {
   const res = await API.get('/reservations/disponibilite', { params: { salle_id: salleId, date } })
   return res.data
 }
 
-export default { createReservation, getMyUpcoming, getMyHistory, getMyStats, getAllReservations, getFiltersData, getDisponibilite }
+export default { createReservation, getMyUpcoming, getMyHistory, getMyStats, getAllReservations, getFiltersData, updateStatut, getDisponibilite }
