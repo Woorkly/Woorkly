@@ -177,7 +177,7 @@ class Room extends BaseModel {
     return rows;
   }
 
-  static async update(id, data, equipmentIds = []) {
+  static async update(id, data, equipmentIds = [], photos = []) {
     const connection = await super.getConnection();
     try {
       await connection.beginTransaction();
@@ -228,6 +228,20 @@ class Room extends BaseModel {
       ];
 
       const [result] = await connection.execute(sql, params);
+
+      // --- Mise à jour des tables liées (photos et équipements) ---
+
+      // 1. Photos de la galerie (supprimer puis réinsérer)
+      await connection.execute(
+        "DELETE FROM salle_photos WHERE salle_id = ?",
+        [id],
+      );
+      if (photos && photos.length > 0) {
+        const photoSql = "INSERT INTO salle_photos (salle_id, url) VALUES (?, ?)";
+        for (const url of photos) {
+          await connection.execute(photoSql, [id, url]);
+        }
+      }
 
       await connection.execute(
         "DELETE FROM salle_equipements WHERE salle_id = ?",
