@@ -27,6 +27,10 @@ router.get('/me/history', authRequired, reservationController.getMyHistory);
 // Retourne toutes les réservations
 router.get('/', authRequired, requireRole('admin'), reservationController.getAllReservations);
 
+// GET /api/reservations/filters-data (admin only)
+// Retourne les listes salles + utilisateurs pour les menus déroulants de filtres
+router.get('/filters-data', authRequired, requireRole('admin'), reservationController.getFiltersData);
+
 // GET /api/reservations/user/:userId (admin only)
 // Retourne les réservations d'un utilisateur spécifique
 router.get('/user/:userId', authRequired, requireRole('admin'), reservationController.getUserReservationsAdmin);

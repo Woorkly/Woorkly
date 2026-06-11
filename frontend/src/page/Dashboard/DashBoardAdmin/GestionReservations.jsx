@@ -70,18 +70,59 @@ function formatDate(raw) {
 export default function GestionReservations() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const [typeTab, setTypeTab]   = useState("Heure")
-  const [events, setEvents]     = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [selected, setSelected] = useState(null)
+  const [events, setEvents]         = useState([])
+  const [loading, setLoading]       = useState(true)
+  const [selected, setSelected]     = useState(null)
+  const [salles, setSalles]         = useState([])
+  const [utilisateurs, setUtilisateurs] = useState([])
+  const [filters, setFilters]       = useState({
+    salle_id: "",
+    utilisateur_id: "",
+    statut: "",
+    type_reservation: "",
+  })
 
+  // Chargement initial des listes pour les menus déroulants
   useEffect(() => {
+    reservationService.getFiltersData()
+      .then(({ salles, utilisateurs }) => {
+        setSalles(salles)
+        setUtilisateurs(utilisateurs)
+      })
+      .catch(() => {})
+  }, [])
+
+  // Re-fetch réservations à chaque changement de filtre
+  useEffect(() => {
+    setLoading(true)
     reservationService
-      .getAllReservations()
+      .getAllReservations(filters)
       .then((data) => setEvents(data.map(toEvent)))
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [])
+  }, [filters])
+
+  const setFilter = (key, value) =>
+    setFilters((prev) => ({ ...prev, [key]: value }))
+
+  const handleStatut = async (newStatut) => {
+    const id = selected.id
+    await reservationService.updateStatut(id, newStatut)
+    // Mise à jour locale : événement sur le calendrier + panel détail
+    setEvents((prev) =>
+      prev.map((ev) =>
+        Number(ev.id) === id
+          ? {
+              ...ev,
+              backgroundColor: STATUT_COLORS[newStatut] ?? ev.backgroundColor,
+              borderColor:     STATUT_COLORS[newStatut] ?? ev.borderColor,
+              extendedProps:   { ...ev.extendedProps, statut: newStatut },
+            }
+          : ev
+      )
+    )
+    setSelected((prev) => ({ ...prev, statut: newStatut }))
+  }
 
   return (
     <>
@@ -92,29 +133,69 @@ export default function GestionReservations() {
         </div>
 
         <div className="filters-row">
-          <div className="search-wrap">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input className="search-box" placeholder="Rechercher" />
-          </div>
           <span className="flt-label">Filtres :</span>
-          <select className="flt-select"><option>Salle ▾</option></select>
-          <select className="flt-select"><option>Utilisateur ▾</option></select>
-          <select className="flt-select"><option>Statut ▾</option></select>
-          <span className="flt-label" style={{ marginLeft: "0.5rem" }}>Type:</span>
+
+          <select
+            className="flt-select"
+            value={filters.salle_id}
+            onChange={(e) => setFilter("salle_id", e.target.value)}
+          >
+            <option value="">Toutes les salles</option>
+            {salles.map((s) => (
+              <option key={s.id} value={s.id}>{s.nom}</option>
+            ))}
+          </select>
+
+          <select
+            className="flt-select"
+            value={filters.utilisateur_id}
+            onChange={(e) => setFilter("utilisateur_id", e.target.value)}
+          >
+            <option value="">Tous les utilisateurs</option>
+            {utilisateurs.map((u) => (
+              <option key={u.id} value={u.id}>{u.nom}</option>
+            ))}
+          </select>
+
+          <select
+            className="flt-select"
+            value={filters.statut}
+            onChange={(e) => setFilter("statut", e.target.value)}
+          >
+            <option value="">Tous les statuts</option>
+            <option value="en-attente">En attente</option>
+            <option value="confirmee">Confirmée</option>
+            <option value="annulee">Annulée</option>
+            <option value="abandonne">Abandonnée</option>
+            <option value="terminee">Terminée</option>
+          </select>
+
+          <span className="flt-label" style={{ marginLeft: "0.5rem" }}>Type :</span>
           <div className="type-tabs">
-            {["Heure", "Demi-journée", "Journée"].map((t) => (
+            {[
+              { label: "Heure",        value: "heure" },
+              { label: "Demi-journée", value: "demi-journee" },
+              { label: "Journée",      value: "journee" },
+            ].map(({ label, value }) => (
               <button
-                key={t}
-                className={`type-tab ${typeTab === t ? "active" : ""}`}
-                onClick={() => setTypeTab(t)}
+                key={value}
+                className={`type-tab ${filters.type_reservation === value ? "active" : ""}`}
+                onClick={() => setFilter("type_reservation", filters.type_reservation === value ? "" : value)}
               >
-                {t}
+                {label}
               </button>
             ))}
           </div>
+
+          {(filters.salle_id || filters.utilisateur_id || filters.statut || filters.type_reservation) && (
+            <button
+              className="type-tab"
+              style={{ marginLeft: "0.5rem" }}
+              onClick={() => setFilters({ salle_id: "", utilisateur_id: "", statut: "", type_reservation: "" })}
+            >
+              Réinitialiser
+            </button>
+          )}
         </div>
 
         <div className="cal-layout">
@@ -223,6 +304,31 @@ export default function GestionReservations() {
                 </span>
               </div>
             </div>
+
+            {(selected.statut === "en-attente" || selected.statut === "confirmee") && (
+              <div style={{ display: "flex", gap: "0.6rem", marginTop: "1.25rem" }}>
+                {selected.statut === "en-attente" && (
+                  <button
+                    onClick={() => handleStatut("confirmee")}
+                    style={{
+                      flex: 1, padding: "0.55rem 0", borderRadius: 8, border: "none",
+                      background: "#10B981", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "0.85rem"
+                    }}
+                  >
+                    ✓ Confirmer
+                  </button>
+                )}
+                <button
+                  onClick={() => handleStatut("annulee")}
+                  style={{
+                    flex: 1, padding: "0.55rem 0", borderRadius: 8, border: "none",
+                    background: "#EF4444", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "0.85rem"
+                  }}
+                >
+                  ✕ Annuler
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
