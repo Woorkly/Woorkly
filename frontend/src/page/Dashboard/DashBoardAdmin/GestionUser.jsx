@@ -89,18 +89,31 @@ function formatDate(raw) {
   return d.toLocaleDateString("fr-FR");
 }
 
-function Avatar({ initiales, couleur, size = 36 }) {
+function Avatar({ initiales, couleur, size = 36, avatar_url }) {
+  const isCloudinary =
+    typeof avatar_url === "string" && avatar_url.startsWith("http");
+
   return (
     <div
       className="u-avatar"
       style={{
         width: size,
         height: size,
-        background: couleur,
+        background: isCloudinary ? "transparent" : couleur,
         fontSize: size * 0.35,
+        overflow: "hidden",
+        padding: 0,
       }}
     >
-      {initiales}
+      {isCloudinary ? (
+        <img
+          src={avatar_url}
+          alt={initiales}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      ) : (
+        initiales
+      )}
     </div>
   );
 }
@@ -131,7 +144,7 @@ function UserDetail({ user, onClose, onEdit, onDelete }) {
 
         {/* Header profil */}
         <div className="ud-header">
-          <Avatar initiales={user.initiales} couleur={user.couleur} size={64} />
+          <Avatar initiales={user.initiales} couleur={user.couleur} size={64} avatar_url={user.avatar_url} />
           <div className="ud-header-info">
             <h2 className="ud-name">{user.nom}</h2>
             <p className="ud-email">{user.email}</p>
@@ -248,7 +261,7 @@ function DeleteConfirmModal({ user, onClose, onDeleted }) {
         <button className="ud-close" onClick={onClose}>✕</button>
 
         <div className="ud-header">
-          <Avatar initiales={user.initiales} couleur={user.couleur} size={52} />
+          <Avatar initiales={user.initiales} couleur={user.couleur} size={52} avatar_url={user.avatar_url} />
           <div className="ud-header-info">
             <h2 className="ud-name">{user.nom}</h2>
             <p className="ud-email">{user.email}</p>
@@ -325,7 +338,7 @@ function EditRoleModal({ user, onClose, onSaved }) {
         <button className="ud-close" onClick={onClose}>✕</button>
 
         <div className="ud-header">
-          <Avatar initiales={user.initiales} couleur={user.couleur} size={52} />
+          <Avatar initiales={user.initiales} couleur={user.couleur} size={52} avatar_url={user.avatar_url} />
           <div className="ud-header-info">
             <h2 className="ud-name">{user.nom}</h2>
             <p className="ud-email">{user.email}</p>
@@ -513,7 +526,7 @@ export default function GestionUtilisateurs() {
               ) : filtered.map((u) => (
                 <tr key={u.id} className="u-row" onClick={() => setSelected(u)}>
                   <td>
-                    <Avatar initiales={u.initiales} couleur={u.couleur} />
+                    <Avatar initiales={u.initiales} couleur={u.couleur} avatar_url={u.avatar_url} />
                   </td>
                   <td style={{ fontWeight: 500 }}>{u.nom}</td>
                   <td style={{ color: "var(--muted)", fontSize: "0.8rem" }}>

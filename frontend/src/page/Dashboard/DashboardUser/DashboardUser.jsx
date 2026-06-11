@@ -204,13 +204,14 @@ function EditProfileModal({ user, onClose, onSave }) {
     setError('');
     setSaving(true);
     try {
-      const formData = new FormData();
-      formData.append('nom', form.nom);
-      formData.append('email', form.email);
-      if (form.password) formData.append('password', form.password);
-      if (avatarFile) formData.append('avatar', avatarFile);
+      const payload = { nom: form.nom, email: form.email };
+      if (form.password) payload.password = form.password;
 
-      await onSave(formData);
+      if (avatarFile) {
+        payload.avatar_url = await userService.uploadAvatar(avatarFile);
+      }
+
+      await onSave(payload);
     } catch (err) {
       setError(err?.response?.data?.message || 'Erreur lors de la mise à jour.');
       setSaving(false);
@@ -302,7 +303,7 @@ const DEFAULT_MONTHLY = MONTHS_FR.map(month => ({ month, reservations: 0, annula
 const DEFAULT_USAGE   = Object.entries(TYPE_CONFIG).map(([, cfg]) => ({ label: cfg.label, percent: 0, color: cfg.color }));
 
 export default function DashboardUser() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, updateUser } = useAuth();
 
   const [upcoming,          setUpcoming]          = useState([]);
   const [history,           setHistory]           = useState([]);
@@ -316,8 +317,12 @@ export default function DashboardUser() {
   const [showProfileModal,  setShowProfileModal]  = useState(false);
 
   const handleSaveProfile = async (payload) => {
-    await userService.updateMyProfile(user.userId, payload);
-    await refreshUser();
+    const result = await userService.updateMyProfile(user.userId, payload);
+    if (result?.user) {
+      updateUser(result.user);
+    } else {
+      updateUser(payload);
+    }
     setShowProfileModal(false);
   };
 

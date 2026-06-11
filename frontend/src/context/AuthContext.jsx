@@ -52,12 +52,17 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const updateUser = (patch) => {
+    setUser(prev => prev ? { ...prev, ...patch } : prev)
+  }
+
   const value = {
     user,
     loading,
     login,
     logout,
     refreshUser,
+    updateUser,
     isAuthenticated: !!user
   }
 

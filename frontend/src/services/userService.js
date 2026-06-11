@@ -30,9 +30,18 @@ const getUserReservations = async (id) => {
   return res.data
 }
 
+const uploadAvatar = async (file) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  const res = await API.post('/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data.url;
+};
+
 const updateMyProfile = async (id, data) => {
   const res = await API.patch(`/users/${id}`, data)
   return res.data
 }
 
-export default { register, getAllUsers, updateUserRole, deleteUser, getUserReservations, updateMyProfile }
+export default { register, getAllUsers, updateUserRole, deleteUser, getUserReservations, uploadAvatar, updateMyProfile }
