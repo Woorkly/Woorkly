@@ -155,6 +155,28 @@ const updateRoom = async (req, res) => {
     try {
         const { id } = req.params;
         const { equipement_ids, photos, ...roomData } = req.body;
+
+        const existing = await Room.getById(id);
+        if (!existing) {
+            return res.status(404).json({ message: "Salle introuvable" });
+        }
+
+        const addressChanged =
+            (roomData.adresse !== undefined && roomData.adresse !== existing.adresse) ||
+            (roomData.code_postal !== undefined && roomData.code_postal !== existing.code_postal) ||
+            (roomData.ville !== undefined && roomData.ville !== existing.ville);
+
+        if (addressChanged) {
+            const addressToGeocode = {
+                adresse: roomData.adresse ?? existing.adresse,
+                code_postal: roomData.code_postal ?? existing.code_postal,
+                ville: roomData.ville ?? existing.ville,
+            };
+            const coordinates = await geocodeAddress(addressToGeocode);
+            roomData.latitude = coordinates.latitude;
+            roomData.longitude = coordinates.longitude;
+        }
+
         const equipmentIds = normalizeIds(equipement_ids);
         const affectedRows = await Room.update(id, roomData, equipmentIds, photos);
 
@@ -164,6 +186,14 @@ const updateRoom = async (req, res) => {
 
         res.status(200).json({ id: Number(id), ...roomData, equipement_ids: equipmentIds, photos: photos || [] });
     } catch (error) {
+        if (error.message === "ADDRESS_NOT_FOUND") {
+            return res.status(400).json({ message: "Impossible de localiser cette adresse. Veuillez verifier la saisie." });
+        }
+
+        if (error.message === "GEOCODING_FAILED") {
+            return res.status(502).json({ message: "Le service de geocodage est indisponible." });
+        }
+
         console.error(error);
         res.status(500).json({ message: "Erreur lors de la mise a jour de la salle" });
     }
