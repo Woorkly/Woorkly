@@ -183,8 +183,8 @@ function EditProfileModal({ user, onClose, onSave }) {
     nom:        user?.nom        || '',
     email:      user?.email      || '',
     password:   '',
-    avatar_url: user?.avatar_url || '',
   });
+  const [avatarFile, setAvatarFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState('');
 
@@ -193,15 +193,24 @@ function EditProfileModal({ user, onClose, onSave }) {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setAvatarFile(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSaving(true);
     try {
-      const payload = { nom: form.nom, email: form.email };
-      if (form.password)   payload.password   = form.password;
-      if (form.avatar_url) payload.avatar_url = form.avatar_url;
-      await onSave(payload);
+      const formData = new FormData();
+      formData.append('nom', form.nom);
+      formData.append('email', form.email);
+      if (form.password) formData.append('password', form.password);
+      if (avatarFile) formData.append('avatar', avatarFile);
+
+      await onSave(formData);
     } catch (err) {
       setError(err?.response?.data?.message || 'Erreur lors de la mise à jour.');
       setSaving(false);
@@ -259,17 +268,15 @@ function EditProfileModal({ user, onClose, onSave }) {
 
           <div className="ep-field">
             <label htmlFor="ep-avatar">
-              Avatar URL
-              <span className="ep-optional"> — fonctionnalité à venir</span>
+              Photo de profil (Avatar)
+              <span className="ep-optional"> — optionnel</span>
             </label>
             <input
               id="ep-avatar"
-              type="text"
-              name="avatar_url"
-              value={form.avatar_url}
-              onChange={handleChange}
-              disabled
-              placeholder="Upload bientôt disponible"
+              type="file"
+              name="avatar"
+              accept="image/*"
+              onChange={handleFileChange}
             />
           </div>
 
@@ -360,7 +367,11 @@ export default function DashboardUser() {
           onClick={() => setShowProfileModal(true)}
           title="Modifier mon profil"
         >
-          <span>{avatarLabel || 'U'}</span>
+          {user?.avatar_url && user.avatar_url !== 'default-avatar.png' ? (
+            <img src={user.avatar_url} alt={avatarLabel} className="dash-avatar__img" />
+          ) : (
+            <span>{avatarLabel || 'U'}</span>
+          )}
         </div>
       </header>
 

@@ -154,15 +154,15 @@ const createRoom = async (req, res) => {
 const updateRoom = async (req, res) => {
     try {
         const { id } = req.params;
-        const { equipement_ids, ...roomData } = req.body;
+        const { equipement_ids, photos, ...roomData } = req.body;
         const equipmentIds = normalizeIds(equipement_ids);
-        const affectedRows = await Room.update(id, roomData, equipmentIds);
+        const affectedRows = await Room.update(id, roomData, equipmentIds, photos);
 
         if (affectedRows === 0) {
             return res.status(404).json({ message: "Salle introuvable" });
         }
 
-        res.status(200).json({ id: Number(id), ...roomData, equipement_ids: equipmentIds });
+        res.status(200).json({ id: Number(id), ...roomData, equipement_ids: equipmentIds, photos: photos || [] });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Erreur lors de la mise a jour de la salle" });
