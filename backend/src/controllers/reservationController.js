@@ -33,11 +33,25 @@ const getMyReservations = async (req, res) => {
 };
 
 // GET /api/reservations (admin only)
-// Retourne toutes les réservations
+// Retourne toutes les réservations, filtrées par query params optionnels
 const getAllReservations = async (req, res) => {
     try {
-        const reservations = await reservationService.getAllReservations();
+        const { salle_id, utilisateur_id, statut, type_reservation } = req.query;
+        const reservations = await reservationService.getAllReservations({
+            salle_id, utilisateur_id, statut, type_reservation
+        });
         res.status(200).json(reservations);
+    } catch (error) {
+        sendError(res, error);
+    }
+};
+
+// GET /api/reservations/filters-data (admin only)
+// Retourne les listes de salles et utilisateurs pour alimenter les filtres
+const getFiltersData = async (req, res) => {
+    try {
+        const data = await reservationService.getFiltersData();
+        res.status(200).json(data);
     } catch (error) {
         sendError(res, error);
     }
@@ -155,6 +169,7 @@ module.exports = {
     getMyUpcoming,
     getMyHistory,
     getAllReservations,
+    getFiltersData,
     getReservationDetails,
     createReservation,
     cancelReservation,

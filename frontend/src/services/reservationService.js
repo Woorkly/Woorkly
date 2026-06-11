@@ -20,8 +20,18 @@ const getMyStats = async () => {
   return res.data
 }
 
-const getAllReservations = async () => {
-  const res = await API.get('/reservations')
+const getAllReservations = async (filters = {}) => {
+  const params = {}
+  if (filters.salle_id)        params.salle_id        = filters.salle_id
+  if (filters.utilisateur_id)  params.utilisateur_id  = filters.utilisateur_id
+  if (filters.statut)          params.statut          = filters.statut
+  if (filters.type_reservation) params.type_reservation = filters.type_reservation
+  const res = await API.get('/reservations', { params })
+  return res.data
+}
+
+const getFiltersData = async () => {
+  const res = await API.get('/reservations/filters-data')
   return res.data
 }
 
@@ -30,4 +40,4 @@ const getDisponibilite = async (salleId, date) => {
   return res.data
 }
 
-export default { createReservation, getMyUpcoming, getMyHistory, getMyStats, getAllReservations, getDisponibilite }
+export default { createReservation, getMyUpcoming, getMyHistory, getMyStats, getAllReservations, getFiltersData, getDisponibilite }

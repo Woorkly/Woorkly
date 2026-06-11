@@ -62,9 +62,14 @@ const getUserReservations = async (userId) => {
     return Reservation.getByUserId(userId);
 };
 
-// Récupère toutes les réservations (admin)
-const getAllReservations = async () => {
-    return Reservation.getAll();
+// Récupère toutes les réservations (admin) avec filtres optionnels
+const getAllReservations = async (filters = {}) => {
+    return Reservation.getAll(filters);
+};
+
+// Retourne les listes salles + utilisateurs pour alimenter les filtres
+const getFiltersData = async () => {
+    return Reservation.getFiltersData();
 };
 
 
@@ -218,6 +223,7 @@ const cancelReservation = async (reservationId, userId, isAdmin = false) => {
 module.exports = {
     getUserReservations,
     getAllReservations,
+    getFiltersData,
     getReservationById,
     getUpcomingReservations,
     getHistoryReservations,

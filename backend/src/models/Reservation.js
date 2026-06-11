@@ -22,17 +22,57 @@ class Reservation extends BaseModel {
         return rows;
     }
 
-    // Récupère toutes les réservations (admin)
-    static async getAll() {
+    // Récupère toutes les réservations (admin) avec filtres optionnels
+    static async getAll(filters = {}) {
+        const conditions = [];
+        const params = [];
+
+        if (filters.salle_id) {
+            conditions.push('r.salle_id = ?');
+            params.push(Number(filters.salle_id));
+        }
+        if (filters.utilisateur_id) {
+            conditions.push('r.utilisateur_id = ?');
+            params.push(Number(filters.utilisateur_id));
+        }
+        if (filters.statut) {
+            conditions.push('r.statut = ?');
+            params.push(filters.statut);
+        }
+        if (filters.type_reservation) {
+            conditions.push('r.type_reservation = ?');
+            params.push(filters.type_reservation);
+        }
+
+        const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
         const sql = `
             SELECT r.*, s.nom as salle_nom, u.nom as utilisateur_nom, u.email as utilisateur_email
             FROM reservations r
             JOIN salles s ON r.salle_id = s.id
             JOIN utilisateurs u ON r.utilisateur_id = u.id
+            ${where}
             ORDER BY r.date DESC
         `;
-        const [rows] = await db.execute(sql);
+        const [rows] = await db.execute(sql, params);
         return rows;
+    }
+
+    // Retourne les listes uniques de salles et utilisateurs ayant des réservations (pour les filtres)
+    static async getFiltersData() {
+        const [salles] = await db.execute(`
+            SELECT DISTINCT s.id, s.nom
+            FROM reservations r
+            JOIN salles s ON r.salle_id = s.id
+            ORDER BY s.nom
+        `);
+        const [utilisateurs] = await db.execute(`
+            SELECT DISTINCT u.id, u.nom
+            FROM reservations r
+            JOIN utilisateurs u ON r.utilisateur_id = u.id
+            ORDER BY u.nom
+        `);
+        return { salles, utilisateurs };
     }
 
      // Récupère une réservation par ID
