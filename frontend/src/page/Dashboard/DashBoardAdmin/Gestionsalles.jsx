@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { equipmentService } from "../../../services/equipmentService";
 import { roomService } from "../../../services/roomService";
 import { typeService } from "../../../services/typeService";
+import api from "../../../services/api";
 import "./AdminStyle.css";
 
 // Icônes SVG par type de salle
@@ -154,6 +155,7 @@ const initialRoomForm = {
   prix_demi_journee: "",
   prix_journee: "",
   image_principale: "",
+  photos: [],
   type_id: "",
   equipement_ids: [],
 };
@@ -177,6 +179,7 @@ const buildRoomPayload = (form) => ({
   prix_demi_journee: optionalNumber(form.prix_demi_journee),
   prix_journee: optionalNumber(form.prix_journee),
   image_principale: form.image_principale.trim() || "default-room.jpg",
+  photos: Array.isArray(form.photos) ? form.photos.filter((u) => u && u.trim()) : [],
   type_id: optionalNumber(form.type_id),
   equipement_ids: form.equipement_ids.map((id) => Number(id)),
 });
@@ -198,6 +201,7 @@ const buildRoomForm = (room) => ({
   prix_demi_journee: toFormValue(room.prix_demi_journee),
   prix_journee: toFormValue(room.prix_journee),
   image_principale: toFormValue(room.image_principale),
+  photos: Array.isArray(room.galerie) ? room.galerie : [],
   type_id: toFormValue(room.type_id),
   equipement_ids: Array.isArray(room.equipement_ids)
     ? room.equipement_ids.map(String)
@@ -248,6 +252,8 @@ export default function GestionSalles() {
   const [newEquipmentName, setNewEquipmentName] = useState("");
   const [addingEquipment, setAddingEquipment] = useState(false);
   const [equipmentCreateError, setEquipmentCreateError] = useState(null);
+  const [uploadingCreate, setUploadingCreate] = useState(false);
+  const [uploadingEdit, setUploadingEdit] = useState(false);
 
   const getRoomFilters = () => {
     const filters = {
@@ -600,6 +606,63 @@ export default function GestionSalles() {
     } finally {
       setDeletingRoom(false);
     }
+  };
+
+  const handleMainImageUpload = async (e, target) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const setUploading = target === "edit" ? setUploadingEdit : setUploadingCreate;
+    const formSetter = target === "edit" ? updateEditRoomForm : updateRoomForm;
+    const setErr = target === "edit" ? setEditFormError : setFormError;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      formSetter("image_principale", res.data.url);
+    } catch {
+      setErr("Erreur lors de l'upload de l'image principale.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleGalleryUpload = async (e, target) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    const setUploading = target === "edit" ? setUploadingEdit : setUploadingCreate;
+    const setForm = target === "edit" ? setEditRoomForm : setRoomForm;
+    const setErr = target === "edit" ? setEditFormError : setFormError;
+    setUploading(true);
+    try {
+      const uploadedUrls = [];
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("image", file);
+        const res = await api.post("/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        uploadedUrls.push(res.data.url);
+      }
+      setForm((current) => ({
+        ...current,
+        photos: [...current.photos, ...uploadedUrls],
+      }));
+    } catch {
+      setErr("Erreur lors de l'upload de la galerie.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeGalleryPhoto = (target, index) => {
+    const setForm = target === "edit" ? setEditRoomForm : setRoomForm;
+    setForm((current) => ({
+      ...current,
+      photos: current.photos.filter((_, i) => i !== index),
+    }));
   };
 
   return (
@@ -1021,16 +1084,68 @@ export default function GestionSalles() {
                 </div>
               </div>
 
-              <label className="room-form-wide">
-                Image principale
+              <div className="room-form-wide room-equipment-field">
+                <span>Image principale</span>
                 <input
-                  value={roomForm.image_principale}
-                  onChange={(event) =>
-                    updateRoomForm("image_principale", event.target.value)
-                  }
-                  placeholder="default-room.jpg"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleMainImageUpload(e, "create")}
+                  disabled={uploadingCreate}
                 />
-              </label>
+                {uploadingCreate && (
+                  <p className="ud-empty">Upload en cours...</p>
+                )}
+                {roomForm.image_principale && (
+                  <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "10px" }}>
+                    <img
+                      src={roomForm.image_principale}
+                      alt="Image principale"
+                      style={{ width: "80px", height: "60px", objectFit: "cover", borderRadius: "6px", border: "1px solid var(--border)" }}
+                    />
+                    <button
+                      type="button"
+                      className="ud-btn-ghost"
+                      style={{ fontSize: "0.75rem", padding: "4px 10px" }}
+                      onClick={() => updateRoomForm("image_principale", "")}
+                      disabled={uploadingCreate}
+                    >
+                      Retirer
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="room-form-wide room-equipment-field">
+                <span>Galerie de photos</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => handleGalleryUpload(e, "create")}
+                  disabled={uploadingCreate}
+                />
+                {roomForm.photos.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px" }}>
+                    {roomForm.photos.map((url, index) => (
+                      <div key={index} style={{ position: "relative" }}>
+                        <img
+                          src={url}
+                          alt={`Photo ${index + 1}`}
+                          style={{ width: "70px", height: "60px", objectFit: "cover", borderRadius: "6px", border: "1px solid var(--border)" }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeGalleryPhoto("create", index)}
+                          disabled={uploadingCreate}
+                          style={{ position: "absolute", top: "-6px", right: "-6px", width: "18px", height: "18px", borderRadius: "50%", background: "var(--red, #e53e3e)", color: "#fff", border: "none", cursor: "pointer", fontSize: "10px", lineHeight: "18px", padding: 0 }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               <label className="room-form-wide">
                 Description
@@ -1057,16 +1172,16 @@ export default function GestionSalles() {
                   className="ud-btn-ghost"
                   type="button"
                   onClick={closeCreateForm}
-                  disabled={savingRoom}
+                  disabled={savingRoom || uploadingCreate}
                 >
                   Annuler
                 </button>
                 <button
                   className="btn-primary"
                   type="submit"
-                  disabled={savingRoom}
+                  disabled={savingRoom || uploadingCreate}
                 >
-                  {savingRoom ? "Enregistrement..." : "Enregistrer"}
+                  {uploadingCreate ? "Upload en cours..." : savingRoom ? "Enregistrement..." : "Enregistrer"}
                 </button>
               </div>
             </form>
@@ -1332,18 +1447,68 @@ export default function GestionSalles() {
                     </div>
                   </div>
 
-                  <label className="room-form-wide">
-                    Image principale
+                  <div className="room-form-wide room-equipment-field">
+                    <span>Image principale</span>
                     <input
-                      value={editRoomForm.image_principale}
-                      onChange={(event) =>
-                        updateEditRoomForm(
-                          "image_principale",
-                          event.target.value,
-                        )
-                      }
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleMainImageUpload(e, "edit")}
+                      disabled={uploadingEdit}
                     />
-                  </label>
+                    {uploadingEdit && (
+                      <p className="ud-empty">Upload en cours...</p>
+                    )}
+                    {editRoomForm.image_principale && (
+                      <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "10px" }}>
+                        <img
+                          src={editRoomForm.image_principale}
+                          alt="Image principale"
+                          style={{ width: "80px", height: "60px", objectFit: "cover", borderRadius: "6px", border: "1px solid var(--border)" }}
+                        />
+                        <button
+                          type="button"
+                          className="ud-btn-ghost"
+                          style={{ fontSize: "0.75rem", padding: "4px 10px" }}
+                          onClick={() => updateEditRoomForm("image_principale", "")}
+                          disabled={uploadingEdit}
+                        >
+                          Retirer
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="room-form-wide room-equipment-field">
+                    <span>Galerie de photos</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => handleGalleryUpload(e, "edit")}
+                      disabled={uploadingEdit}
+                    />
+                    {editRoomForm.photos.length > 0 && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px" }}>
+                        {editRoomForm.photos.map((url, index) => (
+                          <div key={index} style={{ position: "relative" }}>
+                            <img
+                              src={url}
+                              alt={`Photo ${index + 1}`}
+                              style={{ width: "70px", height: "60px", objectFit: "cover", borderRadius: "6px", border: "1px solid var(--border)" }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeGalleryPhoto("edit", index)}
+                              disabled={uploadingEdit}
+                              style={{ position: "absolute", top: "-6px", right: "-6px", width: "18px", height: "18px", borderRadius: "50%", background: "var(--red, #e53e3e)", color: "#fff", border: "none", cursor: "pointer", fontSize: "10px", lineHeight: "18px", padding: 0 }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
                   <label className="room-form-wide">
                     Description
@@ -1373,16 +1538,16 @@ export default function GestionSalles() {
                       className="ud-btn-ghost"
                       type="button"
                       onClick={closeRoomDetails}
-                      disabled={savingEditRoom}
+                      disabled={savingEditRoom || uploadingEdit}
                     >
                       Fermer
                     </button>
                     <button
                       className="btn-primary"
                       type="submit"
-                      disabled={savingEditRoom}
+                      disabled={savingEditRoom || uploadingEdit}
                     >
-                      {savingEditRoom ? "Modification..." : "Enregistrer"}
+                      {uploadingEdit ? "Upload en cours..." : savingEditRoom ? "Modification..." : "Enregistrer"}
                     </button>
                   </div>
                 </form>
