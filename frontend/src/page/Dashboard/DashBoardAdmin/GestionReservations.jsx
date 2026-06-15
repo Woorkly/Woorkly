@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import FullCalendar from "@fullcalendar/react"
 import timeGridPlugin from "@fullcalendar/timegrid"
@@ -70,6 +70,7 @@ function formatDate(raw) {
 export default function GestionReservations() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const calendarRef                  = useRef(null)
   const [events, setEvents]         = useState([])
   const [loading, setLoading]       = useState(true)
   const [selected, setSelected]     = useState(null)
@@ -97,7 +98,24 @@ export default function GestionReservations() {
     setLoading(true)
     reservationService
       .getAllReservations(filters)
-      .then((data) => setEvents(data.map(toEvent)))
+      .then((data) => {
+        const mapped = data.map(toEvent)
+        setEvents(mapped)
+        if (mapped.length > 0 && calendarRef.current) {
+          const api = calendarRef.current.getApi()
+          const viewStart = api.view.activeStart
+          const viewEnd   = api.view.activeEnd
+          const inView = mapped.some((ev) => {
+            const d = new Date(ev.start)
+            return d >= viewStart && d < viewEnd
+          })
+          if (!inView) {
+            const dates = mapped.map((ev) => new Date(ev.start))
+            const closest = dates.reduce((a, b) => Math.abs(b - Date.now()) < Math.abs(a - Date.now()) ? b : a)
+            api.gotoDate(closest)
+          }
+        }
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [filters])
@@ -206,6 +224,7 @@ export default function GestionReservations() {
               </p>
             ) : (
               <FullCalendar
+                ref={calendarRef}
                 plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
                 initialView="timeGridWeek"
                 locale={frLocale}
