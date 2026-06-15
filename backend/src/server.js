@@ -6,6 +6,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const cookieParser = require('cookie-parser');
+const { globalLimiter, loginLimiter } = require('./middlewares/rateLimiter');
 
 // 1. Importation des routes (on les créera juste après)
 
@@ -24,6 +25,7 @@ const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
 
 // --- MIDDLEWARES ---
 app.use(helmet());
+app.use(globalLimiter);
 // Allow the frontend (Vite) to send/receive cookies (HttpOnly token)
 // Permet d'autoriser localhost et TOUTES les URL de preview ou principales de Vercel
 const allowedOrigins = [
@@ -62,6 +64,7 @@ app.use("/api/equipements", equipementRoutes);
 
 app.use('/api/types',typeRoutes);
 
+app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', autRoutes);
 
 app.use('/api/reservations', reservationRoutes);
