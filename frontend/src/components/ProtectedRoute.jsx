@@ -1,3 +1,7 @@
+// Garde de route basé sur l'authentification et le rôle.
+// - Pas de user       → redirige vers /login (ou redirectTo)
+// - Rôle non autorisé → redirige vers le dashboard du rôle réel
+// - Autorisé          → affiche le contenu via <Outlet />
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 

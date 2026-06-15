@@ -1,3 +1,4 @@
+// Service utilisateurs — wrapping des endpoints /users et /upload
 import API from './api'
 
 const register = async ({ nom, email, password }) => {
@@ -30,6 +31,7 @@ const getUserReservations = async (id) => {
   return res.data
 }
 
+// Upload multipart vers /upload — le backend redirige vers Cloudinary
 const uploadAvatar = async (file) => {
   const formData = new FormData();
   formData.append('image', file);

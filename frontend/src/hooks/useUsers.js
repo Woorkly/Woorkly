@@ -1,6 +1,10 @@
+// Hook de gestion de la liste des utilisateurs (espace admin).
+// Calcule les champs dérivés (initiales, couleur, libellé de rôle) côté client
+// pour éviter de les stocker en base.
 import { useEffect, useState } from 'react'
 import userService from '../services/userService'
 
+// Palette de couleurs assignées par rotation sur l'id utilisateur
 const COLORS = ['#1A56A0', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#0EA5E9', '#EC4899']
 
 function mapUser(u) {

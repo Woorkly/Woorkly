@@ -1,3 +1,4 @@
+// Service réservations — wrapping des endpoints /reservations
 import API from './api'
 
 const createReservation = async (reservationData) => {
@@ -20,6 +21,7 @@ const getMyStats = async () => {
   return res.data
 }
 
+// Filtre les paramètres vides pour ne pas polluer la query string
 const getAllReservations = async (filters = {}) => {
   const params = {}
   if (filters.salle_id)        params.salle_id        = filters.salle_id

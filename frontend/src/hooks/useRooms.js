@@ -1,3 +1,8 @@
+// Hook de récupération des salles.
+// Comportement selon les filtres passés :
+//   - filters.roomId → une seule salle (GET /rooms/:id)
+//   - filters.date   → salles disponibles ce jour (GET /rooms/available)
+//   - aucun filtre   → toutes les salles (GET /rooms)
 import { useEffect, useState } from 'react'
 import { roomService } from '../services/roomService'
 
