@@ -70,28 +70,6 @@ export default function Salle() {
     return `/images/${value || 'default-room.jpg'}`
   }
 
-  const nearbyRooms = [
-    'Salle de réunion Paris 1',
-    'Salle de réunion Paris 2',
-    'Salle de réunion Paris 3',
-    'Salle de réunion Paris 4',
-    'Salle de réunion Paris 5',
-    'Salle de réunion Paris 6',
-    'Salle de réunion Paris 7',
-    'Salle de réunion Paris 8',
-    'Salle de réunion Paris 9',
-    'Salle de réunion Paris 10',
-    'Salle de réunion Paris 11',
-    'Salle de réunion Paris 12',
-    'Salle de réunion Paris 13',
-    'Salle de réunion Paris 14',
-    'Salle de réunion Paris 15',
-    'Salle de réunion Paris 16',
-    'Salle de réunion Paris 17',
-    'Salle de réunion Paris 18',
-    'Salle de réunion Paris 19',
-    'Salle de réunion Paris 20',
-  ]
 
   const updateFilter = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
@@ -262,15 +240,6 @@ export default function Salle() {
             ))}
           </MapContainer>
         </div>
-
-        <section className="rooms-nearby-section">
-          <h2>Nos salles de réunion à Paris et à proximité</h2>
-          <div className="rooms-nearby-grid">
-            {nearbyRooms.map((roomName) => (
-              <span key={roomName} className="rooms-nearby-item">{roomName}</span>
-            ))}
-          </div>
-        </section>
       </div>
     </section>
   )

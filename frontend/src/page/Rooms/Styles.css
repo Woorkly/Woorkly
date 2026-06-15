@@ -293,38 +293,6 @@
   color: var(--color-text);
 }
 
-.rooms-nearby-section {
-  grid-column: 1 / -1;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-  padding: 30px 26px;
-}
-
-.rooms-nearby-section h2 {
-  margin: 0 0 16px;
-  color: var(--color-title);
-  font-size: clamp(28px, 2.6vw, 40px);
-  line-height: 1.08;
-  max-width: 16ch;
-}
-
-.rooms-nearby-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px 20px;
-}
-
-.rooms-nearby-item {
-  display: inline-block;
-  font-size: 12px;
-  line-height: 1.45;
-  color: #1f2937;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  cursor: pointer;
-}
-
 /* Responsive */
 @media (max-width: 1200px) {
   .rooms-container {
@@ -347,9 +315,6 @@
     overflow: visible;
   }
 
-  .rooms-nearby-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 768px) {
@@ -387,14 +352,6 @@
     border-radius: 12px;
   }
 
-  .rooms-nearby-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px 14px;
-  }
-
-  .rooms-nearby-section h2 {
-    font-size: 30px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -406,9 +363,6 @@
     height: 250px;
   }
 
-  .rooms-nearby-grid {
-    grid-template-columns: 1fr;
-  }
 
   .room-content {
     padding: 12px;
