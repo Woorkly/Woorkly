@@ -10,10 +10,9 @@ const MUTATION_METHODS = ['post', 'put', 'patch', 'delete']
 let csrfToken = null
 
 const fetchCsrfToken = async () => {
-  const res = await axios.get(
-    `${import.meta.env.VITE_API_BASE || 'http://localhost:3000'}/api/csrf-token`,
-    { withCredentials: true }
-  )
+  // On utilise l'instance API (baseURL = VITE_API_BASE) pour éviter le double /api
+  // Ex: VITE_API_BASE = "http://localhost:3000/api" → GET http://localhost:3000/api/csrf-token ✓
+  const res = await API.get('/csrf-token')
   csrfToken = res.data.csrfToken
   return csrfToken
 }
