@@ -1,25 +1,26 @@
 const express = require("express");
 const router = express.Router();
 const equipementController = require("../controllers/equipementController");
+const { authRequired, requireRole } = require("../middlewares/auth");
 
-// Route pour récupérer tous les equipements
-// URL : GET http://localhost:3000/api/equipements/
+// GET /api/equipements/ (public)
+// Liste tous les équipements (utilisé pour les filtres de salles)
 router.get("/", equipementController.getAllEquipements);
 
-// Route pour récupérer le detaille dun equipement
-// URL : GET http://localhost:3000/api/equipements/1
+// GET /api/equipements/:id (public)
+// Retourne le détail d'un équipement
 router.get("/:id", equipementController.getEquipementDetails);
 
-// Route pour créer un equipement
-// URL : POST http://localhost:3000/api/equipements/
-router.post("/", equipementController.createEquipement);
+// POST /api/equipements/ (admin only)
+// Crée un équipement (retourne 200 s'il existe déjà, 201 si nouveau)
+router.post("/", authRequired, requireRole("admin"), equipementController.createEquipement);
 
-// Route pour modifier un equipement
-// URL : PUT http://localhost:3000/api/equipements/1
-router.put("/:id", equipementController.updateEquipement);
+// PUT /api/equipements/:id (admin only)
+// Met à jour un équipement
+router.put("/:id", authRequired, requireRole("admin"), equipementController.updateEquipement);
 
-// Route pour supprimer un equipement
-// URL : DELETE http://localhost:3000/api/equipements/1
-router.delete("/:id", equipementController.deleteEquipement);
+// DELETE /api/equipements/:id (admin only)
+// Supprime un équipement
+router.delete("/:id", authRequired, requireRole("admin"), equipementController.deleteEquipement);
 
 module.exports = router;

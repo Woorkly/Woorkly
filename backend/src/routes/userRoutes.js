@@ -2,31 +2,32 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const upload = require('../middlewares/upload');
+const { authRequired, requireRole } = require('../middlewares/auth');
 const { createUserValidator, updateUserValidator, patchUserValidator } = require('../validators/userValidator');
 const validate = require('../middlewares/validate');
 
-// Route pour récupérer tous les utilisateurs
-// URL : GET http://localhost:3000/api/users/
-router.get('/', userController.getAllUsers);
+// GET /api/users/ (admin only)
+// Liste tous les utilisateurs avec leur nombre de réservations
+router.get('/', authRequired, requireRole('admin'), userController.getAllUsers);
 
-// Route pour récupérer les détails d'un utilisateur
-// URL : GET http://localhost:3000/api/users/1
-router.get('/:id', userController.getUserDetails);
+// GET /api/users/:id (admin only)
+// Retourne les détails d'un utilisateur
+router.get('/:id', authRequired, requireRole('admin'), userController.getUserDetails);
 
-// Route pour créer un utilisateur
-// URL : POST http://localhost:3000/api/users/
+// POST /api/users/ (public)
+// Création de compte — accessible sans authentification (inscription)
 router.post('/', createUserValidator, validate, userController.createUser);
 
-// Route pour modifier un utilisateur
-// URL : PUT http://localhost:3000/api/users/1
-router.put('/:id', updateUserValidator, validate, userController.updateUser);
+// PUT /api/users/:id (admin only)
+// Mise à jour complète d'un utilisateur
+router.put('/:id', authRequired, requireRole('admin'), updateUserValidator, validate, userController.updateUser);
 
-// Route pour modification partielle (ex: rôle, avatar)
-// URL : PATCH http://localhost:3000/api/users/1
-router.patch('/:id', upload.single('avatar'), patchUserValidator, validate, userController.patchUser);
+// PATCH /api/users/:id (connecté)
+// Mise à jour partielle : profil personnel ou changement de rôle (admin)
+router.patch('/:id', authRequired, upload.single('avatar'), patchUserValidator, validate, userController.patchUser);
 
-// Route pour supprimer un utilisateur
-// URL : DELETE http://localhost:3000/api/users/1
-router.delete('/:id', userController.deleteUser);
+// DELETE /api/users/:id (admin only)
+// Suppression d'un utilisateur (bloquée s'il a des réservations à venir)
+router.delete('/:id', authRequired, requireRole('admin'), userController.deleteUser);
 
 module.exports = router;

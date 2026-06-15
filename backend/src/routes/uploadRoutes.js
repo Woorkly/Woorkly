@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const upload = require('../middlewares/upload');
+const { authRequired } = require('../middlewares/auth');
 const { uploadFromBuffer } = require('../services/uploadService');
 
-router.post('/', upload.single('image'), async (req, res) => {
+// POST /api/upload (connecté)
+// Upload une image vers Cloudinary — utilisé par les admins (photos de salles)
+// et les utilisateurs (avatar). Retourne l'URL Cloudinary.
+router.post('/', authRequired, upload.single('image'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: 'Aucun fichier reçu.' });

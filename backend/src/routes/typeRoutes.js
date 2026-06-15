@@ -1,27 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const typeController = require('../controllers/typeController');
+const { authRequired, requireRole } = require('../middlewares/auth');
 
-
-
-// Route pour récupérer tous les types
-// URL : GET http://localhost:3000/api/types/
+// GET /api/types/ (public)
+// Liste tous les types de salles (utilisé pour les filtres et formulaires)
 router.get('/', typeController.getAllTypes);
 
-// Route pour récupérer les détails d'un type
-// URL : GET http://localhost:3000/api/types/1
+// GET /api/types/:id (public)
+// Retourne le détail d'un type
 router.get('/:id', typeController.getTypesDetails);
 
-// Route pour créer un type
-// URL : POST http://localhost:3000/api/types/
-router.post('/', typeController.createType);
+// POST /api/types/ (admin only)
+// Crée un type de salle
+router.post('/', authRequired, requireRole('admin'), typeController.createType);
 
-// Route pour modifier un type
-// URL : PUT http://localhost:3000/api/types/1
-router.put('/:id', typeController.updateType);
+// PUT /api/types/:id (admin only)
+// Met à jour un type de salle
+router.put('/:id', authRequired, requireRole('admin'), typeController.updateType);
 
-// Route pour supprimer un type
-// URL : DELETE http://localhost:3000/api/types/1
-router.delete('/:id', typeController.deleteType);
+// DELETE /api/types/:id (admin only)
+// Supprime un type de salle
+router.delete('/:id', authRequired, requireRole('admin'), typeController.deleteType);
 
 module.exports = router;
