@@ -1259,6 +1259,30 @@ body { font-family: var(--font); }
   .data-table th,
   .data-table td        { padding: 0.5rem 0.7rem; }
   .resa-table           { min-width: 560px; }
+
+  /* ── dashboard-split : cartes contenues dans leur cellule grid ── */
+  .dashboard-split .card {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* ── table-scroll dans la carte réservations récentes ── */
+  .dashboard-split .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── Donut admin : empilement vertical comme la variante user ── */
+  .dashboard-split .donut-wrap {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .dashboard-split .donut-legend {
+    min-width: 0;
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
