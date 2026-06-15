@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const roomController = require('../controllers/roomController');
+const { createRoomValidator, updateRoomValidator } = require('../validators/roomValidator');
+const validate = require('../middlewares/validate');
 
 // Route pour récupérer toutes les salles
 // URL : GET http://localhost:3000/api/rooms/
@@ -16,9 +18,9 @@ router.get('/:id', roomController.getRoomDetails);
 
 // Route pour créer une salle (Admin)
 // URL : POST http://localhost:3000/api/rooms/
-router.post('/', roomController.createRoom);
+router.post('/', createRoomValidator, validate, roomController.createRoom);
 
-router.put('/:id', roomController.updateRoom);
+router.put('/:id', updateRoomValidator, validate, roomController.updateRoom);
 
 router.delete('/:id', roomController.deleteRoom);
 

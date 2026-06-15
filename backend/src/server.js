@@ -6,6 +6,8 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const cookieParser = require('cookie-parser');
+const { globalLimiter, loginLimiter } = require('./middlewares/rateLimiter');
+const { doubleCsrf } = require('csrf-csrf');
 
 // 1. Importation des routes (on les créera juste après)
 
@@ -22,8 +24,24 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const app = express();
 const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
+    getSecret: () => process.env.CSRF_SECRET,
+    getSessionIdentifier: (req) => req.cookies?.token ?? '',
+    cookieName: 'csrf_token',
+    cookieOptions: {
+        httpOnly: true,
+        sameSite: isProduction ? 'none' : 'strict',
+        secure: isProduction,
+        path: '/',
+    },
+    getCsrfTokenFromRequest: (req) => req.headers['x-csrf-token'],
+});
+
 // --- MIDDLEWARES ---
 app.use(helmet());
+app.use(globalLimiter);
 // Allow the frontend (Vite) to send/receive cookies (HttpOnly token)
 // Permet d'autoriser localhost et TOUTES les URL de preview ou principales de Vercel
 const allowedOrigins = [
@@ -44,12 +62,18 @@ app.use(cors({
 }));
 app.use(cookieParser());
 app.use(express.json());
+app.use(doubleCsrfProtection);
 
 // --- ROUTES ---
 
 // Route de test
 app.get("/", (req, res) => {
   res.send("Serveur Workly opérationnel !");
+});
+
+// Fournit un token CSRF au frontend (appelé une fois au chargement)
+app.get('/api/csrf-token', (req, res) => {
+    res.json({ csrfToken: generateCsrfToken(req, res) });
 });
 
 // 2. Utilisation des routes spécialisées
@@ -62,6 +86,7 @@ app.use("/api/equipements", equipementRoutes);
 
 app.use('/api/types',typeRoutes);
 
+app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', autRoutes);
 
 app.use('/api/reservations', reservationRoutes);

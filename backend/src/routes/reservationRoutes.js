@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const reservationController = require('../controllers/reservationController');
 const { authRequired, requireRole } = require('../middlewares/auth');
+const { createReservationValidator, updateStatutValidator } = require('../validators/reservationValidator');
+const validate = require('../middlewares/validate');
 
 // GET /api/reservations/disponibilite?salle_id=X&date=Y
 // Retourne la disponibilité des créneaux (accessible aux utilisateurs connectés)
@@ -41,7 +43,7 @@ router.get('/:id', authRequired, reservationController.getReservationDetails);
 
 // POST /api/reservations
 // Crée une nouvelle réservation
-router.post('/', authRequired, reservationController.createReservation);
+router.post('/', authRequired, createReservationValidator, validate, reservationController.createReservation);
 
 // PATCH /api/reservations/:id/cancel
 // Annule une réservation
@@ -49,6 +51,6 @@ router.patch('/:id/cancel', authRequired, reservationController.cancelReservatio
 
 // PATCH /api/reservations/:id/statut (admin only)
 // Met à jour le statut d'une réservation
-router.patch('/:id/statut', authRequired, requireRole('admin'), reservationController.updateStatut);
+router.patch('/:id/statut', authRequired, requireRole('admin'), updateStatutValidator, validate, reservationController.updateStatut);
 
 module.exports = router;
