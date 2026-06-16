@@ -1259,6 +1259,86 @@ body { font-family: var(--font); }
   .data-table th,
   .data-table td        { padding: 0.5rem 0.7rem; }
   .resa-table           { min-width: 560px; }
+
+  /* ── dashboard-split : cartes contenues dans leur cellule grid ── */
+  .dashboard-split .card {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* ── table-scroll dans la carte réservations récentes ── */
+  .dashboard-split .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── Donut admin : empilement vertical comme la variante user ── */
+  .dashboard-split .donut-wrap {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .dashboard-split .donut-legend {
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* ── FullCalendar : toolbar empilée sur mobile ── */
+  .fc .fc-header-toolbar {
+    flex-direction: column;
+    gap: 0.45rem;
+    align-items: stretch;
+  }
+
+  .fc .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 0.92rem;
+    text-align: center;
+  }
+
+  .fc .fc-button {
+    padding: 0.22rem 0.5rem !important;
+    font-size: 0.72rem !important;
+  }
+
+  /* ── FullCalendar : grille réduite ── */
+  .fc .fc-col-header-cell-cushion {
+    font-size: 0.68rem;
+    padding: 4px 2px;
+  }
+
+  .fc .fc-timegrid-axis-cushion,
+  .fc .fc-timegrid-slot-label-cushion {
+    font-size: 0.64rem;
+    padding-right: 4px;
+  }
+
+  .fc .fc-timegrid-slot {
+    height: 26px;
+  }
+
+  .fc .fc-event-title,
+  .fc .fc-event-time {
+    font-size: 0.64rem;
+    line-height: 1.2;
+  }
+
+  /* ── Filtres : pleine largeur sur mobile ── */
+  .flt-select {
+    flex: 1 1 calc(50% - 0.3rem);
+    min-width: 0;
+  }
+
+  .type-tabs {
+    flex-wrap: wrap;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1272,6 +1352,20 @@ body { font-family: var(--font); }
   .search-box,
   .search-wrap .search-box { width: 140px; }
   .ud-panel             { margin: 0 10px; padding: 1.1rem; }
+
+  /* ── FullCalendar : très petits écrans ── */
+  .fc .fc-toolbar-title {
+    font-size: 0.8rem;
+  }
+
+  .fc .fc-button {
+    padding: 0.18rem 0.38rem !important;
+    font-size: 0.67rem !important;
+  }
+
+  .fc .fc-timegrid-slot {
+    height: 22px;
+  }
 }
 
 /* ══════════════════════════════════════

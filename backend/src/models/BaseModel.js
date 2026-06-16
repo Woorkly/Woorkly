@@ -1,7 +1,10 @@
+// Classe abstraite partagée par tous les modèles.
+// Fournit les opérations génériques (findAll, findById, delete) et getConnection
+// pour les transactions dans les classes filles.
 const db = require('../config/db');
 
 class BaseModel {
-    
+
     constructor(table) {
         this.table = table;
     }

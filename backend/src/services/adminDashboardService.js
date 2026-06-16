@@ -1,3 +1,6 @@
+// Service analytique du dashboard admin.
+// Toutes les requêtes sont exécutées en parallèle (Promise.all) pour réduire la latence.
+// Hypothèse métier : 10 heures disponibles par salle par jour (08h00–18h00).
 const db = require('../config/db');
 
 const MONTH_LABELS = [
@@ -94,6 +97,7 @@ const getAdminDashboardStats = async () => {
   const [typeResult] = typeRows;
   const [recentResult] = recentRows;
 
+  // Indexe les résultats par numéro de mois pour combler les mois sans données (valeur 0)
   const monthlyByMonth = new Map(
     monthlyResult.map((row) => [Number(row.month_number), row])
   );

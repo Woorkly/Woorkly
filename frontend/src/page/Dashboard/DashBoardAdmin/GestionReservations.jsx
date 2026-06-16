@@ -72,6 +72,8 @@ function toEvent(r) {
 
 /* ── Page principale ─────────────────────────────────────────── */
 
+const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
 export default function GestionReservations() {
   const [events,        setEvents]       = useState([]);
   const [loading,       setLoading]      = useState(true);
@@ -200,9 +202,13 @@ export default function GestionReservations() {
             ) : (
               <FullCalendar
                 plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
-                initialView="timeGridWeek"
+                initialView={isMobile ? 'timeGridDay' : 'timeGridWeek'}
                 locale={frLocale}
-                headerToolbar={{
+                headerToolbar={isMobile ? {
+                  left:   'prev,next',
+                  center: 'title',
+                  right:  'timeGridDay,timeGridWeek',
+                } : {
                   left:   'prev,next today',
                   center: 'title',
                   right:  'dayGridMonth,timeGridWeek,timeGridDay',

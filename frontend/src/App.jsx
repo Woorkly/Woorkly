@@ -15,11 +15,13 @@ import GestionUser from './page/Dashboard/DashBoardAdmin/GestionUser';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotFound from './page/NotFound';
 import ScrollToTop from './components/ScrollToTop';
+import RateLimitToast from './components/RateLimitToast';
 
 function App() {
   return (
     <>
       <ScrollToTop />
+      <RateLimitToast />
       <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Landing />} />

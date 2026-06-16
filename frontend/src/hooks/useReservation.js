@@ -1,3 +1,7 @@
+// Hook de création de réservation.
+// Expose createReservation() avec gestion des états loading/erreur.
+// L'erreur est également re-thrown pour que le composant appelant
+// puisse l'intercepter et afficher son propre retour visuel.
 import { useState } from 'react'
 import reservationService from '../services/reservationService'
 

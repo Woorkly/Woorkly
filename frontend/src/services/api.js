@@ -28,10 +28,16 @@ API.interceptors.request.use(async (config) => {
 })
 
 // Si le serveur renvoie 403 (token CSRF expiré), on renouvelle et on rejoue la requête
+// Si le serveur renvoie 429 (rate limit), on notifie le frontend via un custom event
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config
+    if (error.response?.status === 429) {
+      const msg = error.response.data?.message || 'Trop de requêtes, veuillez réessayer dans 15 minutes.'
+      window.dispatchEvent(new CustomEvent('rate-limit', { detail: { message: msg } }))
+      return Promise.reject(error)
+    }
     if (error.response?.status === 403 && !originalRequest._csrfRetry) {
       originalRequest._csrfRetry = true
       csrfToken = null

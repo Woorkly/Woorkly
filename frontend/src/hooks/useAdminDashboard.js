@@ -1,9 +1,14 @@
+// Hook de données pour le dashboard admin.
+// Agrège en parallèle 4 sources (dashboard, salles, utilisateurs, réservations)
+// et recalcule les KPIs côté client pour afficher les métriques en temps réel.
+// Fallback : si les appels parallèles échouent, utilise adminDashboardService seul.
 import { useEffect, useState } from 'react'
 import adminDashboardService from '../services/adminDashboardService'
 import { roomService } from '../services/roomService'
 import userService from '../services/userService'
 import reservationService from '../services/reservationService'
 
+// Extrait la partie YYYY-MM-DD d'une valeur date (Date, string ISO ou MySQL DATETIME)
 const getIsoDateKey = (value) => String(value || '').slice(0, 10)
 
 const getTodayKey = () => {

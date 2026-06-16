@@ -1,3 +1,5 @@
+// Hook consommateur du AuthContext — à utiliser dans tous les composants
+// qui ont besoin des données utilisateur ou des actions d'authentification.
 import { useContext } from 'react'
 import { AuthContext } from '../context/AuthContext'
 

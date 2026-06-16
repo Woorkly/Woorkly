@@ -1,3 +1,4 @@
+// Service d'authentification : génération/vérification JWT et connexion utilisateur.
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');

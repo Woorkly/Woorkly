@@ -53,7 +53,7 @@ export default function DonutChart({
   const hasData = data.some((d) => Number(d[dataKey]) > 0);
 
   return (
-    <div className={cls.wrap} style={{ alignItems: 'flex-start' }}>
+    <div className={cls.wrap} style={variant === 'admin' ? { alignItems: 'flex-start' } : undefined}>
       <div className={cls.shell}>
         {hasData ? (
           <ResponsiveContainer width="100%" height="100%">
