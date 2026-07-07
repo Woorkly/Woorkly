@@ -50,7 +50,7 @@ export default function ReservationPage() {
     if (formule === "heure") {
       setHeureDebut("08:00");
       setHeureFin("10:00");
-    } else if (formule === "demi-journée") {
+    } else if (formule === "demi-journee") {
       const p = DEMI_PERIODES[demiPeriode];
       setHeureDebut(p.heureDebut);
       setHeureFin(p.heureFin);
@@ -72,11 +72,11 @@ export default function ReservationPage() {
       if (duree <= 0) return null;
       return Number(room.prix_heure || 0) * duree;
     }
-    if (formule === "demi-journée") {
+    if (formule === "demi-journee") {
       const p = Number(room.prix_demi_journee);
       return isNaN(p) ? null : p;
     }
-    if (formule === "journée") {
+    if (formule === "journee") {
       const p = Number(room.prix_journee);
       return isNaN(p) ? null : p;
     }
@@ -86,11 +86,11 @@ export default function ReservationPage() {
   // Quand la disponibilité change, réinitialise automatiquement la période ou la formule si elles deviennent bloquées
   useEffect(() => {
     if (!dispo) return;
-    if (formule === "demi-journée") {
+    if (formule === "demi-journee") {
       if (!dispo.matin_disponible && dispo.apres_midi_disponible) setDemiPeriode("apres-midi");
       if (!dispo.apres_midi_disponible && dispo.matin_disponible) setDemiPeriode("matin");
     }
-    if (formule === "journée" && !dispo.journee_disponible) setFormule("heure");
+    if (formule === "journee" && !dispo.journee_disponible) setFormule("heure");
   }, [dispo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = async (event) => {
@@ -209,12 +209,12 @@ export default function ReservationPage() {
                   blocked: dispoLoading,
                 },
                 {
-                  value: "demi-journée",
+                  value: "demi-journee",
                   label: "À la demi-journée",
                   blocked: dispoLoading || (dispo ? (!dispo.matin_disponible && !dispo.apres_midi_disponible) : false),
                 },
                 {
-                  value: "journée",
+                  value: "journee",
                   label: "À la journée",
                   blocked: dispoLoading || (dispo ? !dispo.journee_disponible : false),
                 },
@@ -242,7 +242,7 @@ export default function ReservationPage() {
           </div>
 
           {/* Sélecteur matin / après-midi — visible uniquement pour demi-journée */}
-          {formule === "demi-journée" && (
+          {formule === "demi-journee" && (
             <div className="form-group">
               <label className="form-label" htmlFor="demiPeriode">
                 Période <span>*</span>
