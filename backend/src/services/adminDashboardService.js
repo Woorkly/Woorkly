@@ -36,19 +36,32 @@ const getAdminDashboardStats = async () => {
     db.execute("SELECT COUNT(*) AS reservations_today FROM reservations WHERE date = CURDATE() AND statut <> 'annulee'"),
     db.execute('SELECT COUNT(*) AS total_utilisateurs FROM utilisateurs'),
     db.execute(`
-      SELECT
-          COALESCE(
-            ROUND(
-              (
-                SELECT COALESCE(SUM(TIME_TO_SEC(TIMEDIFF(heure_fin, heure_debut)) / 3600), 0)
-                FROM reservations
-                WHERE date = CURDATE()
-                  AND statut <> 'annulee'
-              ) / NULLIF((SELECT COUNT(*) * ${DAILY_AVAILABLE_HOURS} FROM salles), 0) * 100,
-              1
-            ),
-            0
-          ) AS taux_occupation
+     SELECT
+  COALESCE(
+    ROUND(
+      (
+        SELECT COALESCE(
+          SUM(TIME_TO_SEC(TIMEDIFF(heure_fin, heure_debut)) / 3600),
+          0
+        )
+        FROM reservations
+        WHERE YEAR(date) = YEAR(CURDATE())
+          AND MONTH(date) = MONTH(CURDATE())
+          AND date <= CURDATE()
+          AND statut <> 'annulee'
+      )
+      /
+      NULLIF(
+        (
+          SELECT COUNT(*)
+          FROM salles
+        ) * ${DAILY_AVAILABLE_HOURS} * DAY(CURDATE()),
+        0
+      ) * 100,
+      1
+    ),
+    0
+  ) AS taux_occupation;
     `),
     db.execute(`
       SELECT
