@@ -89,10 +89,10 @@ const getAdminDashboardStats = async () => {
     `),
   ]);
 
-  const [totalSallesResult] = totalSallesRows;
-  const [reservationsTodayResult] = reservationsTodayRows;
-  const [totalUtilisateursResult] = totalUtilisateursRows;
-  const [occupationResult] = occupationRows;
+  const [[totalSallesResult]] = totalSallesRows;
+const [[reservationsTodayResult]] = reservationsTodayRows;
+const [[totalUtilisateursResult]] = totalUtilisateursRows;
+const [[occupationResult]] = occupationRows;
   const [monthlyResult] = monthlyRows;
   const [typeResult] = typeRows;
   const [recentResult] = recentRows;
@@ -105,8 +105,8 @@ const getAdminDashboardStats = async () => {
   const monthly_trends = Array.from({ length: 12 }, (_, index) => {
     const monthNumber = index + 1;
     const row = monthlyByMonth.get(monthNumber);
-
-    return {
+   
+          return {
       month: formatMonth(monthNumber),
       total_reservations: Number(row?.total_reservations || 0),
       confirmees: Number(row?.confirmees || 0),
@@ -118,7 +118,7 @@ const getAdminDashboardStats = async () => {
     type: row.type_name,
     total: Number(row.total || 0),
     percentage: totalTypeUsage > 0 ? Math.round((Number(row.total || 0) / totalTypeUsage) * 100) : 0,
-  }));
+  }));    
 
   return {
     kpis: {
