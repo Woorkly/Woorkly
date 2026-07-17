@@ -135,6 +135,7 @@ export default function Salle() {
               <input
                 type="date"
                 value={filters.date}
+                min={new Date().toISOString().split('T')[0]}
                 onChange={(e) => updateFilter('date', e.target.value)}
               />
             </label>
