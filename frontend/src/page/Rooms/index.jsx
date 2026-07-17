@@ -5,7 +5,7 @@
   - Styles locaux dans `styles.css`
 */
 import { Link } from 'react-router-dom'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import useRooms from '../../hooks/useRooms'
@@ -27,12 +27,14 @@ export default function Salle() {
     date: '',
     capacite_min: '',
     type_id: '',
-    equipement_id: '',
+    equipement_ids: [],
   })
   const [villeInput, setVilleInput] = useState('')
   const [debouncedVille, setDebouncedVille] = useState('')
   const [types, setTypes] = useState([])
   const [equipements, setEquipements] = useState([])
+  const [equipementMenuOpen, setEquipementMenuOpen] = useState(false)
+  const equipementDropdownRef = useRef(null)
 
   useEffect(() => {
     const fetchTypes = async () => {
@@ -67,7 +69,7 @@ export default function Salle() {
       ville: debouncedVille.trim() || undefined,
       capacite_min: filters.capacite_min || undefined,
       type_id: filters.type_id || undefined,
-      equipement_id: filters.equipement_id || undefined,
+      equipement_id: filters.equipement_ids.length ? filters.equipement_ids.join(',') : undefined,
     }
   }, [filters, debouncedVille])
 
@@ -78,6 +80,20 @@ export default function Salle() {
 
     return () => clearTimeout(debounceId)
   }, [villeInput])
+
+  // Ferme le menu déroulant des équipements au clic en dehors
+  useEffect(() => {
+    if (!equipementMenuOpen) return
+
+    const handleClickOutside = (e) => {
+      if (equipementDropdownRef.current && !equipementDropdownRef.current.contains(e.target)) {
+        setEquipementMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [equipementMenuOpen])
 
   const { rooms, loading, error } = useRooms(appliedFilters)
 
@@ -90,12 +106,23 @@ export default function Salle() {
 
   const updateFilter = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
+    if (key === 'date' && !value) setEquipementMenuOpen(false)
+  }
+
+  const toggleEquipement = (id) => {
+    setFilters((prev) => ({
+      ...prev,
+      equipement_ids: prev.equipement_ids.includes(id)
+        ? prev.equipement_ids.filter((existingId) => existingId !== id)
+        : [...prev.equipement_ids, id],
+    }))
   }
 
   const resetFilters = () => {
     setVilleInput('')
     setDebouncedVille('')
-    setFilters({ date: '', capacite_min: '', type_id: '', equipement_id: '' })
+    setEquipementMenuOpen(false)
+    setFilters({ date: '', capacite_min: '', type_id: '', equipement_ids: [] })
   }
 
   // Calculate center of map from rooms with valid coordinates
@@ -176,19 +203,43 @@ export default function Salle() {
               </select>
             </label>
 
-            <label>
-              Équipement
-              <select
-                value={filters.equipement_id}
-                onChange={(e) => updateFilter('equipement_id', e.target.value)}
-                disabled={!filters.date}
-              >
-                <option value="">Tous les équipements</option>
-                {equipements.map((equipement) => (
-                  <option key={equipement.id} value={equipement.id}>{equipement.nom}</option>
-                ))}
-              </select>
-            </label>
+            <div className="equipement-filter">
+              <span className="equipement-filter-label">Équipement</span>
+              <div className="equipement-dropdown" ref={equipementDropdownRef}>
+                <button
+                  type="button"
+                  className="equipement-dropdown-toggle"
+                  onClick={() => setEquipementMenuOpen((open) => !open)}
+                  disabled={!filters.date}
+                >
+                  {filters.equipement_ids.length
+                    ? `${filters.equipement_ids.length} équipement(s)`
+                    : 'Tous les équipements'}
+                </button>
+
+                {equipementMenuOpen && (
+                  <div className="equipement-dropdown-panel">
+                    {equipements.length === 0 ? (
+                      <p className="equipement-dropdown-empty">Aucun équipement</p>
+                    ) : (
+                      equipements.map((equipement) => {
+                        const id = String(equipement.id)
+                        return (
+                          <label key={id} className="equipement-dropdown-option">
+                            <input
+                              type="checkbox"
+                              checked={filters.equipement_ids.includes(id)}
+                              onChange={() => toggleEquipement(id)}
+                            />
+                            {equipement.nom}
+                          </label>
+                        )
+                      })
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
 
             <button type="button" className="filters-reset" onClick={resetFilters}>
               Réinitialiser

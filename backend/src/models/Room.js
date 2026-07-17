@@ -8,6 +8,15 @@ class Room extends BaseModel {
     Object.assign(this, data); // Astuce pour assigner tous les champs d'un coup
   }
 
+  // Transforme "1,2,3" (ou un id seul) en tableau d'entiers valides
+  static _parseEquipementIds(value) {
+    if (!value) return [];
+    return String(value)
+      .split(",")
+      .map((id) => Number(id))
+      .filter((id) => Number.isInteger(id) && id > 0);
+  }
+
   // On réécrit getAll car on a une jointure spécifique (Polymorphisme)
   static async getAll(filters = {}) {
     const where = [];
@@ -33,21 +42,22 @@ class Room extends BaseModel {
       params.push(Number(filters.type_id));
     }
 
-    if (filters.equipement_id) {
+    const equipementIds = Room._parseEquipementIds(filters.equipement_id);
+    if (equipementIds.length > 0) {
       where.push(`
-        EXISTS (
-          SELECT 1
+        (
+          SELECT COUNT(DISTINCT filter_se.equipement_id)
           FROM salle_equipements filter_se
           WHERE filter_se.salle_id = s.id
-          AND filter_se.equipement_id = ?
-        )
+          AND filter_se.equipement_id IN (${equipementIds.map(() => "?").join(",")})
+        ) = ?
       `);
-      params.push(Number(filters.equipement_id));
+      params.push(...equipementIds, equipementIds.length);
     }
 
     const sql = `
-    SELECT 
-        s.*, 
+    SELECT
+        s.*,
         t.nom as type_nom,
         GROUP_CONCAT(e.nom SEPARATOR ', ') as equipements
     FROM salles s
@@ -80,16 +90,17 @@ class Room extends BaseModel {
       params.push(Number(filters.type_id));
     }
 
-    if (filters.equipement_id) {
+    const equipementIds = Room._parseEquipementIds(filters.equipement_id);
+    if (equipementIds.length > 0) {
       where.push(`
-        EXISTS (
-          SELECT 1
+        (
+          SELECT COUNT(DISTINCT filter_se.equipement_id)
           FROM salle_equipements filter_se
           WHERE filter_se.salle_id = s.id
-          AND filter_se.equipement_id = ?
-        )
+          AND filter_se.equipement_id IN (${equipementIds.map(() => "?").join(",")})
+        ) = ?
       `);
-      params.push(Number(filters.equipement_id));
+      params.push(...equipementIds, equipementIds.length);
     }
 
     const sql = `
