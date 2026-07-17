@@ -12,12 +12,13 @@ export const roomService = {
     return res.data
   },
 
-  getAvailableRooms: async ({ date, ville, capacite_min, type_id }) => {
+  getAvailableRooms: async ({ date, ville, capacite_min, type_id, equipement_id }) => {
     const params = {
       date,
       ville: ville || undefined,
       capacite_min: capacite_min || undefined,
       type_id: type_id || undefined,
+      equipement_id: equipement_id || undefined,
     }
     const res = await api.get('/rooms/available', { params })
     return res.data

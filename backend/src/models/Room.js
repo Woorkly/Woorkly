@@ -80,8 +80,20 @@ class Room extends BaseModel {
       params.push(Number(filters.type_id));
     }
 
+    if (filters.equipement_id) {
+      where.push(`
+        EXISTS (
+          SELECT 1
+          FROM salle_equipements filter_se
+          WHERE filter_se.salle_id = s.id
+          AND filter_se.equipement_id = ?
+        )
+      `);
+      params.push(Number(filters.equipement_id));
+    }
+
     const sql = `
-            SELECT s.*, t.nom as type_nom 
+            SELECT s.*, t.nom as type_nom
             FROM salles s
             JOIN types t ON s.type_id = t.id
             WHERE ${where.join(" AND ")}

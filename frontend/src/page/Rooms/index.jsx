@@ -11,6 +11,7 @@ import L from 'leaflet'
 import useRooms from '../../hooks/useRooms'
 import Button from '../../components/Button'
 import api from '../../services/api'
+import { equipmentService } from '../../services/equipmentService'
 import './Styles.css'
 
 // Fix marker icon for leaflet
@@ -26,10 +27,12 @@ export default function Salle() {
     date: '',
     capacite_min: '',
     type_id: '',
+    equipement_id: '',
   })
   const [villeInput, setVilleInput] = useState('')
   const [debouncedVille, setDebouncedVille] = useState('')
   const [types, setTypes] = useState([])
+  const [equipements, setEquipements] = useState([])
 
   useEffect(() => {
     const fetchTypes = async () => {
@@ -44,6 +47,19 @@ export default function Salle() {
     fetchTypes()
   }, [])
 
+  useEffect(() => {
+    const fetchEquipements = async () => {
+      try {
+        const data = await equipmentService.getEquipments()
+        setEquipements(Array.isArray(data) ? data : [])
+      } catch {
+        setEquipements([])
+      }
+    }
+
+    fetchEquipements()
+  }, [])
+
   const appliedFilters = useMemo(() => {
     if (!filters.date) return {}
     return {
@@ -51,6 +67,7 @@ export default function Salle() {
       ville: debouncedVille.trim() || undefined,
       capacite_min: filters.capacite_min || undefined,
       type_id: filters.type_id || undefined,
+      equipement_id: filters.equipement_id || undefined,
     }
   }, [filters, debouncedVille])
 
@@ -78,7 +95,7 @@ export default function Salle() {
   const resetFilters = () => {
     setVilleInput('')
     setDebouncedVille('')
-    setFilters({ date: '', capacite_min: '', type_id: '' })
+    setFilters({ date: '', capacite_min: '', type_id: '', equipement_id: '' })
   }
 
   // Calculate center of map from rooms with valid coordinates
@@ -155,6 +172,20 @@ export default function Salle() {
                 <option value="">Tous les types</option>
                 {types.map((type) => (
                   <option key={type.id} value={type.id}>{type.nom}</option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              Équipement
+              <select
+                value={filters.equipement_id}
+                onChange={(e) => updateFilter('equipement_id', e.target.value)}
+                disabled={!filters.date}
+              >
+                <option value="">Tous les équipements</option>
+                {equipements.map((equipement) => (
+                  <option key={equipement.id} value={equipement.id}>{equipement.nom}</option>
                 ))}
               </select>
             </label>
