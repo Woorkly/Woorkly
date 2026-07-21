@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import "./style.css";
 import useRooms from "../../hooks/useRooms";
 import useReservation from "../../hooks/useReservation";
@@ -18,12 +18,13 @@ const getTodayInputValue = () => {
 
 export default function ReservationPage() {
   const { roomId } = useParams();
+  const [searchParams] = useSearchParams();
   const { room, loading: roomLoading, error: roomError } = useRooms({ roomId });
   const { createReservation, loading: submitting, error: reservationError } = useReservation();
 
   const [formule, setFormule]         = useState("heure");
   const [demiPeriode, setDemiPeriode] = useState("matin");
-  const [date, setDate]               = useState("");
+  const [date, setDate]               = useState(() => searchParams.get("date") || "");
   const [heureDebut, setHeureDebut]   = useState("08:00");
   const [heureFin, setHeureFin]       = useState("10:00");
   const [successMessage, setSuccessMessage] = useState("");
