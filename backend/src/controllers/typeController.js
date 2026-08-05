@@ -72,6 +72,11 @@ const deleteType = async (req, res) => {
         res.status(200).json({ message: "type supprimé avec succès" });
     } catch (error) {
         console.error("ERREUR SQL :", error);
+        if (error.code === "ER_ROW_IS_REFERENCED_2" || error.errno === 1451) {
+            return res.status(409).json({
+                message: "Ce type est utilisé par une ou plusieurs salles, impossible de le supprimer",
+            });
+        }
         res.status(500).json({ message: "Erreur lors de la suppression du Type" });
     }
 };
