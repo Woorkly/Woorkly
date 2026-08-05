@@ -1,8 +1,16 @@
 const BaseModel = require('./BaseModel');
 const db = require('../config/db');
 
-class Types extends BaseModel { 
+class Types extends BaseModel {
     static table='types';
+
+    static async findByName(name) {
+        const [rows] = await db.execute(
+            "SELECT * FROM types WHERE LOWER(nom) = LOWER(?) LIMIT 1",
+            [name],
+        );
+        return rows[0];
+    }
 
     constructor(data) {
         super('types'); // On dit à la classe mère qu'on gère la table 'types'
