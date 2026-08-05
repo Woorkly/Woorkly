@@ -246,6 +246,11 @@ export default function GestionSalles() {
   const [roomTypes, setRoomTypes] = useState([]);
   const [loadingTypes, setLoadingTypes] = useState(true);
   const [typesError, setTypesError] = useState(null);
+  const [newTypeName, setNewTypeName] = useState("");
+  const [addingType, setAddingType] = useState(false);
+  const [typeCreateError, setTypeCreateError] = useState(null);
+  const [deletingType, setDeletingType] = useState(false);
+  const [typeDeleteError, setTypeDeleteError] = useState(null);
   const [equipments, setEquipments] = useState([]);
   const [loadingEquipments, setLoadingEquipments] = useState(true);
   const [equipmentsError, setEquipmentsError] = useState(null);
@@ -410,6 +415,94 @@ export default function GestionSalles() {
     }
   };
 
+  const normalizeTypeName = (name) => name.trim().toLowerCase();
+
+  const findTypeByName = (name) =>
+    roomTypes.find(
+      (type) => normalizeTypeName(type.nom) === normalizeTypeName(name),
+    );
+
+  const selectTypeInForm = (typeId, target) => {
+    if (!typeId) return;
+
+    const setter = target === "edit" ? setEditRoomForm : setRoomForm;
+    setter((current) => ({ ...current, type_id: String(typeId) }));
+  };
+
+  const handleCreateType = async (name, target) => {
+    const cleanName = name.trim();
+    setTypeCreateError(null);
+
+    if (!cleanName) {
+      setTypeCreateError("Le nom du type est obligatoire.");
+      return;
+    }
+
+    const existingType = findTypeByName(cleanName);
+    if (existingType) {
+      selectTypeInForm(existingType.id, target);
+      setNewTypeName("");
+      return;
+    }
+
+    setAddingType(true);
+
+    try {
+      const createdType = await typeService.createType(cleanName);
+      const data = await typeService.getTypes();
+      const nextTypes = Array.isArray(data) ? data : [];
+      const freshType = nextTypes.find(
+        (type) => normalizeTypeName(type.nom) === normalizeTypeName(cleanName),
+      );
+
+      setRoomTypes(nextTypes);
+      selectTypeInForm(createdType.id || freshType?.id, target);
+      setNewTypeName("");
+    } catch (err) {
+      setTypeCreateError(
+        err.response?.data?.message ||
+          err.message ||
+          "Erreur lors de la creation du type",
+      );
+    } finally {
+      setAddingType(false);
+    }
+  };
+
+  const handleDeleteType = async (typeId, target) => {
+    if (!typeId) return;
+
+    const type = roomTypes.find((t) => String(t.id) === String(typeId));
+    const confirmed = window.confirm(
+      `Supprimer le type "${type?.nom || ""}" ? Cette action est irreversible.`,
+    );
+    if (!confirmed) return;
+
+    setTypeDeleteError(null);
+    setDeletingType(true);
+
+    try {
+      await typeService.deleteType(typeId);
+      const data = await typeService.getTypes();
+      setRoomTypes(Array.isArray(data) ? data : []);
+
+      const setter = target === "edit" ? setEditRoomForm : setRoomForm;
+      setter((current) =>
+        current.type_id === String(typeId)
+          ? { ...current, type_id: "" }
+          : current,
+      );
+    } catch (err) {
+      setTypeDeleteError(
+        err.response?.data?.message ||
+          err.message ||
+          "Erreur lors de la suppression du type",
+      );
+    } finally {
+      setDeletingType(false);
+    }
+  };
+
   const filtered = salles.filter((s) =>
     s.nom?.toLowerCase().includes(search.toLowerCase()),
   );
@@ -430,6 +523,9 @@ export default function GestionSalles() {
     setFormError(null);
     setEquipmentCreateError(null);
     setNewEquipmentName("");
+    setTypeCreateError(null);
+    setNewTypeName("");
+    setTypeDeleteError(null);
     setIsCreateOpen(true);
   };
 
@@ -462,6 +558,9 @@ export default function GestionSalles() {
     setEditFormError(null);
     setEquipmentCreateError(null);
     setNewEquipmentName("");
+    setTypeCreateError(null);
+    setNewTypeName("");
+    setTypeDeleteError(null);
     setLoadingRoom(true);
 
     try {
@@ -488,6 +587,9 @@ export default function GestionSalles() {
     setEditFormError(null);
     setEquipmentCreateError(null);
     setNewEquipmentName("");
+    setTypeCreateError(null);
+    setNewTypeName("");
+    setTypeDeleteError(null);
   };
 
   const updateEditRoomForm = (field, value) => {
@@ -993,26 +1095,59 @@ export default function GestionSalles() {
 
               <label>
                 Type de salle
-                <select
-                  required
-                  value={roomForm.type_id}
-                  onChange={(event) =>
-                    updateRoomForm("type_id", event.target.value)
-                  }
-                  disabled={loadingTypes}
-                >
-                  <option value="">
-                    {loadingTypes
-                      ? "Chargement des types..."
-                      : "Choisir un type"}
-                  </option>
-                  {roomTypes.map((type) => (
-                    <option key={type.id} value={type.id}>
-                      {type.nom}
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <select
+                    required
+                    value={roomForm.type_id}
+                    onChange={(event) =>
+                      updateRoomForm("type_id", event.target.value)
+                    }
+                    disabled={loadingTypes}
+                    style={{ flex: 1 }}
+                  >
+                    <option value="">
+                      {loadingTypes
+                        ? "Chargement des types..."
+                        : "Choisir un type"}
                     </option>
-                  ))}
-                </select>
+                    {roomTypes.map((type) => (
+                      <option key={type.id} value={type.id}>
+                        {type.nom}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    className="ud-btn-danger"
+                    type="button"
+                    onClick={() =>
+                      handleDeleteType(roomForm.type_id, "create")
+                    }
+                    disabled={!roomForm.type_id || deletingType}
+                    style={{ whiteSpace: "nowrap" }}
+                  >
+                    {deletingType ? "..." : "Supprimer"}
+                  </button>
+                </div>
               </label>
+
+              <div className="room-form-wide room-equipment-field">
+                <span>Ajouter un type de salle</span>
+                <div className="room-equipment-create">
+                  <input
+                    value={newTypeName}
+                    onChange={(event) => setNewTypeName(event.target.value)}
+                    placeholder="Nouveau type de salle"
+                  />
+                  <button
+                    className="btn-primary"
+                    type="button"
+                    onClick={() => handleCreateType(newTypeName, "create")}
+                    disabled={addingType}
+                  >
+                    {addingType ? "Ajout..." : "Ajouter"}
+                  </button>
+                </div>
+              </div>
 
               <div className="room-form-wide room-equipment-field">
                 <span>Equipements</span>
@@ -1162,6 +1297,14 @@ export default function GestionSalles() {
               {formError && <p className="room-form-error">{formError}</p>}
 
               {typesError && <p className="room-form-error">{typesError}</p>}
+
+              {typeCreateError && (
+                <p className="room-form-error">{typeCreateError}</p>
+              )}
+
+              {typeDeleteError && (
+                <p className="room-form-error">{typeDeleteError}</p>
+              )}
 
               {equipmentCreateError && (
                 <p className="room-form-error">{equipmentCreateError}</p>
@@ -1351,26 +1494,61 @@ export default function GestionSalles() {
 
                   <label>
                     Type de salle
-                    <select
-                      required
-                      value={editRoomForm.type_id}
-                      onChange={(event) =>
-                        updateEditRoomForm("type_id", event.target.value)
-                      }
-                      disabled={loadingTypes}
-                    >
-                      <option value="">
-                        {loadingTypes
-                          ? "Chargement des types..."
-                          : "Choisir un type"}
-                      </option>
-                      {roomTypes.map((type) => (
-                        <option key={type.id} value={type.id}>
-                          {type.nom}
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                      <select
+                        required
+                        value={editRoomForm.type_id}
+                        onChange={(event) =>
+                          updateEditRoomForm("type_id", event.target.value)
+                        }
+                        disabled={loadingTypes}
+                        style={{ flex: 1 }}
+                      >
+                        <option value="">
+                          {loadingTypes
+                            ? "Chargement des types..."
+                            : "Choisir un type"}
                         </option>
-                      ))}
-                    </select>
+                        {roomTypes.map((type) => (
+                          <option key={type.id} value={type.id}>
+                            {type.nom}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        className="ud-btn-danger"
+                        type="button"
+                        onClick={() =>
+                          handleDeleteType(editRoomForm.type_id, "edit")
+                        }
+                        disabled={!editRoomForm.type_id || deletingType}
+                        style={{ whiteSpace: "nowrap" }}
+                      >
+                        {deletingType ? "..." : "Supprimer"}
+                      </button>
+                    </div>
                   </label>
+
+                  <div className="room-form-wide room-equipment-field">
+                    <span>Ajouter un type de salle</span>
+                    <div className="room-equipment-create">
+                      <input
+                        value={newTypeName}
+                        onChange={(event) =>
+                          setNewTypeName(event.target.value)
+                        }
+                        placeholder="Nouveau type de salle"
+                      />
+                      <button
+                        className="btn-primary"
+                        type="button"
+                        onClick={() => handleCreateType(newTypeName, "edit")}
+                        disabled={addingType}
+                      >
+                        {addingType ? "Ajout..." : "Ajouter"}
+                      </button>
+                    </div>
+                  </div>
 
                   <div className="room-form-wide room-equipment-field">
                     <span>Equipements</span>
@@ -1527,6 +1705,14 @@ export default function GestionSalles() {
 
                   {typesError && (
                     <p className="room-form-error">{typesError}</p>
+                  )}
+
+                  {typeCreateError && (
+                    <p className="room-form-error">{typeCreateError}</p>
+                  )}
+
+                  {typeDeleteError && (
+                    <p className="room-form-error">{typeDeleteError}</p>
                   )}
 
                   {equipmentCreateError && (

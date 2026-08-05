@@ -31,8 +31,21 @@ const getTypesDetails = async (req, res) => {
 // Créer un nouveau Type
 const createType = async (req, res) => {
     try {
-        const typeId = await Types.create(req.body);
-        res.status(201).json({ id: typeId, message: "type créé avec succès" });
+        const nom = req.body.nom?.trim();
+
+        if (!nom) {
+            return res.status(400).json({ message: "Le nom du type est obligatoire" });
+        }
+
+        const existingType = await Types.findByName(nom);
+        if (existingType) {
+            return res
+                .status(200)
+                .json({ id: existingType.id, nom: existingType.nom, message: "Type deja existant" });
+        }
+
+        const typeId = await Types.create({ nom });
+        res.status(201).json({ id: typeId, nom, message: "type créé avec succès" });
     } catch (error) {
         console.error("ERREUR SQL :", error);
         res.status(500).json({ message: "Erreur lors de la création du type" });
@@ -59,6 +72,11 @@ const deleteType = async (req, res) => {
         res.status(200).json({ message: "type supprimé avec succès" });
     } catch (error) {
         console.error("ERREUR SQL :", error);
+        if (error.code === "ER_ROW_IS_REFERENCED_2" || error.errno === 1451) {
+            return res.status(409).json({
+                message: "Ce type est utilisé par une ou plusieurs salles, impossible de le supprimer",
+            });
+        }
         res.status(500).json({ message: "Erreur lors de la suppression du Type" });
     }
 };
