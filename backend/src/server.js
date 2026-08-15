@@ -29,12 +29,16 @@ const isProduction = process.env.NODE_ENV === 'production';
 const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
     getSecret: () => process.env.CSRF_SECRET,
     getSessionIdentifier: (req) => {
-        // Utilise le JWT comme session identifier (stable pour un utilisateur)
-        // Sinon génère un UUID unique basé sur l'User-Agent pour les non-auth
+        // Priorité 1: Utilise le JWT pour les utilisateurs authentifiés
         if (req.cookies?.token) {
             return req.cookies.token;
         }
-        // Pour les non-authentifiés, on utilise une clé stable basée sur l'User-Agent
+        // Priorité 2: Utilise le sessionId envoyé par le client (stable et unique)
+        const sessionId = req.get('x-session-id');
+        if (sessionId) {
+            return sessionId;
+        }
+        // Fallback: User-Agent (dernier recours)
         return req.get('user-agent') || 'anonymous';
     },
     cookieName: 'csrf_token',
