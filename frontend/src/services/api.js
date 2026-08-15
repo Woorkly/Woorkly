@@ -9,6 +9,29 @@ const MUTATION_METHODS = ['post', 'put', 'patch', 'delete']
 
 let csrfToken = null
 
+// Générer ou récupérer un UUID stable pour la session (utilisé pour le CSRF)
+const getSessionId = () => {
+  const key = '__session_id__'
+  let sessionId = sessionStorage.getItem(key)
+
+  if (!sessionId) {
+    // Génère un UUID v4 si disponible (navigateurs modernes)
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      sessionId = crypto.randomUUID()
+    } else {
+      // Fallback pour navigateurs anciens
+      sessionId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = (Math.random() * 16) | 0
+        const v = c === 'x' ? r : (r & 0x3) | 0x8
+        return v.toString(16)
+      })
+    }
+    sessionStorage.setItem(key, sessionId)
+  }
+
+  return sessionId
+}
+
 const fetchCsrfToken = async () => {
   // On utilise l'instance API (baseURL = VITE_API_BASE) pour éviter le double /api
   // Ex: VITE_API_BASE = "http://localhost:3000/api" → GET http://localhost:3000/api/csrf-token ✓
@@ -18,6 +41,9 @@ const fetchCsrfToken = async () => {
 }
 
 API.interceptors.request.use(async (config) => {
+  // Envoyer le sessionId pour les non-authentifiés (utilisé pour identifier la session CSRF)
+  config.headers['x-session-id'] = getSessionId()
+
   if (MUTATION_METHODS.includes(config.method)) {
     if (!csrfToken) {
       await fetchCsrfToken()
