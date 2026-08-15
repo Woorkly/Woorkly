@@ -47,4 +47,9 @@ const getDisponibilite = async (salleId, date) => {
   return res.data
 }
 
-export default { createReservation, getMyUpcoming, getMyHistory, getMyStats, getAllReservations, getFiltersData, updateStatut, getDisponibilite }
+const cancelReservation = async (reservationId) => {
+  const res = await API.patch(`/reservations/${reservationId}/cancel`)
+  return res.data
+}
+
+export default { createReservation, getMyUpcoming, getMyHistory, getMyStats, getAllReservations, getFiltersData, updateStatut, getDisponibilite, cancelReservation }

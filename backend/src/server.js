@@ -28,7 +28,15 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
     getSecret: () => process.env.CSRF_SECRET,
-    getSessionIdentifier: (req) => req.cookies?.token ?? '',
+    getSessionIdentifier: (req) => {
+        // Utilise le JWT comme session identifier (stable pour un utilisateur)
+        // Sinon génère un UUID unique basé sur l'User-Agent pour les non-auth
+        if (req.cookies?.token) {
+            return req.cookies.token;
+        }
+        // Pour les non-authentifiés, on utilise une clé stable basée sur l'User-Agent
+        return req.get('user-agent') || 'anonymous';
+    },
     cookieName: 'csrf_token',
     cookieOptions: {
         httpOnly: true,
@@ -63,6 +71,15 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 app.use(doubleCsrfProtection);
+
+// Gestion des erreurs CSRF
+app.use((err, req, res, next) => {
+  if (err.message === 'invalid csrf token' || err.code === 'EBADCSRFTOKEN') {
+    // CSRF invalide - répond avec 403 au lieu d'afficher l'erreur dans la console
+    return res.status(403).json({ message: 'Token CSRF invalide' });
+  }
+  next(err);
+});
 
 // --- ROUTES ---
 

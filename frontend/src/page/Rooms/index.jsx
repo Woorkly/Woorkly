@@ -171,7 +171,7 @@ export default function Salle() {
                 disabled={!filters.date}
               >
                 <option value="">Tous les types</option>
-                {types.map((type) => (
+                {types.filter(type => type.nom && type.nom.trim()).map((type) => (
                   <option key={type.id} value={type.id}>{type.nom}</option>
                 ))}
               </select>
@@ -185,7 +185,7 @@ export default function Salle() {
                 disabled={!filters.date}
               >
                 <option value="">Tous les équipements</option>
-                {equipements.map((equipement) => (
+                {equipements.filter(equipement => equipement.nom && equipement.nom.trim()).map((equipement) => (
                   <option key={equipement.id} value={equipement.id}>{equipement.nom}</option>
                 ))}
               </select>
