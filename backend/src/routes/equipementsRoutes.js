@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const equipementController = require("../controllers/equipementController");
 const { authRequired, requireRole } = require("../middlewares/auth");
+const { createEquipementValidator, updateEquipementValidator } = require("../validators/equipementValidator");
+const validate = require("../middlewares/validate");
 
 // GET /api/equipements/ (public)
 // Liste tous les équipements (utilisé pour les filtres de salles)
@@ -13,11 +15,11 @@ router.get("/:id", equipementController.getEquipementDetails);
 
 // POST /api/equipements/ (admin only)
 // Crée un équipement (retourne 200 s'il existe déjà, 201 si nouveau)
-router.post("/", authRequired, requireRole("admin"), equipementController.createEquipement);
+router.post("/", authRequired, requireRole("admin"), createEquipementValidator, validate, equipementController.createEquipement);
 
 // PUT /api/equipements/:id (admin only)
 // Met à jour un équipement
-router.put("/:id", authRequired, requireRole("admin"), equipementController.updateEquipement);
+router.put("/:id", authRequired, requireRole("admin"), updateEquipementValidator, validate, equipementController.updateEquipement);
 
 // DELETE /api/equipements/:id (admin only)
 // Supprime un équipement
