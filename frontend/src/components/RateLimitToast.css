@@ -1,0 +1,121 @@
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+.rate-limit-overlay {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rate-limit-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  color: #fef2f2;
+  padding: 1rem 1.25rem;
+  border-radius: 0.625rem;
+  box-shadow: 0 10px 25px rgba(220, 38, 38, 0.2);
+  max-width: 420px;
+  min-width: 300px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideInUp 0.3s ease-out;
+}
+
+.rate-limit-overlay:not(.visible) .rate-limit-toast {
+  animation: slideOutDown 0.3s ease-out forwards;
+}
+
+.rate-limit-icon {
+  flex-shrink: 0;
+  font-size: 1.5rem;
+  margin-top: 2px;
+}
+
+.rate-limit-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.rate-limit-message {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+  color: #fef2f2;
+}
+
+.rate-limit-hint {
+  font-size: 0.8rem;
+  line-height: 1.3;
+  margin: 0;
+  color: #fecaca;
+  font-weight: 500;
+}
+
+.rate-limit-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: #fca5a5;
+  cursor: pointer;
+  font-size: 1.25rem;
+  padding: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.rate-limit-close:hover {
+  color: #fef2f2;
+  transform: scale(1.1);
+}
+
+.rate-limit-close:active {
+  transform: scale(0.95);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .rate-limit-overlay {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+  }
+
+  .rate-limit-toast {
+    min-width: unset;
+    max-width: 100%;
+    gap: 0.75rem;
+  }
+}
