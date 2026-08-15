@@ -17,7 +17,7 @@ const getAllUsers = async () => {
 }
 
 const updateUserRole = async (id, role) => {
-  const res = await API.patch(`/users/${id}`, { role })
+  const res = await API.patch(`/users/${id}/role`, { role })
   return res.data
 }
 
@@ -42,7 +42,7 @@ const uploadAvatar = async (file) => {
 };
 
 const updateMyProfile = async (id, data) => {
-  const res = await API.patch(`/users/${id}`, data)
+  const res = await API.patch(`/users/${id}/profile`, data)
   return res.data
 }
 
