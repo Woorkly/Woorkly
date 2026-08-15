@@ -43,7 +43,20 @@ const createType = async (req, res) => {
 const updateType = async (req, res) => {
     try {
         const { id } = req.params;
-        await Types.update(id, req.body);
+        const allowedFields = ['nom'];
+        const updates = {};
+
+        allowedFields.forEach(field => {
+            if (req.body[field] !== undefined) {
+                updates[field] = req.body[field];
+            }
+        });
+
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ message: "Aucun champ valide à mettre à jour" });
+        }
+
+        await Types.update(id, updates);
         res.status(200).json({ message: "type mis à jour avec succès" });
     } catch (error) {
         console.error("ERREUR SQL :", error);
