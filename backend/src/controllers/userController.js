@@ -41,61 +41,6 @@ const createUser = async (req, res) => {
     }
 };
 
-// modification d'un utilisateur
-const updateUser = async (req, res) => {
-    try {
-        const { id } = req.params;
-        await User.update(id, req.body);
-        res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Erreur lors de la mise à jour de l'utilisateur" });
-    }
-};
-
-// modification partielle d'un utilisateur (ex: rôle uniquement, ou profil personnel)
-const patchUser = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        // Gestion de l'upload de l'avatar s'il y a un fichier
-        if (req.file) {
-            const result = await uploadFromBuffer(req.file.buffer, 'woorkly/avatars');
-            if (result && (result.secure_url || result.url)) {
-                req.body.avatar_url = result.secure_url || result.url;
-            }
-        }
-
-        await User.patch(id, req.body);
-
-        // Re-émettre le JWT si des champs de profil changent (nom/email/avatar_url)
-        if (req.body.nom !== undefined || req.body.email !== undefined || req.body.avatar_url !== undefined) {
-            const updatedUser = await User.findById(id);
-            if (updatedUser) {
-                const authService = require('../services/authService');
-                const token = authService.generateToken(updatedUser);
-                const isProduction = process.env.NODE_ENV === 'production';
-                res.cookie('token', token, {
-                    httpOnly: true,
-                    secure: isProduction,
-                    sameSite: isProduction ? 'none' : 'strict',
-                    maxAge: 7 * 24 * 60 * 60 * 1000,
-                    path: '/',
-                });
-                return res.status(200).json({
-                    message: "Utilisateur mis à jour avec succès",
-                    user: { userId: updatedUser.id, nom: updatedUser.nom, email: updatedUser.email, role: updatedUser.role, avatar_url: updatedUser.avatar_url },
-                });
-            }
-        }
-
-        res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Erreur lors de la mise à jour de l'utilisateur" });
-    }
-};
-
 // modification du profil personnel (nom, email, avatar, password)
 const patchProfile = async (req, res) => {
     try {
@@ -209,8 +154,6 @@ module.exports = {
     getAllUsers,
     getUserDetails,
     createUser,
-    updateUser,
-    patchUser,
     patchProfile,
     patchRole,
     deleteUser
