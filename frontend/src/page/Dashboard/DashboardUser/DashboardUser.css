@@ -738,3 +738,28 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ─── Bouton Annuler Réservation ─────────────────────────────────────────────── */
+
+.btn-cancel-reservation {
+  padding: 0.4rem 0.75rem;
+  border: 1.5px solid var(--accent-red);
+  border-radius: 6px;
+  background: #fef2f2;
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-red);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.btn-cancel-reservation:hover:not(:disabled) {
+  background: var(--accent-red);
+  color: #fff;
+}
+
+.btn-cancel-reservation:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

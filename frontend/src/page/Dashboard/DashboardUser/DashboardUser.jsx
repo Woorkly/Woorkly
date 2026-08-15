@@ -181,11 +181,26 @@ export default function DashboardUser() {
   const [upcomingPage,     setUpcomingPage]     = useState(1);
   const [historyPage,      setHistoryPage]      = useState(1);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [cancellingId,     setCancellingId]     = useState(null);
+  const [cancelError,      setCancelError]      = useState('');
 
   const handleSaveProfile = async (payload) => {
     const result = await userService.updateMyProfile(user.userId, payload);
     updateUser(result?.user || payload);
     setShowProfileModal(false);
+  };
+
+  const handleCancelReservation = async (reservationId) => {
+    setCancelError('');
+    setCancellingId(reservationId);
+    try {
+      await reservationService.cancelReservation(reservationId);
+      setUpcoming((prev) => prev.filter((r) => r.id !== reservationId));
+    } catch (err) {
+      setCancelError(err?.response?.data?.message || 'Erreur lors de l\'annulation.');
+    } finally {
+      setCancellingId(null);
+    }
   };
 
   useEffect(() => {
@@ -319,9 +334,10 @@ export default function DashboardUser() {
               <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', padding: '1rem 0' }}>Aucune réservation à venir.</p>
             ) : (
               <>
+                {cancelError && <p style={{ color: '#ef4444', fontSize: '0.85rem', marginBottom: '0.5rem' }}>⚠️ {cancelError}</p>}
                 <table className="resa-table">
                   <thead>
-                    <tr><th>Date</th><th>Salle</th><th>Heure</th><th>Statut</th></tr>
+                    <tr><th>Date</th><th>Salle</th><th>Heure</th><th>Statut</th><th>Actions</th></tr>
                   </thead>
                   <tbody>
                     {upcoming
@@ -332,6 +348,16 @@ export default function DashboardUser() {
                           <td>{r.salle_nom}</td>
                           <td>{formatTime(r.heure_debut)} – {formatTime(r.heure_fin)}</td>
                           <td><StatusBadge status={r.statut} /></td>
+                          <td>
+                            <button
+                              className="btn-cancel-reservation"
+                              onClick={() => handleCancelReservation(r.id)}
+                              disabled={cancellingId === r.id || r.statut === 'annulee'}
+                              title={r.statut === 'annulee' ? 'Réservation déjà annulée' : 'Annuler cette réservation'}
+                            >
+                              {cancellingId === r.id ? 'Annulation…' : 'Annuler'}
+                            </button>
+                          </td>
                         </tr>
                       ))}
                   </tbody>

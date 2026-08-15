@@ -1,72 +1,49 @@
 import { useState, useEffect, useCallback } from 'react'
+import './RateLimitToast.css'
 
 export default function RateLimitToast() {
   const [toast, setToast] = useState(null)
+  const [isVisible, setIsVisible] = useState(false)
 
-  const dismiss = useCallback(() => setToast(null), [])
+  const dismiss = useCallback(() => {
+    setIsVisible(false)
+    setTimeout(() => setToast(null), 300)
+  }, [])
 
   useEffect(() => {
     let timer
     const handler = (e) => {
       setToast(e.detail.message)
+      setIsVisible(true)
       clearTimeout(timer)
-      timer = setTimeout(() => setToast(null), 8000)
+      timer = setTimeout(() => dismiss(), 5000)
     }
     window.addEventListener('rate-limit', handler)
     return () => {
       window.removeEventListener('rate-limit', handler)
       clearTimeout(timer)
     }
-  }, [])
+  }, [dismiss])
 
   if (!toast) return null
 
   return (
-    <div style={styles.overlay}>
-      <div style={styles.toast} role="alert" aria-live="assertive">
-        <span style={styles.icon}>⚠️</span>
-        <span style={styles.message}>{toast}</span>
-        <button style={styles.close} onClick={dismiss} aria-label="Fermer">✕</button>
+    <div className={`rate-limit-overlay ${isVisible ? 'visible' : ''}`}>
+      <div className="rate-limit-toast" role="alert" aria-live="polite" aria-atomic="true">
+        <span className="rate-limit-icon">⚠️</span>
+        <div className="rate-limit-content">
+          <p className="rate-limit-message">{toast}</p>
+          <p className="rate-limit-hint">Veuillez patienter avant de réessayer</p>
+        </div>
+        <button
+          className="rate-limit-close"
+          onClick={dismiss}
+          aria-label="Fermer l'alerte"
+          title="Fermer"
+        >
+          ✕
+        </button>
       </div>
     </div>
   )
-}
-
-const styles = {
-  overlay: {
-    position: 'fixed',
-    bottom: '1.5rem',
-    right: '1.5rem',
-    zIndex: 9999,
-  },
-  toast: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    background: '#7f1d1d',
-    color: '#fef2f2',
-    padding: '0.875rem 1.25rem',
-    borderRadius: '0.5rem',
-    boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-    maxWidth: '380px',
-    fontSize: '0.9rem',
-    lineHeight: '1.4',
-    animation: 'slideIn 0.25s ease',
-  },
-  icon: {
-    flexShrink: 0,
-    fontSize: '1.1rem',
-  },
-  message: {
-    flex: 1,
-  },
-  close: {
-    background: 'none',
-    border: 'none',
-    color: '#fca5a5',
-    cursor: 'pointer',
-    fontSize: '1rem',
-    padding: '0',
-    flexShrink: 0,
-  },
 }

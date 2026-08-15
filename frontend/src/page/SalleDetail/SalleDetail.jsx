@@ -22,9 +22,9 @@ const getRoomImageSrc = (imageName) => {
 };
 
 const formatPrice = (room) => {
-  if (room.prix_journee) return `A partir de ${room.prix_journee} EUR / jour`;
-  if (room.prix_demi_journee) return `A partir de ${room.prix_demi_journee} EUR / demi-journee`;
   if (room.prix_heure) return `A partir de ${room.prix_heure} EUR / heure`;
+  if (room.prix_demi_journee) return `A partir de ${room.prix_demi_journee} EUR / demi-journee`;
+  if (room.prix_journee) return `A partir de ${room.prix_journee} EUR / jour`;
   return "Tarif sur demande";
 };
 

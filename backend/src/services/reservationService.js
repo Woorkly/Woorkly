@@ -210,6 +210,17 @@ const cancelReservation = async (reservationId, userId, isAdmin = false) => {
         throw createHttpError('Cette réservation est déjà annulée', 400);
     }
 
+    // Vérifier qu'il reste au moins 24h avant la réservation (non-admin)
+    if (!isAdmin) {
+        const reservationDate = new Date(reservation.date);
+        const now = new Date();
+        const hoursUntilReservation = (reservationDate - now) / (1000 * 60 * 60);
+
+        if (hoursUntilReservation < 24) {
+            throw createHttpError('Impossible d\'annuler une réservation moins de 24h avant', 400);
+        }
+    }
+
     const cancelled = await Reservation.cancel(reservationId);
     if (!cancelled) {
         throw createHttpError('Erreur lors de l\'annulation', 500);

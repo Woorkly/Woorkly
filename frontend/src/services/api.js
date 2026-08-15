@@ -34,8 +34,20 @@ API.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
     if (error.response?.status === 429) {
-      const msg = error.response.data?.message || 'Trop de requêtes, veuillez réessayer dans 15 minutes.'
-      window.dispatchEvent(new CustomEvent('rate-limit', { detail: { message: msg } }))
+      const data = error.response.data || {}
+      let msg = data.message || 'Trop de requêtes détectées. Veuillez réessayer bientôt.'
+
+      // Améliorer le message avec le hint si disponible
+      if (data.hint) {
+        msg = `${msg} ${data.hint}`
+      }
+
+      window.dispatchEvent(new CustomEvent('rate-limit', {
+        detail: {
+          message: msg,
+          retryAfter: data.retryAfter
+        }
+      }))
       return Promise.reject(error)
     }
     if (error.response?.status === 403 && !originalRequest._csrfRetry) {
@@ -48,5 +60,10 @@ API.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+
+// Pré-charge le token CSRF au startup
+fetchCsrfToken().catch(() => {
+  // Pas critique si le fetch échoue au startup
+})
 
 export default API

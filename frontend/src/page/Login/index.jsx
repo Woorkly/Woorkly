@@ -20,7 +20,11 @@ const Login = () => {
       // La redirection doit utiliser la réponse de login, pas l'état du contexte juste après setUser.
       role === 'admin' ? navigate('/dashboardAdmin') : navigate('/')
     } catch (err) {
-      setError(err?.response?.data?.message || 'Erreur lors de la connexion')
+      // Les erreurs 429 (rate limit) sont gérées via le toast personnalisé
+      // On ignore le message d'erreur pour éviter la duplication
+      if (err?.response?.status !== 429) {
+        setError(err?.response?.data?.message || 'Erreur lors de la connexion')
+      }
     }
   }
 
