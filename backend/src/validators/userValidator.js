@@ -52,4 +52,25 @@ const patchUserValidator = [
         .isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères.'),
 ];
 
-module.exports = { createUserValidator, updateUserValidator, patchUserValidator };
+const patchProfileValidator = [
+    body('nom')
+        .optional()
+        .trim()
+        .notEmpty().withMessage('Le nom ne peut pas être vide.')
+        .isLength({ max: 100 }).withMessage('Le nom ne peut pas dépasser 100 caractères.'),
+    body('email')
+        .optional()
+        .trim()
+        .isEmail().withMessage('L\'email n\'est pas valide.'),
+    body('password')
+        .optional()
+        .isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères.'),
+];
+
+const patchRoleValidator = [
+    body('role')
+        .notEmpty().withMessage('Le rôle est obligatoire.')
+        .isIn(ROLES_VALIDES).withMessage(`Le rôle doit être l'un des suivants : ${ROLES_VALIDES.join(', ')}.`),
+];
+
+module.exports = { createUserValidator, updateUserValidator, patchUserValidator, patchProfileValidator, patchRoleValidator };
