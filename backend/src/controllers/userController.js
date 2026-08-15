@@ -100,7 +100,8 @@ const patchUser = async (req, res) => {
 const patchProfile = async (req, res) => {
     try {
         const { id } = req.params;
-        const userId = req.user.id;
+        const userId = req.user.userId;
+        console.log("ID de l'utilisateur connecté :", userId);
 
         // Vérifier que l'utilisateur modifie son propre profil
         if (parseInt(id) !== parseInt(userId)) {
