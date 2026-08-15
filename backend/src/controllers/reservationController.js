@@ -37,8 +37,25 @@ const getMyReservations = async (req, res) => {
 const getAllReservations = async (req, res) => {
     try {
         const { salle_id, utilisateur_id, statut, type_reservation } = req.query;
+
+        // Validation des query params
+        if (salle_id && isNaN(salle_id)) {
+            return res.status(400).json({ message: "salle_id doit être un nombre" });
+        }
+        if (utilisateur_id && isNaN(utilisateur_id)) {
+            return res.status(400).json({ message: "utilisateur_id doit être un nombre" });
+        }
+
+        const validStatuts = ['confirmée', 'annulée', 'en attente'];
+        if (statut && !validStatuts.includes(statut)) {
+            return res.status(400).json({ message: "Statut invalide. Les valeurs autorisées sont: " + validStatuts.join(', ') });
+        }
+
         const reservations = await reservationService.getAllReservations({
-            salle_id, utilisateur_id, statut, type_reservation
+            salle_id: salle_id ? Number(salle_id) : undefined,
+            utilisateur_id: utilisateur_id ? Number(utilisateur_id) : undefined,
+            statut,
+            type_reservation
         });
         res.status(200).json(reservations);
     } catch (error) {
@@ -59,10 +76,24 @@ const getFiltersData = async (req, res) => {
 
 // GET /api/reservations/:id
 // Retourne une réservation spécifique
+// Vérification: l'utilisateur ne peut voir que ses propres réservations, sauf s'il est admin
 const getReservationDetails = async (req, res) => {
     try {
         const { id } = req.params;
+        const userId = req.user.userId;
+        const isAdmin = req.user.role === 'admin';
+
         const reservation = await reservationService.getReservationById(id);
+
+        if (!reservation) {
+            return res.status(404).json({ message: "Réservation introuvable" });
+        }
+
+        // Vérifier que c'est la réservation de l'utilisateur ou qu'il est admin
+        if (!isAdmin && reservation.utilisateur_id !== userId) {
+            return res.status(403).json({ message: "Accès refusé: vous ne pouvez voir que vos réservations" });
+        }
+
         res.status(200).json(reservation);
     } catch (error) {
         sendError(res, error);

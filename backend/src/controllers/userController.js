@@ -41,35 +41,39 @@ const createUser = async (req, res) => {
     }
 };
 
-// modification d'un utilisateur
-const updateUser = async (req, res) => {
+// modification du profil personnel (nom, email, avatar, password)
+const patchProfile = async (req, res) => {
     try {
         const { id } = req.params;
-        await User.update(id, req.body);
-        res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Erreur lors de la mise à jour de l'utilisateur" });
-    }
-};
+        const userId = req.user.userId;
+        
+        // Vérifier que l'utilisateur modifie son propre profil
+        if (parseInt(id) !== parseInt(userId)) {
+            return res.status(403).json({ message: "Vous ne pouvez modifier que votre propre profil" });
+        }
 
-// modification partielle d'un utilisateur (ex: rôle uniquement, ou profil personnel)
-const patchUser = async (req, res) => {
-    try {
-        const { id } = req.params;
+        // Filtrer les champs autorisés (bloquer le rôle)
+        const allowedFields = ['nom', 'email', 'password', 'avatar_url'];
+        const updates = {};
+
+        allowedFields.forEach(field => {
+            if (req.body[field] !== undefined) {
+                updates[field] = req.body[field];
+            }
+        });
 
         // Gestion de l'upload de l'avatar s'il y a un fichier
         if (req.file) {
             const result = await uploadFromBuffer(req.file.buffer, 'woorkly/avatars');
             if (result && (result.secure_url || result.url)) {
-                req.body.avatar_url = result.secure_url || result.url;
+                updates.avatar_url = result.secure_url || result.url;
             }
         }
 
-        await User.patch(id, req.body);
+        await User.patch(id, updates);
 
-        // Re-émettre le JWT si des champs de profil changent (nom/email/avatar_url)
-        if (req.body.nom !== undefined || req.body.email !== undefined || req.body.avatar_url !== undefined) {
+        // Re-émettre le JWT si des champs de profil changent
+        if (updates.nom !== undefined || updates.email !== undefined || updates.avatar_url !== undefined) {
             const updatedUser = await User.findById(id);
             if (updatedUser) {
                 const authService = require('../services/authService');
@@ -83,16 +87,44 @@ const patchUser = async (req, res) => {
                     path: '/',
                 });
                 return res.status(200).json({
-                    message: "Utilisateur mis à jour avec succès",
+                    message: "Profil mis à jour avec succès",
                     user: { userId: updatedUser.id, nom: updatedUser.nom, email: updatedUser.email, role: updatedUser.role, avatar_url: updatedUser.avatar_url },
                 });
             }
         }
 
-        res.status(200).json({ message: "Utilisateur mis à jour avec succès" });
+        res.status(200).json({ message: "Profil mis à jour avec succès" });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Erreur lors de la mise à jour de l'utilisateur" });
+        res.status(500).json({ message: "Erreur lors de la mise à jour du profil" });
+    }
+};
+
+// modification du rôle d'un utilisateur (admin seulement)
+const patchRole = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.body;
+
+        // Filtrer pour accepter seulement le champ 'role'
+        if (!role) {
+            return res.status(400).json({ message: "Le rôle est obligatoire" });
+        }
+
+        const updates = { role };
+
+        await User.patch(id, updates);
+
+        const updatedUser = await User.findById(id);
+        if (updatedUser) {
+            res.status(200).json({
+                message: "Rôle mis à jour avec succès",
+                user: { userId: updatedUser.id, nom: updatedUser.nom, email: updatedUser.email, role: updatedUser.role }
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur lors de la mise à jour du rôle" });
     }
 };
 
@@ -122,8 +154,8 @@ module.exports = {
     getAllUsers,
     getUserDetails,
     createUser,
-    updateUser,
-    patchUser,
+    patchProfile,
+    patchRole,
     deleteUser
 };
  

@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const typeController = require('../controllers/typeController');
 const { authRequired, requireRole } = require('../middlewares/auth');
+const { createTypeValidator, updateTypeValidator } = require('../validators/typeValidator');
+const validate = require('../middlewares/validate');
 
 // GET /api/types/ (public)
 // Liste tous les types de salles (utilisé pour les filtres et formulaires)
@@ -13,11 +15,11 @@ router.get('/:id', typeController.getTypesDetails);
 
 // POST /api/types/ (admin only)
 // Crée un type de salle
-router.post('/', authRequired, requireRole('admin'), typeController.createType);
+router.post('/', authRequired, requireRole('admin'), createTypeValidator, validate, typeController.createType);
 
 // PUT /api/types/:id (admin only)
 // Met à jour un type de salle
-router.put('/:id', authRequired, requireRole('admin'), typeController.updateType);
+router.put('/:id', authRequired, requireRole('admin'), updateTypeValidator, validate, typeController.updateType);
 
 // DELETE /api/types/:id (admin only)
 // Supprime un type de salle
