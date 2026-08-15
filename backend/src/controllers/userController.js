@@ -101,8 +101,7 @@ const patchProfile = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.user.userId;
-        console.log("ID de l'utilisateur connecté :", userId);
-
+        
         // Vérifier que l'utilisateur modifie son propre profil
         if (parseInt(id) !== parseInt(userId)) {
             return res.status(403).json({ message: "Vous ne pouvez modifier que votre propre profil" });
