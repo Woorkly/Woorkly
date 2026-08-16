@@ -21,6 +21,12 @@ const createRoomValidator = [
     body('prix_heure')
         .notEmpty().withMessage('Le prix par heure est obligatoire.')
         .isFloat({ min: 0 }).withMessage('Le prix par heure doit être un nombre positif.'),
+    body('prix_demi_journee')
+        .notEmpty().withMessage('Le prix demi-journée est obligatoire.')
+        .isFloat({ min: 0 }).withMessage('Le prix demi-journée doit être un nombre positif.'),
+    body('prix_journee')
+        .notEmpty().withMessage('Le prix journée est obligatoire.')
+        .isFloat({ min: 0 }).withMessage('Le prix journée doit être un nombre positif.'),
     body('description')
         .optional()
         .trim()
@@ -51,6 +57,12 @@ const updateRoomValidator = [
     body('prix_heure')
         .optional()
         .isFloat({ min: 0 }).withMessage('Le prix par heure doit être un nombre positif.'),
+    body('prix_demi_journee')
+        .optional()
+        .isFloat({ min: 0 }).withMessage('Le prix demi-journée doit être un nombre positif.'),
+    body('prix_journee')
+        .optional()
+        .isFloat({ min: 0 }).withMessage('Le prix journée doit être un nombre positif.'),
     body('description')
         .optional()
         .trim()

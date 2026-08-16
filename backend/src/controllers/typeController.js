@@ -4,7 +4,8 @@ const Types = require('../models/Types');
 const getAllTypes = async (req, res) => {
     try {
         const allTypes = await Types.findAll();
-        res.status(200).json(allTypes);
+        const validTypes = allTypes.filter(type => type.nom && type.nom.trim());
+        res.status(200).json(validTypes);
     } catch (error) {
         console.error("ERREUR SQL :", error);
         res.status(500).json({ message: "Erreur lors de la récupération des types" });
@@ -37,6 +38,10 @@ const createType = async (req, res) => {
             return res.status(400).json({ message: "Le nom du type est obligatoire" });
         }
 
+        if (nom.length > 100) {
+            return res.status(400).json({ message: "Le nom du type ne peut pas dépasser 100 caractères" });
+        }
+
         const existingType = await Types.findByName(nom);
         if (existingType) {
             return res
@@ -67,6 +72,17 @@ const updateType = async (req, res) => {
 
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({ message: "Aucun champ valide à mettre à jour" });
+        }
+
+        if (updates.nom) {
+            const nom = updates.nom.trim();
+            if (!nom) {
+                return res.status(400).json({ message: "Le nom du type ne peut pas être vide" });
+            }
+            if (nom.length > 100) {
+                return res.status(400).json({ message: "Le nom du type ne peut pas dépasser 100 caractères" });
+            }
+            updates.nom = nom;
         }
 
         await Types.update(id, updates);

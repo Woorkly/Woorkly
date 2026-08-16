@@ -186,6 +186,10 @@ const updateRoom = async (req, res) => {
 
         res.status(200).json({ id: Number(id), ...roomData, equipement_ids: equipmentIds, photos: photos || [] });
     } catch (error) {
+        if (error.message === "ADDRESS_REQUIRED") {
+            return res.status(400).json({ message: "L'adresse est obligatoire." });
+        }
+
         if (error.message === "ADDRESS_NOT_FOUND") {
             return res.status(400).json({ message: "Impossible de localiser cette adresse. Veuillez verifier la saisie." });
         }
