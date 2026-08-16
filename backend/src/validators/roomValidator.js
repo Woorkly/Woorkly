@@ -31,12 +31,6 @@ const createRoomValidator = [
         .optional()
         .trim()
         .isLength({ max: 1000 }).withMessage('La description ne peut pas dépasser 1000 caractères.'),
-    body('latitude')
-        .optional()
-        .isFloat({ min: -90, max: 90 }).withMessage('La latitude doit être entre -90 et 90.'),
-    body('longitude')
-        .optional()
-        .isFloat({ min: -180, max: 180 }).withMessage('La longitude doit être entre -180 et 180.'),
 ];
 
 const updateRoomValidator = [
@@ -73,12 +67,6 @@ const updateRoomValidator = [
         .optional()
         .trim()
         .isLength({ max: 1000 }).withMessage('La description ne peut pas dépasser 1000 caractères.'),
-    body('latitude')
-        .optional()
-        .isFloat({ min: -90, max: 90 }).withMessage('La latitude doit être entre -90 et 90.'),
-    body('longitude')
-        .optional()
-        .isFloat({ min: -180, max: 180 }).withMessage('La longitude doit être entre -180 et 180.'),
 ];
 
 module.exports = { createRoomValidator, updateRoomValidator };
