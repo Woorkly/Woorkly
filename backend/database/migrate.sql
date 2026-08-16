@@ -86,6 +86,36 @@ CREATE TABLE IF NOT EXISTS `salle_photos` (
 -- Ajoutez les modifications ci-dessous pour ne pas perdre de données
 
 -- ============================================================
+-- HARMONISATION DES CONTRAINTES NOT NULL AVEC LES VALIDATEURS
 
--- Exemple pour plus tard :
--- ALTER TABLE `utilisateurs` ADD COLUMN IF NOT EXISTS `avatar_url` VARCHAR(255);
+-- 1. TABLE SALLES
+-- Nettoyage des valeurs NULL avant d'ajouter les contraintes NOT NULL
+UPDATE `salles` SET `adresse` = 'Adresse à compléter' WHERE `adresse` IS NULL;
+UPDATE `salles` SET `code_postal` = '00000' WHERE `code_postal` IS NULL;
+UPDATE `salles` SET `ville` = 'Ville à compléter' WHERE `ville` IS NULL;
+UPDATE `salles` SET `capacite` = 1 WHERE `capacite` IS NULL;
+UPDATE `salles` SET `prix_heure` = 0.00 WHERE `prix_heure` IS NULL;
+UPDATE `salles` SET `prix_demi_journee` = 0.00 WHERE `prix_demi_journee` IS NULL;
+UPDATE `salles` SET `prix_journee` = 0.00 WHERE `prix_journee` IS NULL;
+UPDATE `salles` SET `latitude` = 48.8566 WHERE `latitude` IS NULL;
+UPDATE `salles` SET `longitude` = 2.3522 WHERE `longitude` IS NULL;
+
+-- Application des contraintes NOT NULL
+ALTER TABLE `salles`
+MODIFY COLUMN `adresse` VARCHAR(255) NOT NULL,
+MODIFY COLUMN `code_postal` VARCHAR(10) NOT NULL,
+MODIFY COLUMN `ville` VARCHAR(100) NOT NULL,
+MODIFY COLUMN `capacite` INT NOT NULL,
+MODIFY COLUMN `prix_heure` DECIMAL(5, 2) NOT NULL,
+MODIFY COLUMN `prix_demi_journee` DECIMAL(5, 2) NOT NULL,
+MODIFY COLUMN `prix_journee` DECIMAL(6, 2) NOT NULL,
+MODIFY COLUMN `latitude` DECIMAL(10, 8) NOT NULL,
+MODIFY COLUMN `longitude` DECIMAL(11, 8) NOT NULL;
+
+-- 2. TABLE RESERVATIONS
+-- Nettoyage des valeurs NULL avant d'ajouter les contraintes NOT NULL
+UPDATE `reservations` SET `type_reservation` = 'heure' WHERE `type_reservation` IS NULL;
+
+-- Application des contraintes NOT NULL
+ALTER TABLE `reservations`
+MODIFY COLUMN `type_reservation` VARCHAR(50) NOT NULL;

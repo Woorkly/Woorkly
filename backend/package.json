@@ -7,6 +7,7 @@
     "start": "node src/server.js",
     "dev": "nodemon --watch src --ext js,json --legacy-watch src/server.js",
     "db:setup": "node database/setup.js",
+    "db:migrate": "node database/migrate-only.js",
     "test": "jest"
   },
   "keywords": [],

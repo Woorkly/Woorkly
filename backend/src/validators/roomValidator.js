@@ -21,10 +21,22 @@ const createRoomValidator = [
     body('prix_heure')
         .notEmpty().withMessage('Le prix par heure est obligatoire.')
         .isFloat({ min: 0 }).withMessage('Le prix par heure doit être un nombre positif.'),
+    body('prix_demi_journee')
+        .notEmpty().withMessage('Le prix demi-journée est obligatoire.')
+        .isFloat({ min: 0 }).withMessage('Le prix demi-journée doit être un nombre positif.'),
+    body('prix_journee')
+        .notEmpty().withMessage('Le prix journée est obligatoire.')
+        .isFloat({ min: 0 }).withMessage('Le prix journée doit être un nombre positif.'),
     body('description')
         .optional()
         .trim()
         .isLength({ max: 1000 }).withMessage('La description ne peut pas dépasser 1000 caractères.'),
+    body('latitude')
+        .optional()
+        .isFloat({ min: -90, max: 90 }).withMessage('La latitude doit être entre -90 et 90.'),
+    body('longitude')
+        .optional()
+        .isFloat({ min: -180, max: 180 }).withMessage('La longitude doit être entre -180 et 180.'),
 ];
 
 const updateRoomValidator = [
@@ -51,10 +63,22 @@ const updateRoomValidator = [
     body('prix_heure')
         .optional()
         .isFloat({ min: 0 }).withMessage('Le prix par heure doit être un nombre positif.'),
+    body('prix_demi_journee')
+        .optional()
+        .isFloat({ min: 0 }).withMessage('Le prix demi-journée doit être un nombre positif.'),
+    body('prix_journee')
+        .optional()
+        .isFloat({ min: 0 }).withMessage('Le prix journée doit être un nombre positif.'),
     body('description')
         .optional()
         .trim()
         .isLength({ max: 1000 }).withMessage('La description ne peut pas dépasser 1000 caractères.'),
+    body('latitude')
+        .optional()
+        .isFloat({ min: -90, max: 90 }).withMessage('La latitude doit être entre -90 et 90.'),
+    body('longitude')
+        .optional()
+        .isFloat({ min: -180, max: 180 }).withMessage('La longitude doit être entre -180 et 180.'),
 ];
 
 module.exports = { createRoomValidator, updateRoomValidator };
