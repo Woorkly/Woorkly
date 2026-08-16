@@ -4,7 +4,8 @@ const Equipements = require("../models/Equipements");
 const getAllEquipements = async (req, res) => {
   try {
     const equipements = await Equipements.findAll();
-    res.status(200).json(equipements);
+    const validEquipements = equipements.filter(equipement => equipement.nom && equipement.nom.trim());
+    res.status(200).json(validEquipements);
   } catch (error) {
     console.error("ERREUR SQL :", error);
     res
@@ -41,6 +42,10 @@ const createEquipement = async (req, res) => {
       return res.status(400).json({ message: "Le nom de l'equipement est obligatoire" });
     }
 
+    if (nom.length > 100) {
+      return res.status(400).json({ message: "Le nom de l'equipement ne peut pas dépasser 100 caractères" });
+    }
+
     const existingEquipement = await Equipements.findByName(nom);
     if (existingEquipement) {
       return res
@@ -75,6 +80,17 @@ const updateEquipement = async (req, res) => {
 
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({ message: "Aucun champ valide à mettre à jour" });
+    }
+
+    if (updates.nom) {
+      const nom = updates.nom.trim();
+      if (!nom) {
+        return res.status(400).json({ message: "Le nom de l'equipement ne peut pas être vide" });
+      }
+      if (nom.length > 100) {
+        return res.status(400).json({ message: "Le nom de l'equipement ne peut pas dépasser 100 caractères" });
+      }
+      updates.nom = nom;
     }
 
     await Equipements.update(id, updates);
