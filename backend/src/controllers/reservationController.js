@@ -46,7 +46,7 @@ const getAllReservations = async (req, res) => {
             return res.status(400).json({ message: "utilisateur_id doit être un nombre" });
         }
 
-        const validStatuts = ['confirmée', 'annulée', 'en attente'];
+        const validStatuts = ['en-attente', 'confirmee', 'annulee', 'terminee', 'abandonne'];
         if (statut && !validStatuts.includes(statut)) {
             return res.status(400).json({ message: "Statut invalide. Les valeurs autorisées sont: " + validStatuts.join(', ') });
         }

@@ -1,6 +1,6 @@
 const { body } = require('express-validator');
 
-const STATUTS_VALIDES = ['en_attente', 'confirmee', 'annulee'];
+const STATUTS_VALIDES = ['en-attente', 'confirmee', 'annulee', 'terminee', 'abandonne'];
 const TYPES_VALIDES = ['heure', 'demi-journee', 'journee'];
 
 const createReservationValidator = [
