@@ -4,6 +4,12 @@ const db = require('../config/db');
 class Types extends BaseModel {
     static table='types';
 
+    constructor(data) {
+        super('types'); // On dit à la classe mère qu'on gère la table 'types'
+        Object.assign(this, data); // Astuce pour assigner tous les champs d'un coup
+
+    }
+
     static async findByName(name) {
         const [rows] = await db.execute(
             "SELECT * FROM types WHERE LOWER(nom) = LOWER(?) LIMIT 1",
@@ -12,11 +18,6 @@ class Types extends BaseModel {
         return rows[0];
     }
 
-    constructor(data) {
-        super('types'); // On dit à la classe mère qu'on gère la table 'types'
-        Object.assign(this, data); // Astuce pour assigner tous les champs d'un coup
-        
-    } 
     // Création d'un types dans la table `types`
     static async create(data) {
         const connection = await super.getConnection();
