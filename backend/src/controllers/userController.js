@@ -23,7 +23,7 @@ const getUserDetails = async (req, res) => {
             return res.status(404).json({ message: "Utilisateur introuvable" });
         }
 
-        res.status(200).json(user);
+        res.status(200).json(User.sanitize(user));
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Erreur lors de la récupération des détails" });

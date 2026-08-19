@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const upload = require('../middlewares/upload');
-const { authRequired } = require('../middlewares/auth');
+const { authRequired, requireRole } = require('../middlewares/auth');
 const { uploadFromBuffer } = require('../services/uploadService');
 const { verifyImageBinary } = require('../utils/fileValidator');
 
@@ -29,9 +29,9 @@ const handleUpload = (folder) => async (req, res) => {
 router.post('/avatar', authRequired, upload.single('image'), handleUpload('woorkly/avatars'));
 
 // POST /api/upload/room-image — Image principale de salle
-router.post('/room-image', authRequired, upload.single('image'), handleUpload('woorkly/salles/images'));
+router.post('/room-image', authRequired, requireRole('admin'), upload.single('image'), handleUpload('woorkly/salles/images'));
 
 // POST /api/upload/room-gallery — Galerie de salle
-router.post('/room-gallery', authRequired, upload.single('image'), handleUpload('woorkly/salles/gallery'));
+router.post('/room-gallery', authRequired, requireRole('admin'), upload.single('image'), handleUpload('woorkly/salles/gallery'));
 
 module.exports = router;
