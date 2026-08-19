@@ -127,11 +127,8 @@ app.use('/api/upload', uploadRoutes);
 
 // --- MIDDLEWARE D'ERREUR GLOBAL ---
 app.use((err, req, res, next) => {
-  console.error('[ERROR]', err.message, err.stack);
-
   // Si les headers ont déjà été envoyés, déléguer à Express
   if (res.headersSent) {
-    console.error('[ERROR] Headers déjà envoyés, délégation à Express');
     return next(err);
   }
 
