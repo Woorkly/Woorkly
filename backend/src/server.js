@@ -53,7 +53,7 @@ const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
 
 // --- MIDDLEWARES ---
 app.use(helmet());
-app.use(globalLimiter);
+
 // Allow the frontend (Vite) to send/receive cookies (HttpOnly token)
 // Permet d'autoriser localhost et TOUTES les URL de preview ou principales de Vercel
 const allowedOrigins = [
@@ -74,7 +74,17 @@ app.use(cors({
 }));
 app.use(cookieParser());
 app.use(express.json());
-app.use(doubleCsrfProtection);
+app.use(globalLimiter);
+
+// Ignorer le CSRF pour les requêtes OPTIONS (preflight CORS)
+const csrfProtectionWithOptionsExclude = (req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+  doubleCsrfProtection(req, res, next);
+};
+
+app.use(csrfProtectionWithOptionsExclude);
 
 // Gestion des erreurs CSRF
 app.use((err, req, res, next) => {
@@ -117,6 +127,11 @@ app.use('/api/upload', uploadRoutes);
 
 // --- MIDDLEWARE D'ERREUR GLOBAL ---
 app.use((err, req, res, next) => {
+  // Si les headers ont déjà été envoyés, déléguer à Express
+  if (res.headersSent) {
+    return next(err);
+  }
+
   const statusCode = err.statusCode || 500;
   res.status(statusCode).json({
     message: err.message,

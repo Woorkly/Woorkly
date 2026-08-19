@@ -3,6 +3,7 @@ import { equipmentService } from "../../../services/equipmentService";
 import { roomService } from "../../../services/roomService";
 import { typeService } from "../../../services/typeService";
 import api from "../../../services/api";
+import uploadService from "../../../services/uploadService";
 import "./AdminStyle.css";
 
 // Icônes SVG par type de salle
@@ -718,12 +719,8 @@ export default function GestionSalles() {
     const setErr = target === "edit" ? setEditFormError : setFormError;
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("image", file);
-      const res = await api.post("/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      formSetter("image_principale", res.data.url);
+      const url = await uploadService.uploadRoomImage(file);
+      formSetter("image_principale", url);
     } catch {
       setErr("Erreur lors de l'upload de l'image principale.");
     } finally {
@@ -741,12 +738,8 @@ export default function GestionSalles() {
     try {
       const uploadedUrls = [];
       for (const file of files) {
-        const formData = new FormData();
-        formData.append("image", file);
-        const res = await api.post("/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        uploadedUrls.push(res.data.url);
+        const url = await uploadService.uploadRoomGallery(file);
+        uploadedUrls.push(url);
       }
       setForm((current) => ({
         ...current,
