@@ -18,6 +18,7 @@ const globalLimiter = rateLimit({
     max: 100,
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => req.method === 'OPTIONS', // Ignorer les OPTIONS (preflight CORS)
     handler: (req, res) => {
         const retryAfter = req.rateLimit?.resetTime
             ? Math.ceil((req.rateLimit.resetTime - Date.now()) / 1000)
@@ -39,6 +40,7 @@ const loginLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     skipSuccessfulRequests: true,
+    skip: (req) => req.method === 'OPTIONS', // Ignorer les OPTIONS (preflight CORS)
     handler: (req, res) => {
         const retryAfter = req.rateLimit?.resetTime
             ? Math.ceil((req.rateLimit.resetTime - Date.now()) / 1000)
