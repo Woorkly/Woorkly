@@ -17,7 +17,9 @@ const authRequired = (req, res, next) => {
     }
 
     if (!token) {
-        return next(new Error('Token manquant ou invalide', 401));
+        const error = new Error('Token manquant ou invalide');
+        error.statusCode = 401;
+        return next(error);
     }
 
     try {
@@ -25,6 +27,7 @@ const authRequired = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (err) {
+        err.statusCode = 401;
         next(err);
     }
 };
@@ -33,11 +36,15 @@ const authRequired = (req, res, next) => {
 const requireRole = (role) => {
     return (req, res, next) => {
         if (!req.user) {
-            return next(new Error('Utilisateur non authentifié', 401));
+            const error = new Error('Utilisateur non authentifié');
+            error.statusCode = 401;
+            return next(error);
         }
 
         if (req.user.role !== role) {
-            return next(new Error('Accès refusé: rôle insuffisant', 403));
+            const error = new Error('Accès refusé: rôle insuffisant');
+            error.statusCode = 403;
+            return next(error);
         }
 
         next();

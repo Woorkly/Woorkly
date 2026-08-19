@@ -114,6 +114,16 @@ app.use('/api/reservations', reservationRoutes);
 
 app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
+
+// --- MIDDLEWARE D'ERREUR GLOBAL ---
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).json({
+    message: err.message,
+    statusCode: statusCode
+  });
+});
+
 // --- LANCEMENT ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT,"0.0.0.0", () => {
