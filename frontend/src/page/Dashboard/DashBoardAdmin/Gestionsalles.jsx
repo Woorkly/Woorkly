@@ -289,7 +289,7 @@ export default function GestionSalles() {
         const data = await roomService.getRooms(filters);
         setSalles(Array.isArray(data) ? data : []);
       } catch (err) {
-        setError(err.message || "Erreur lors du chargement des salles");
+        setError(err.response?.data?.message || err.message || "Erreur lors du chargement des salles");
       } finally {
         setLoading(false);
       }
@@ -307,7 +307,7 @@ export default function GestionSalles() {
         const data = await typeService.getTypes();
         setRoomTypes(Array.isArray(data) ? data : []);
       } catch (err) {
-        setTypesError(err.message || "Erreur lors du chargement des types");
+        setTypesError(err.response?.data?.message || err.message || "Erreur lors du chargement des types");
       } finally {
         setLoadingTypes(false);
       }
@@ -326,7 +326,7 @@ export default function GestionSalles() {
         setEquipments(Array.isArray(data) ? data : []);
       } catch (err) {
         setEquipmentsError(
-          err.message || "Erreur lors du chargement des equipements",
+          err.response?.data?.message || err.message || "Erreur lors du chargement des equipements",
         );
       } finally {
         setLoadingEquipments(false);
@@ -344,7 +344,7 @@ export default function GestionSalles() {
       const data = await roomService.getRooms(getRoomFilters());
       setSalles(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError(err.message || "Erreur lors du chargement des salles");
+      setError(err.response?.data?.message || err.message || "Erreur lors du chargement des salles");
     } finally {
       setLoading(false);
     }
