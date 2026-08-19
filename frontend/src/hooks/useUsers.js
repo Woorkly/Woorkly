@@ -34,7 +34,7 @@ export default function useUsers() {
         const data = await userService.getAllUsers()
         setUsers(data.map(mapUser))
       } catch (err) {
-        setError(err.message)
+        setError(err.response?.data?.message || err.message)
       } finally {
         setLoading(false)
       }

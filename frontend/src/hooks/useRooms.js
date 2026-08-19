@@ -31,7 +31,7 @@ export default function useRooms(filters = {}) {
           : await roomService.getRooms(filters)
         setRooms(data)
       } catch (err) {
-        setError(err.message)
+        setError(err.response?.data?.message || err.message)
       } finally {
         setLoading(false)
       }

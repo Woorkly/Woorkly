@@ -204,7 +204,7 @@ function EditRoleModal({ user, onClose, onSaved }) {
       onSaved(user.id, role === 'admin' ? 'Admin' : 'Utilisateur');
       onClose();
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setSaving(false);
     }
