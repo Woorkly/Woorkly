@@ -77,7 +77,7 @@ const getFiltersData = async () => {
 const getReservationById = async (id) => {
     const reservation = await Reservation.getById(id);
     if (!reservation) {
-        throw new Error('Réservation introuvable', 404);
+        throw createHttpError('Réservation introuvable', 404);
     }
     return reservation;
 };

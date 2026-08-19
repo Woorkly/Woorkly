@@ -126,7 +126,11 @@ class User extends BaseModel {
     return rows[0];
   }
 
-  
+  static sanitize(user) {
+    if (!user) return null;
+    const { password, ...publicUser } = user;
+    return publicUser;
+  }
 
 }
 
