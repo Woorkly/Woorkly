@@ -8,12 +8,6 @@ class User extends BaseModel {
   static normalizeFields(fields) {
     const normalized = { ...fields };
 
-    if (normalized.avatar !== undefined && normalized.avatar_url === undefined) {
-      normalized.avatar_url = normalized.avatar;
-    }
-
-    delete normalized.avatar;
-    
     if (typeof normalized.avatar_url === 'object' || normalized.avatar_url === '[object Object]' || normalized.avatar_url === '{}') {
       delete normalized.avatar_url;
     }
