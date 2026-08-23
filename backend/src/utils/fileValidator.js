@@ -36,4 +36,30 @@ const verifyImageBinary = (buffer, mimetype) => {
     return true;
 };
 
-module.exports = { verifyImageBinary };
+// Valide qu'une URL est une URL HTTPS valide provenant d'une source de confiance (Cloudinary)
+const isValidImageUrl = (url) => {
+    if (!url || typeof url !== 'string') {
+        return false;
+    }
+
+    try {
+        const urlObj = new URL(url);
+
+        // Vérifier que c'est HTTPS (sécurisé)
+        if (urlObj.protocol !== 'https:') {
+            return false;
+        }
+
+        // Vérifier que ça vient de Cloudinary (source de confiance pour les images)
+        if (!urlObj.hostname.includes('cloudinary.com')) {
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        // URL invalide
+        return false;
+    }
+};
+
+module.exports = { verifyImageBinary, isValidImageUrl };
