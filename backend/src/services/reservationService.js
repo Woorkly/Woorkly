@@ -21,6 +21,19 @@ const isWeekend = (dateStr) => {
     return dayOfWeek === 0 || dayOfWeek === 6;
 };
 
+const isTimeInPast = (dateStr, timeStr) => {
+    const now = new Date();
+    const today = getTodayIsoDate();
+
+    if (dateStr !== today) return false;
+
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
+
+    return hours < currentHours || (hours === currentHours && minutes <= currentMinutes);
+};
+
 
 // Calcule le prix total selon le type de réservation
 const calculatePrice = (room, typeReservation, heureDebut, heureFin) => {
@@ -102,6 +115,10 @@ const createReservation = async (data, userId) => {
 
     if (isWeekend(date)) {
         throw createHttpError('Les réservations ne sont pas disponibles les weekends (samedi et dimanche)', 400);
+    }
+
+    if (isTimeInPast(date, heure_debut)) {
+        throw createHttpError('Vous ne pouvez pas réserver une heure qui est déjà passée', 400);
     }
 
     // Vérifier que la salle existe
