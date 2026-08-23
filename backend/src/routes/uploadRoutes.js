@@ -4,6 +4,7 @@ const upload = require('../middlewares/upload');
 const { authRequired, requireRole } = require('../middlewares/auth');
 const { uploadFromBuffer } = require('../services/uploadService');
 const { verifyImageBinary } = require('../utils/fileValidator');
+const uploadLimiter = require('../middlewares/uploadRateLimit');
 
 const handleUpload = (folder) => async (req, res) => {
     try {
@@ -26,12 +27,15 @@ const handleUpload = (folder) => async (req, res) => {
 };
 
 // POST /api/upload/avatar — Avatar utilisateur
-router.post('/avatar', authRequired, upload.single('image'), handleUpload('woorkly/avatars'));
+// Sécurité: rate limiting pour prévenir les attaques DOS et la saturation du stockage
+router.post('/avatar', authRequired, uploadLimiter, upload.single('image'), handleUpload('woorkly/avatars'));
 
 // POST /api/upload/room-image — Image principale de salle
-router.post('/room-image', authRequired, requireRole('admin'), upload.single('image'), handleUpload('woorkly/salles/images'));
+// Sécurité: rate limiting + vérification admin
+router.post('/room-image', authRequired, requireRole('admin'), uploadLimiter, upload.single('image'), handleUpload('woorkly/salles/images'));
 
 // POST /api/upload/room-gallery — Galerie de salle
-router.post('/room-gallery', authRequired, requireRole('admin'), upload.single('image'), handleUpload('woorkly/salles/gallery'));
+// Sécurité: rate limiting + vérification admin
+router.post('/room-gallery', authRequired, requireRole('admin'), uploadLimiter, upload.single('image'), handleUpload('woorkly/salles/gallery'));
 
 module.exports = router;
