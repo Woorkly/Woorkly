@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import L from "leaflet";
-import { roomService } from "../../services/roomService";
+import useRooms from "../../hooks/useRooms";
 import "./SalleDetail.css";
 
 const DEFAULT_ROOM_IMAGE = "/images/default-room.jpg";
@@ -36,44 +36,11 @@ const hasValidCoordinates = (room) =>
 
 const SalleDetail = () => {
   const { id } = useParams();
-  const [room, setRoom] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { room, loading, error } = useRooms({ roomId: id });
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const selectedDate = searchParams.get("date") || "";
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchRoom = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const data = await roomService.getRoomById(id);
-        if (isMounted) {
-          setRoom(data);
-        }
-      } catch (err) {
-        if (isMounted) {
-          const status = err.response?.status;
-          setError(status === 404 ? "Salle introuvable" : "Erreur lors du chargement de la salle");
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchRoom();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [id]);
 
   const images = useMemo(() => {
     if (!room) return [DEFAULT_ROOM_IMAGE];
