@@ -605,9 +605,6 @@ export default function GestionSalles() {
               Réinitialiser
             </button>
           )}
-          <select className="flt-select" style={{ marginLeft: "auto" }}>
-            <option>Ainas delive ▾</option>
-          </select>
         </div>
 
         {equipmentsError && <p className="room-form-error">{equipmentsError}</p>}
