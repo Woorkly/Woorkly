@@ -2,145 +2,42 @@ import { useEffect, useState } from "react";
 import { equipmentService } from "../../../services/equipmentService";
 import { roomService } from "../../../services/roomService";
 import { typeService } from "../../../services/typeService";
-import api from "../../../services/api";
 import uploadService from "../../../services/uploadService";
+import { Badge, RoomForm, RoomDeleteModal } from "../../../components/GestionSalle";
 import "./AdminStyle.css";
 
 // Icônes SVG par type de salle
 const icons = {
   hub: (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#1A56A0"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      width="26"
-      height="26"
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="#1A56A0" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="26" height="26">
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <path d="M3 9h18M9 21V9" />
       <circle cx="6" cy="6" r="0.5" fill="#1A56A0" />
     </svg>
   ),
   boardroom: (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#1A56A0"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      width="26"
-      height="26"
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="#1A56A0" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="26" height="26">
       <rect x="2" y="7" width="20" height="10" rx="2" />
       <path d="M6 7V5M12 7V4M18 7V5M6 17v2M18 17v2" />
-    </svg>
-  ),
-  creative: (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#1A56A0"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      width="26"
-      height="26"
-    >
-      <rect x="3" y="3" width="18" height="14" rx="2" />
-      <path d="M8 21h8M12 17v4" />
-      <path d="M7 8l3 3 2-2 3 4" />
-    </svg>
-  ),
-  screen: (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#1A56A0"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      width="26"
-      height="26"
-    >
-      <rect x="2" y="4" width="20" height="14" rx="2" />
-      <path d="M8 20h8M12 18v2" />
-      <circle cx="12" cy="11" r="3" />
-    </svg>
-  ),
-  office: (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#1A56A0"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      width="26"
-      height="26"
-    >
-      <path d="M4 20V10l8-6 8 6v10H4z" />
-      <rect x="9" y="14" width="6" height="6" />
-      <path d="M4 10h16" />
     </svg>
   ),
 };
 
 const IconEdit = () => (
-  <svg
-    viewBox="0 0 24 24"
-    width="15"
-    height="15"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
   </svg>
 );
 
 const IconTrash = () => (
-  <svg
-    viewBox="0 0 24 24"
-    width="15"
-    height="15"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="3 6 5 6 21 6" />
     <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
     <path d="M10 11v6M14 11v6" />
     <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
   </svg>
 );
-
-function Badge({ s }) {
-  const m = {
-    disponible: "b-available",
-    reservee: "b-blue",
-    "hors-service": "b-offline",
-  };
-  const labels = {
-    disponible: "Disponible",
-    reservee: "Reservee",
-    "hors-service": "Hors service",
-  };
-
-  return (
-    <span className={`badge ${m[s] || ""}`}>
-      {labels[s] || s || "Non renseigne"}
-    </span>
-  );
-}
 
 const initialRoomForm = {
   nom: "",
@@ -161,10 +58,7 @@ const initialRoomForm = {
   equipement_ids: [],
 };
 
-const optionalNumber = (value) => {
-  if (value === "") return null;
-  return Number(value);
-};
+const optionalNumber = (value) => (value === "" ? null : Number(value));
 
 const buildRoomPayload = (form) => ({
   ...form,
@@ -185,8 +79,7 @@ const buildRoomPayload = (form) => ({
   equipement_ids: form.equipement_ids.map((id) => Number(id)),
 });
 
-const toFormValue = (value) =>
-  value === null || value === undefined ? "" : String(value);
+const toFormValue = (value) => (value === null || value === undefined ? "" : String(value));
 
 const buildRoomForm = (room) => ({
   nom: toFormValue(room.nom),
@@ -204,9 +97,7 @@ const buildRoomForm = (room) => ({
   image_principale: toFormValue(room.image_principale),
   photos: Array.isArray(room.galerie) ? room.galerie : [],
   type_id: toFormValue(room.type_id),
-  equipement_ids: Array.isArray(room.equipement_ids)
-    ? room.equipement_ids.map(String)
-    : [],
+  equipement_ids: Array.isArray(room.equipement_ids) ? room.equipement_ids.map(String) : [],
 });
 
 const capacityFilters = {
@@ -215,14 +106,6 @@ const capacityFilters = {
   large: { capacite_min: 21 },
 };
 
-const predefinedEquipmentNames = [
-  "Projecteur",
-  "Ecran",
-  "Tableau blanc",
-  "Paperboard",
-  "Visioconference",
-  "Wifi",
-];
 
 export default function GestionSalles() {
   const [search, setSearch] = useState("");
@@ -231,48 +114,40 @@ export default function GestionSalles() {
   const [salles, setSalles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [roomForm, setRoomForm] = useState(initialRoomForm);
-  const [savingRoom, setSavingRoom] = useState(false);
+
+  // Form state: unified for create + edit
+  const [roomFormData, setRoomFormData] = useState(initialRoomForm);
   const [formError, setFormError] = useState(null);
-  const [selectedRoom, setSelectedRoom] = useState(null);
-  const [loadingRoom, setLoadingRoom] = useState(false);
-  const [detailError, setDetailError] = useState(null);
-  const [editRoomForm, setEditRoomForm] = useState(initialRoomForm);
-  const [savingEditRoom, setSavingEditRoom] = useState(false);
-  const [editFormError, setEditFormError] = useState(null);
-  const [roomToDelete, setRoomToDelete] = useState(null);
-  const [deletingRoom, setDeletingRoom] = useState(false);
-  const [deleteError, setDeleteError] = useState(null);
+  const [savingRoom, setSavingRoom] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  // Modal state: null = closed, { id, ... } = editing, "create" = creating
+  const [modalState, setModalState] = useState(null);
+  const [selectedRoomDetail, setSelectedRoomDetail] = useState(null);
+
+  // Room types
   const [roomTypes, setRoomTypes] = useState([]);
   const [loadingTypes, setLoadingTypes] = useState(true);
-  const [typesError, setTypesError] = useState(null);
   const [newTypeName, setNewTypeName] = useState("");
   const [addingType, setAddingType] = useState(false);
   const [typeCreateError, setTypeCreateError] = useState(null);
   const [deletingType, setDeletingType] = useState(false);
   const [typeDeleteError, setTypeDeleteError] = useState(null);
+
+  // Equipment
   const [equipments, setEquipments] = useState([]);
   const [loadingEquipments, setLoadingEquipments] = useState(true);
   const [equipmentsError, setEquipmentsError] = useState(null);
   const [newEquipmentName, setNewEquipmentName] = useState("");
   const [addingEquipment, setAddingEquipment] = useState(false);
   const [equipmentCreateError, setEquipmentCreateError] = useState(null);
-  const [uploadingCreate, setUploadingCreate] = useState(false);
-  const [uploadingEdit, setUploadingEdit] = useState(false);
 
-  const getRoomFilters = () => {
-    const filters = {
-      ...(capacityFilters[capacityFilter] || {}),
-    };
+  // Delete confirmation
+  const [roomToDelete, setRoomToDelete] = useState(null);
+  const [deletingRoom, setDeletingRoom] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
-    if (equipmentFilter) {
-      filters.equipement_id = equipmentFilter;
-    }
-
-    return filters;
-  };
-
+  // Fetch rooms on filter change
   useEffect(() => {
     let isMounted = true;
 
@@ -281,66 +156,48 @@ export default function GestionSalles() {
       setError(null);
 
       try {
-        const filters = {
-          ...(capacityFilters[capacityFilter] || {}),
-        };
-
-        if (equipmentFilter) {
-          filters.equipement_id = equipmentFilter;
-        }
+        const filters = { ...(capacityFilters[capacityFilter] || {}) };
+        if (equipmentFilter) filters.equipement_id = equipmentFilter;
 
         const data = await roomService.getRooms(filters);
-        if (isMounted) {
-          setSalles(Array.isArray(data) ? data : []);
-        }
+        if (isMounted) setSalles(Array.isArray(data) ? data : []);
       } catch (err) {
-        if (isMounted) {
-          setError(err.response?.data?.message || err.message || "Erreur lors du chargement des salles");
-        }
+        if (isMounted) setError(err.response?.data?.message || err.message || "Erreur lors du chargement des salles");
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchRooms();
-
     return () => {
       isMounted = false;
     };
   }, [capacityFilter, equipmentFilter]);
 
+  // Fetch types
   useEffect(() => {
     let isMounted = true;
 
     const fetchTypes = async () => {
       setLoadingTypes(true);
-      setTypesError(null);
 
       try {
         const data = await typeService.getTypes();
-        if (isMounted) {
-          setRoomTypes(Array.isArray(data) ? data : []);
-        }
+        if (isMounted) setRoomTypes(Array.isArray(data) ? data : []);
       } catch (err) {
-        if (isMounted) {
-          setTypesError(err.response?.data?.message || err.message || "Erreur lors du chargement des types");
-        }
+        // Silent fail for types
       } finally {
-        if (isMounted) {
-          setLoadingTypes(false);
-        }
+        if (isMounted) setLoadingTypes(false);
       }
     };
 
     fetchTypes();
-
     return () => {
       isMounted = false;
     };
   }, []);
 
+  // Fetch equipments
   useEffect(() => {
     let isMounted = true;
 
@@ -350,24 +207,15 @@ export default function GestionSalles() {
 
       try {
         const data = await equipmentService.getEquipments();
-        if (isMounted) {
-          setEquipments(Array.isArray(data) ? data : []);
-        }
+        if (isMounted) setEquipments(Array.isArray(data) ? data : []);
       } catch (err) {
-        if (isMounted) {
-          setEquipmentsError(
-            err.response?.data?.message || err.message || "Erreur lors du chargement des equipements",
-          );
-        }
+        if (isMounted) setEquipmentsError(err.response?.data?.message || err.message || "Erreur lors du chargement des équipements");
       } finally {
-        if (isMounted) {
-          setLoadingEquipments(false);
-        }
+        if (isMounted) setLoadingEquipments(false);
       }
     };
 
     fetchEquipments();
-
     return () => {
       isMounted = false;
     };
@@ -378,7 +226,10 @@ export default function GestionSalles() {
     setError(null);
 
     try {
-      const data = await roomService.getRooms(getRoomFilters());
+      const filters = { ...(capacityFilters[capacityFilter] || {}) };
+      if (equipmentFilter) filters.equipement_id = equipmentFilter;
+
+      const data = await roomService.getRooms(filters);
       setSalles(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err.response?.data?.message || err.message || "Erreur lors du chargement des salles");
@@ -388,20 +239,13 @@ export default function GestionSalles() {
   };
 
   const normalizeEquipmentName = (name) => name.trim().toLowerCase();
-
   const findEquipmentByName = (name) =>
-    equipments.find(
-      (equipment) =>
-        normalizeEquipmentName(equipment.nom) === normalizeEquipmentName(name),
-    );
+    equipments.find((equipment) => normalizeEquipmentName(equipment.nom) === normalizeEquipmentName(name));
 
-  const selectEquipmentInForm = (equipmentId, target) => {
+  const selectEquipmentInForm = (equipmentId) => {
     if (!equipmentId) return;
-
     const value = String(equipmentId);
-    const setter = target === "edit" ? setEditRoomForm : setRoomForm;
-
-    setter((current) => ({
+    setRoomFormData((current) => ({
       ...current,
       equipement_ids: current.equipement_ids.includes(value)
         ? current.equipement_ids
@@ -409,18 +253,18 @@ export default function GestionSalles() {
     }));
   };
 
-  const handleCreateEquipment = async (name, target) => {
+  const handleCreateEquipment = async (name) => {
     const cleanName = name.trim();
     setEquipmentCreateError(null);
 
     if (!cleanName) {
-      setEquipmentCreateError("Le nom de l'equipement est obligatoire.");
+      setEquipmentCreateError("Le nom de l'équipement est obligatoire.");
       return;
     }
 
     const existingEquipment = findEquipmentByName(cleanName);
     if (existingEquipment) {
-      selectEquipmentInForm(existingEquipment.id, target);
+      selectEquipmentInForm(existingEquipment.id);
       setNewEquipmentName("");
       return;
     }
@@ -428,45 +272,30 @@ export default function GestionSalles() {
     setAddingEquipment(true);
 
     try {
-      const createdEquipment =
-        await equipmentService.createEquipment(cleanName);
+      const createdEquipment = await equipmentService.createEquipment(cleanName);
       const data = await equipmentService.getEquipments();
       const nextEquipments = Array.isArray(data) ? data : [];
-      const freshEquipment = nextEquipments.find(
-        (equipment) =>
-          normalizeEquipmentName(equipment.nom) ===
-          normalizeEquipmentName(cleanName),
-      );
+      const freshEquipment = nextEquipments.find((equipment) => normalizeEquipmentName(equipment.nom) === normalizeEquipmentName(cleanName));
 
       setEquipments(nextEquipments);
-      selectEquipmentInForm(createdEquipment.id || freshEquipment?.id, target);
+      selectEquipmentInForm(createdEquipment.id || freshEquipment?.id);
       setNewEquipmentName("");
     } catch (err) {
-      setEquipmentCreateError(
-        err.response?.data?.message ||
-          err.message ||
-          "Erreur lors de la creation de l'equipement",
-      );
+      setEquipmentCreateError(err.response?.data?.message || err.message || "Erreur lors de la création de l'équipement");
     } finally {
       setAddingEquipment(false);
     }
   };
 
   const normalizeTypeName = (name) => name.trim().toLowerCase();
+  const findTypeByName = (name) => roomTypes.find((type) => normalizeTypeName(type.nom) === normalizeTypeName(name));
 
-  const findTypeByName = (name) =>
-    roomTypes.find(
-      (type) => normalizeTypeName(type.nom) === normalizeTypeName(name),
-    );
-
-  const selectTypeInForm = (typeId, target) => {
+  const selectTypeInForm = (typeId) => {
     if (!typeId) return;
-
-    const setter = target === "edit" ? setEditRoomForm : setRoomForm;
-    setter((current) => ({ ...current, type_id: String(typeId) }));
+    setRoomFormData((current) => ({ ...current, type_id: String(typeId) }));
   };
 
-  const handleCreateType = async (name, target) => {
+  const handleCreateType = async (name) => {
     const cleanName = name.trim();
     setTypeCreateError(null);
 
@@ -477,7 +306,7 @@ export default function GestionSalles() {
 
     const existingType = findTypeByName(cleanName);
     if (existingType) {
-      selectTypeInForm(existingType.id, target);
+      selectTypeInForm(existingType.id);
       setNewTypeName("");
       return;
     }
@@ -488,31 +317,23 @@ export default function GestionSalles() {
       const createdType = await typeService.createType(cleanName);
       const data = await typeService.getTypes();
       const nextTypes = Array.isArray(data) ? data : [];
-      const freshType = nextTypes.find(
-        (type) => normalizeTypeName(type.nom) === normalizeTypeName(cleanName),
-      );
+      const freshType = nextTypes.find((type) => normalizeTypeName(type.nom) === normalizeTypeName(cleanName));
 
       setRoomTypes(nextTypes);
-      selectTypeInForm(createdType.id || freshType?.id, target);
+      selectTypeInForm(createdType.id || freshType?.id);
       setNewTypeName("");
     } catch (err) {
-      setTypeCreateError(
-        err.response?.data?.message ||
-          err.message ||
-          "Erreur lors de la creation du type",
-      );
+      setTypeCreateError(err.response?.data?.message || err.message || "Erreur lors de la création du type");
     } finally {
       setAddingType(false);
     }
   };
 
-  const handleDeleteType = async (typeId, target) => {
+  const handleDeleteType = async (typeId) => {
     if (!typeId) return;
 
     const type = roomTypes.find((t) => String(t.id) === String(typeId));
-    const confirmed = window.confirm(
-      `Supprimer le type "${type?.nom || ""}" ? Cette action est irreversible.`,
-    );
+    const confirmed = window.confirm(`Supprimer le type "${type?.nom || ""}" ? Cette action est irréversible.`);
     if (!confirmed) return;
 
     setTypeDeleteError(null);
@@ -523,26 +344,17 @@ export default function GestionSalles() {
       const data = await typeService.getTypes();
       setRoomTypes(Array.isArray(data) ? data : []);
 
-      const setter = target === "edit" ? setEditRoomForm : setRoomForm;
-      setter((current) =>
-        current.type_id === String(typeId)
-          ? { ...current, type_id: "" }
-          : current,
+      setRoomFormData((current) =>
+        current.type_id === String(typeId) ? { ...current, type_id: "" } : current
       );
     } catch (err) {
-      setTypeDeleteError(
-        err.response?.data?.message ||
-          err.message ||
-          "Erreur lors de la suppression du type",
-      );
+      setTypeDeleteError(err.response?.data?.message || err.message || "Erreur lors de la suppression du type");
     } finally {
       setDeletingType(false);
     }
   };
 
-  const filtered = salles.filter((s) =>
-    s.nom?.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = salles.filter((s) => s.nom?.toLowerCase().includes(search.toLowerCase()));
 
   const getRoomImageSrc = (imageName) => {
     const value = (imageName || "").trim();
@@ -552,76 +364,44 @@ export default function GestionSalles() {
   };
 
   const getLocation = (room) =>
-    [room.adresse, room.code_postal, room.ville].filter(Boolean).join(", ") ||
-    "Non renseigne";
+    [room.adresse, room.code_postal, room.ville].filter(Boolean).join(", ") || "Non renseigné";
 
   const openCreateForm = () => {
-    setRoomForm(initialRoomForm);
+    setRoomFormData(initialRoomForm);
     setFormError(null);
     setEquipmentCreateError(null);
     setNewEquipmentName("");
     setTypeCreateError(null);
     setNewTypeName("");
     setTypeDeleteError(null);
-    setIsCreateOpen(true);
-  };
-
-  const closeCreateForm = () => {
-    if (savingRoom) return;
-    setIsCreateOpen(false);
-  };
-
-  const updateRoomForm = (field, value) => {
-    setRoomForm((current) => ({ ...current, [field]: value }));
-  };
-
-  const toggleRoomEquipment = (equipmentId) => {
-    const value = String(equipmentId);
-
-    setRoomForm((current) => {
-      const selected = current.equipement_ids.includes(value);
-      return {
-        ...current,
-        equipement_ids: selected
-          ? current.equipement_ids.filter((id) => id !== value)
-          : [...current.equipement_ids, value],
-      };
-    });
+    setModalState("create");
   };
 
   const openRoomDetails = async (roomId) => {
-    setSelectedRoom(null);
-    setDetailError(null);
-    setEditFormError(null);
+    setSelectedRoomDetail(null);
+    setFormError(null);
     setEquipmentCreateError(null);
     setNewEquipmentName("");
     setTypeCreateError(null);
     setNewTypeName("");
     setTypeDeleteError(null);
-    setLoadingRoom(true);
 
     try {
       const data = await roomService.getRoomById(roomId);
-      setSelectedRoom(data);
-      setEditRoomForm(buildRoomForm(data));
+      setSelectedRoomDetail(data);
+      setRoomFormData(buildRoomForm(data));
+      setModalState(data.id);
     } catch (err) {
-      setDetailError(
-        err.response?.data?.message ||
-          err.message ||
-          "Erreur lors du chargement de la salle",
-      );
-    } finally {
-      setLoadingRoom(false);
+      setFormError(err.response?.data?.message || err.message || "Erreur lors du chargement de la salle");
     }
   };
 
-  const closeRoomDetails = () => {
-    if (savingEditRoom) return;
-    setSelectedRoom(null);
-    setDetailError(null);
-    setLoadingRoom(false);
-    setEditRoomForm(initialRoomForm);
-    setEditFormError(null);
+  const closeForm = () => {
+    if (savingRoom || uploading) return;
+    setModalState(null);
+    setSelectedRoomDetail(null);
+    setRoomFormData(initialRoomForm);
+    setFormError(null);
     setEquipmentCreateError(null);
     setNewEquipmentName("");
     setTypeCreateError(null);
@@ -629,45 +409,30 @@ export default function GestionSalles() {
     setTypeDeleteError(null);
   };
 
-  const updateEditRoomForm = (field, value) => {
-    setEditRoomForm((current) => ({ ...current, [field]: value }));
+  const updateFormField = (field, value) => {
+    setRoomFormData((current) => ({ ...current, [field]: value }));
   };
 
-  const toggleEditRoomEquipment = (equipmentId) => {
+  const toggleEquipment = (equipmentId) => {
     const value = String(equipmentId);
-
-    setEditRoomForm((current) => {
-      const selected = current.equipement_ids.includes(value);
-      return {
-        ...current,
-        equipement_ids: selected
-          ? current.equipement_ids.filter((id) => id !== value)
-          : [...current.equipement_ids, value],
-      };
-    });
-  };
-
-  const openDeleteConfirm = (room) => {
-    setDeleteError(null);
-    setRoomToDelete(room);
-  };
-
-  const closeDeleteConfirm = () => {
-    if (deletingRoom) return;
-    setRoomToDelete(null);
-    setDeleteError(null);
+    setRoomFormData((current) => ({
+      ...current,
+      equipement_ids: current.equipement_ids.includes(value)
+        ? current.equipement_ids.filter((id) => id !== value)
+        : [...current.equipement_ids, value],
+    }));
   };
 
   const handleCreateRoom = async (event) => {
     event.preventDefault();
     setFormError(null);
 
-    if (!roomForm.nom.trim()) {
+    if (!roomFormData.nom.trim()) {
       setFormError("Le nom de la salle est obligatoire.");
       return;
     }
 
-    if (!roomForm.type_id) {
+    if (!roomFormData.type_id) {
       setFormError("Le type de salle est obligatoire.");
       return;
     }
@@ -675,16 +440,11 @@ export default function GestionSalles() {
     setSavingRoom(true);
 
     try {
-      await roomService.createRoom(buildRoomPayload(roomForm));
-      setIsCreateOpen(false);
-      setRoomForm(initialRoomForm);
+      await roomService.createRoom(buildRoomPayload(roomFormData));
+      closeForm();
       await refreshRooms();
     } catch (err) {
-      setFormError(
-        err.response?.data?.message ||
-          err.message ||
-          "Erreur lors de la creation de la salle",
-      );
+      setFormError(err.response?.data?.message || err.message || "Erreur lors de la création de la salle");
     } finally {
       setSavingRoom(false);
     }
@@ -692,45 +452,30 @@ export default function GestionSalles() {
 
   const handleUpdateRoom = async (event) => {
     event.preventDefault();
-    setEditFormError(null);
+    setFormError(null);
 
-    if (!selectedRoom) return;
+    if (!selectedRoomDetail) return;
 
-    if (!editRoomForm.nom.trim()) {
-      setEditFormError("Le nom de la salle est obligatoire.");
+    if (!roomFormData.nom.trim()) {
+      setFormError("Le nom de la salle est obligatoire.");
       return;
     }
 
-    if (!editRoomForm.type_id) {
-      setEditFormError("Le type de salle est obligatoire.");
+    if (!roomFormData.type_id) {
+      setFormError("Le type de salle est obligatoire.");
       return;
     }
 
-    setSavingEditRoom(true);
+    setSavingRoom(true);
 
     try {
-      const payload = buildRoomPayload(editRoomForm);
-      await roomService.updateRoom(selectedRoom.id, payload);
-      const updatedRoom = await roomService.getRoomById(selectedRoom.id);
+      await roomService.updateRoom(selectedRoomDetail.id, buildRoomPayload(roomFormData));
       await refreshRooms();
-      setSelectedRoom(null);
-      setDetailError(null);
-      setLoadingRoom(false);
-      setEditRoomForm(initialRoomForm);
-      setEditFormError(null);
-      setEquipmentCreateError(null);
-      setNewEquipmentName("");
-      setTypeCreateError(null);
-      setNewTypeName("");
-      setTypeDeleteError(null);
+      closeForm();
     } catch (err) {
-      setEditFormError(
-        err.response?.data?.message ||
-          err.message ||
-          "Erreur lors de la modification de la salle",
-      );
+      setFormError(err.response?.data?.message || err.message || "Erreur lors de la modification de la salle");
     } finally {
-      setSavingEditRoom(false);
+      setSavingRoom(false);
     }
   };
 
@@ -745,39 +490,31 @@ export default function GestionSalles() {
       setRoomToDelete(null);
       await refreshRooms();
     } catch (err) {
-      setDeleteError(
-        err.response?.data?.message ||
-          err.message ||
-          "Erreur lors de la suppression de la salle",
-      );
+      setDeleteError(err.response?.data?.message || err.message || "Erreur lors de la suppression de la salle");
     } finally {
       setDeletingRoom(false);
     }
   };
 
-  const handleMainImageUpload = async (e, target) => {
+  const handleMainImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const setUploading = target === "edit" ? setUploadingEdit : setUploadingCreate;
-    const formSetter = target === "edit" ? updateEditRoomForm : updateRoomForm;
-    const setErr = target === "edit" ? setEditFormError : setFormError;
+
     setUploading(true);
     try {
       const url = await uploadService.uploadRoomImage(file);
-      formSetter("image_principale", url);
+      updateFormField("image_principale", url);
     } catch {
-      setErr("Erreur lors de l'upload de l'image principale.");
+      setFormError("Erreur lors de l'upload de l'image principale.");
     } finally {
       setUploading(false);
     }
   };
 
-  const handleGalleryUpload = async (e, target) => {
+  const handleGalleryUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
-    const setUploading = target === "edit" ? setUploadingEdit : setUploadingCreate;
-    const setForm = target === "edit" ? setEditRoomForm : setRoomForm;
-    const setErr = target === "edit" ? setEditFormError : setFormError;
+
     setUploading(true);
     try {
       const uploadedUrls = [];
@@ -785,24 +522,26 @@ export default function GestionSalles() {
         const url = await uploadService.uploadRoomGallery(file);
         uploadedUrls.push(url);
       }
-      setForm((current) => ({
+      setRoomFormData((current) => ({
         ...current,
         photos: [...current.photos, ...uploadedUrls],
       }));
     } catch {
-      setErr("Erreur lors de l'upload de la galerie.");
+      setFormError("Erreur lors de l'upload de la galerie.");
     } finally {
       setUploading(false);
     }
   };
 
-  const removeGalleryPhoto = (target, index) => {
-    const setForm = target === "edit" ? setEditRoomForm : setRoomForm;
-    setForm((current) => ({
+  const removeGalleryPhoto = (index) => {
+    setRoomFormData((current) => ({
       ...current,
       photos: current.photos.filter((_, i) => i !== index),
     }));
   };
+
+  const isEditMode = modalState && modalState !== "create";
+  const isModalOpen = modalState !== null;
 
   return (
     <>
@@ -810,27 +549,14 @@ export default function GestionSalles() {
       <div className="page-body">
         <div className="page-header">
           <h2 className="page-title">Gestion Salles</h2>
-          <button
-            className="btn-primary"
-            type="button"
-            onClick={openCreateForm}
-          >
+          <button className="btn-primary" type="button" onClick={openCreateForm}>
             + Ajouter une salle
           </button>
         </div>
 
         <div className="filters-row">
           <div className="search-wrap">
-            <svg
-              viewBox="0 0 24 24"
-              width="14"
-              height="14"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
@@ -847,9 +573,9 @@ export default function GestionSalles() {
             value={capacityFilter}
             onChange={(event) => setCapacityFilter(event.target.value)}
           >
-            <option value="">Capacite</option>
+            <option value="">Capacité</option>
             <option value="small">12 ou moins</option>
-            <option value="medium">13 a 20</option>
+            <option value="medium">13 à 20</option>
             <option value="large">Plus de 20</option>
           </select>
           <select
@@ -859,7 +585,7 @@ export default function GestionSalles() {
             disabled={loadingEquipments}
           >
             <option value="">
-              {loadingEquipments ? "Chargement..." : "Equipements"}
+              {loadingEquipments ? "Chargement..." : "Équipements"}
             </option>
             {equipments.map((equipment) => (
               <option key={equipment.id} value={equipment.id}>
@@ -876,7 +602,7 @@ export default function GestionSalles() {
                 setEquipmentFilter("");
               }}
             >
-              Reinitialiser
+              Réinitialiser
             </button>
           )}
           <select className="flt-select" style={{ marginLeft: "auto" }}>
@@ -884,9 +610,7 @@ export default function GestionSalles() {
           </select>
         </div>
 
-        {equipmentsError && (
-          <p className="room-form-error">{equipmentsError}</p>
-        )}
+        {equipmentsError && <p className="room-form-error">{equipmentsError}</p>}
 
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>
           <div className="table-scroll">
@@ -905,10 +629,7 @@ export default function GestionSalles() {
               <tbody>
                 {loading && (
                   <tr>
-                    <td
-                      colSpan="7"
-                      style={{ textAlign: "center", padding: 24 }}
-                    >
+                    <td colSpan="7" style={{ textAlign: "center", padding: 24 }}>
                       Chargement des salles...
                     </td>
                   </tr>
@@ -916,14 +637,7 @@ export default function GestionSalles() {
 
                 {!loading && error && (
                   <tr>
-                    <td
-                      colSpan="7"
-                      style={{
-                        textAlign: "center",
-                        padding: 24,
-                        color: "var(--red)",
-                      }}
-                    >
+                    <td colSpan="7" style={{ textAlign: "center", padding: 24, color: "var(--red)" }}>
                       {error}
                     </td>
                   </tr>
@@ -931,11 +645,8 @@ export default function GestionSalles() {
 
                 {!loading && !error && filtered.length === 0 && (
                   <tr>
-                    <td
-                      colSpan="7"
-                      style={{ textAlign: "center", padding: 24 }}
-                    >
-                      Aucune salle trouvee.
+                    <td colSpan="7" style={{ textAlign: "center", padding: 24 }}>
+                      Aucune salle trouvée.
                     </td>
                   </tr>
                 )}
@@ -957,15 +668,13 @@ export default function GestionSalles() {
                           </div>
                         </td>
                         <td style={{ fontWeight: 500 }}>{s.nom}</td>
-                        <td>{s.capacite || "Non renseigne"}</td>
+                        <td>{s.capacite || "Non renseigné"}</td>
                         <td>{getLocation(s)}</td>
-                        <td
-                          style={{ fontSize: "0.79rem", color: "var(--muted)" }}
-                        >
-                          {s.equipements || "Non renseigne"}
+                        <td style={{ fontSize: "0.79rem", color: "var(--muted)" }}>
+                          {s.equipements || "Non renseigné"}
                         </td>
                         <td>
-                          <Badge s={s.statut} />
+                          <Badge status={s.statut} />
                         </td>
                         <td>
                           <button
@@ -978,7 +687,10 @@ export default function GestionSalles() {
                           <button
                             className="act-btn act-del"
                             type="button"
-                            onClick={() => openDeleteConfirm(s)}
+                            onClick={() => {
+                              setDeleteError(null);
+                              setRoomToDelete(s);
+                            }}
                           >
                             <IconTrash />
                           </button>
@@ -992,859 +704,52 @@ export default function GestionSalles() {
         </div>
       </div>
 
-      {isCreateOpen && (
-        <div className="ud-overlay" onClick={closeCreateForm}>
-          <div
-            className="ud-panel room-form-panel"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <button
-              className="ud-close"
-              type="button"
-              onClick={closeCreateForm}
-              disabled={savingRoom}
-            >
-              x
-            </button>
-
-            <div>
-              <h3 className="ud-name">Ajouter une salle</h3>
-              <p className="ud-email">
-                Prepare les informations de la salle avant enregistrement.
-              </p>
-            </div>
-
-            <form className="room-form" onSubmit={handleCreateRoom}>
-              <label>
-                Nom
-                <input
-                  required
-                  value={roomForm.nom}
-                  onChange={(event) =>
-                    updateRoomForm("nom", event.target.value)
-                  }
-                  placeholder="Nom de la salle"
-                />
-              </label>
-
-              <label>
-                Statut
-                <select
-                  value={roomForm.statut}
-                  onChange={(event) =>
-                    updateRoomForm("statut", event.target.value)
-                  }
-                >
-                  <option value="disponible">Disponible</option>
-                  <option value="reservee">Reservee</option>
-                  <option value="hors-service">Hors service</option>
-                </select>
-              </label>
-
-              <label>
-                Adresse
-                <input
-                  required
-                  value={roomForm.adresse}
-                  onChange={(event) =>
-                    updateRoomForm("adresse", event.target.value)
-                  }
-                  placeholder="Adresse"
-                />
-              </label>
-
-              <label>
-                Code postal
-                <input
-                  value={roomForm.code_postal}
-                  onChange={(event) =>
-                    updateRoomForm("code_postal", event.target.value)
-                  }
-                  placeholder="13001"
-                />
-              </label>
-
-              <label>
-                Ville
-                <input
-                  value={roomForm.ville}
-                  onChange={(event) =>
-                    updateRoomForm("ville", event.target.value)
-                  }
-                  placeholder="Marseille"
-                />
-              </label>
-
-              <label>
-                Capacite
-                <input
-                  type="number"
-                  min="1"
-                  value={roomForm.capacite}
-                  onChange={(event) =>
-                    updateRoomForm("capacite", event.target.value)
-                  }
-                  placeholder="12"
-                />
-              </label>
-
-              <label>
-                Prix heure
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={roomForm.prix_heure}
-                  onChange={(event) =>
-                    updateRoomForm("prix_heure", event.target.value)
-                  }
-                  placeholder="25.00"
-                />
-              </label>
-
-              <label>
-                Prix demi-journee
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={roomForm.prix_demi_journee}
-                  onChange={(event) =>
-                    updateRoomForm("prix_demi_journee", event.target.value)
-                  }
-                  placeholder="90.00"
-                />
-              </label>
-
-              <label>
-                Prix journee
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={roomForm.prix_journee}
-                  onChange={(event) =>
-                    updateRoomForm("prix_journee", event.target.value)
-                  }
-                  placeholder="160.00"
-                />
-              </label>
-
-              <label>
-                Type de salle
-                <div style={{ display: "flex", gap: "0.5rem" }}>
-                  <select
-                    required
-                    value={roomForm.type_id}
-                    onChange={(event) =>
-                      updateRoomForm("type_id", event.target.value)
-                    }
-                    disabled={loadingTypes}
-                    style={{ flex: 1 }}
-                  >
-                    <option value="">
-                      {loadingTypes
-                        ? "Chargement des types..."
-                        : "Choisir un type"}
-                    </option>
-                    {roomTypes.map((type) => (
-                      <option key={type.id} value={type.id}>
-                        {type.nom}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    className="ud-btn-danger"
-                    type="button"
-                    onClick={() =>
-                      handleDeleteType(roomForm.type_id, "create")
-                    }
-                    disabled={!roomForm.type_id || deletingType}
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    {deletingType ? "..." : "Supprimer"}
-                  </button>
-                </div>
-              </label>
-
-              <div className="room-form-wide room-equipment-field">
-                <span>Ajouter un type de salle</span>
-                <div className="room-equipment-create">
-                  <input
-                    value={newTypeName}
-                    onChange={(event) => setNewTypeName(event.target.value)}
-                    placeholder="Nouveau type de salle"
-                  />
-                  <button
-                    className="btn-primary"
-                    type="button"
-                    onClick={() => handleCreateType(newTypeName, "create")}
-                    disabled={addingType}
-                  >
-                    {addingType ? "Ajout..." : "Ajouter"}
-                  </button>
-                </div>
-              </div>
-
-              <div className="room-form-wide room-equipment-field">
-                <span>Equipements</span>
-                <div className="room-equipment-list">
-                  {loadingEquipments && (
-                    <p className="ud-empty">Chargement des equipements...</p>
-                  )}
-
-                  {!loadingEquipments && equipments.length === 0 && (
-                    <p className="ud-empty">Aucun equipement disponible.</p>
-                  )}
-
-                  {!loadingEquipments &&
-                    equipments.map((equipment) => (
-                      <label
-                        key={equipment.id}
-                        className="room-equipment-choice"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={roomForm.equipement_ids.includes(
-                            String(equipment.id),
-                          )}
-                          onChange={() => toggleRoomEquipment(equipment.id)}
-                        />
-                        <span>{equipment.nom}</span>
-                      </label>
-                    ))}
-                </div>
-
-                <div className="room-equipment-presets">
-                  {predefinedEquipmentNames
-                    .filter(
-                      (equipmentName) => !findEquipmentByName(equipmentName),
-                    )
-                    .map((equipmentName) => (
-                      <button
-                        key={equipmentName}
-                        className="room-equipment-preset"
-                        type="button"
-                        onClick={() =>
-                          handleCreateEquipment(equipmentName, "create")
-                        }
-                        disabled={addingEquipment}
-                      >
-                        + {equipmentName}
-                      </button>
-                    ))}
-                </div>
-
-                <div className="room-equipment-create">
-                  <input
-                    value={newEquipmentName}
-                    onChange={(event) =>
-                      setNewEquipmentName(event.target.value)
-                    }
-                    placeholder="Nouvel equipement"
-                  />
-                  <button
-                    className="btn-primary"
-                    type="button"
-                    onClick={() =>
-                      handleCreateEquipment(newEquipmentName, "create")
-                    }
-                    disabled={addingEquipment}
-                  >
-                    {addingEquipment ? "Ajout..." : "Ajouter"}
-                  </button>
-                </div>
-              </div>
-
-              <div className="room-form-wide room-equipment-field">
-                <span>Image principale</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleMainImageUpload(e, "create")}
-                  disabled={uploadingCreate}
-                />
-                {uploadingCreate && (
-                  <p className="ud-empty">Upload en cours...</p>
-                )}
-                {roomForm.image_principale && (
-                  <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "10px" }}>
-                    <img
-                      src={roomForm.image_principale}
-                      alt="Image principale"
-                      style={{ width: "80px", height: "60px", objectFit: "cover", borderRadius: "6px", border: "1px solid var(--border)" }}
-                    />
-                    <button
-                      type="button"
-                      className="ud-btn-ghost"
-                      style={{ fontSize: "0.75rem", padding: "4px 10px" }}
-                      onClick={() => updateRoomForm("image_principale", "")}
-                      disabled={uploadingCreate}
-                    >
-                      Retirer
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <div className="room-form-wide room-equipment-field">
-                <span>Galerie de photos</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(e) => handleGalleryUpload(e, "create")}
-                  disabled={uploadingCreate}
-                />
-                {roomForm.photos.length > 0 && (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px" }}>
-                    {roomForm.photos.map((url, index) => (
-                      <div key={index} style={{ position: "relative" }}>
-                        <img
-                          src={url}
-                          alt={`Photo ${index + 1}`}
-                          style={{ width: "70px", height: "60px", objectFit: "cover", borderRadius: "6px", border: "1px solid var(--border)" }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeGalleryPhoto("create", index)}
-                          disabled={uploadingCreate}
-                          style={{ position: "absolute", top: "-6px", right: "-6px", width: "18px", height: "18px", borderRadius: "50%", background: "var(--red, #e53e3e)", color: "#fff", border: "none", cursor: "pointer", fontSize: "10px", lineHeight: "18px", padding: 0 }}
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <label className="room-form-wide">
-                Description
-                <textarea
-                  value={roomForm.description}
-                  onChange={(event) =>
-                    updateRoomForm("description", event.target.value)
-                  }
-                  placeholder="Description de la salle"
-                  rows="4"
-                />
-              </label>
-
-              {formError && <p className="room-form-error">{formError}</p>}
-
-              {typesError && <p className="room-form-error">{typesError}</p>}
-
-              {typeCreateError && (
-                <p className="room-form-error">{typeCreateError}</p>
-              )}
-
-              {typeDeleteError && (
-                <p className="room-form-error">{typeDeleteError}</p>
-              )}
-
-              {equipmentCreateError && (
-                <p className="room-form-error">{equipmentCreateError}</p>
-              )}
-
-              <div className="room-form-actions">
-                <button
-                  className="ud-btn-ghost"
-                  type="button"
-                  onClick={closeCreateForm}
-                  disabled={savingRoom || uploadingCreate}
-                >
-                  Annuler
-                </button>
-                <button
-                  className="btn-primary"
-                  type="submit"
-                  disabled={savingRoom || uploadingCreate}
-                >
-                  {uploadingCreate ? "Upload en cours..." : savingRoom ? "Enregistrement..." : "Enregistrer"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {isModalOpen && (
+        <RoomForm
+          title={isEditMode ? `Modifier ${selectedRoomDetail?.nom || "la salle"}` : "Ajouter une salle"}
+          subtitle={isEditMode ? "Mettez à jour les informations de la salle." : "Préparez les informations de la salle avant enregistrement."}
+          formData={roomFormData}
+          onFormChange={updateFormField}
+          roomTypes={roomTypes}
+          loadingTypes={loadingTypes}
+          equipments={equipments}
+          loadingEquipments={loadingEquipments}
+          onSubmit={isEditMode ? handleUpdateRoom : handleCreateRoom}
+          onClose={closeForm}
+          loading={savingRoom || uploading}
+          error={formError}
+          newTypeName={newTypeName}
+          onNewTypeNameChange={setNewTypeName}
+          onCreateType={handleCreateType}
+          onDeleteType={handleDeleteType}
+          addingType={addingType}
+          deletingType={deletingType}
+          typeCreateError={typeCreateError}
+          typeDeleteError={typeDeleteError}
+          newEquipmentName={newEquipmentName}
+          onNewEquipmentNameChange={setNewEquipmentName}
+          onCreateEquipment={handleCreateEquipment}
+          onEquipmentToggle={toggleEquipment}
+          addingEquipment={addingEquipment}
+          equipmentCreateError={equipmentCreateError}
+          onMainImageUpload={handleMainImageUpload}
+          onGalleryUpload={handleGalleryUpload}
+          onRemovePhoto={removeGalleryPhoto}
+          uploading={uploading}
+          mode={isEditMode ? "edit" : "create"}
+        />
       )}
 
-      {(loadingRoom || detailError || selectedRoom) && (
-        <div className="ud-overlay" onClick={closeRoomDetails}>
-          <div
-            className="ud-panel room-detail-panel"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <button
-              className="ud-close"
-              type="button"
-              onClick={closeRoomDetails}
-              disabled={savingEditRoom}
-            >
-              x
-            </button>
-
-            {loadingRoom && (
-              <p className="ud-empty">Chargement de la salle...</p>
-            )}
-
-            {!loadingRoom && detailError && (
-              <p className="room-form-error">{detailError}</p>
-            )}
-
-            {!loadingRoom && selectedRoom && (
-              <>
-                <div className="room-detail-admin-head">
-                  <div className="room-detail-admin-thumb">
-                    {getRoomImageSrc(selectedRoom.image_principale) ? (
-                      <img
-                        src={getRoomImageSrc(selectedRoom.image_principale)}
-                        alt={selectedRoom.nom}
-                      />
-                    ) : (
-                      icons.boardroom
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="ud-name">{selectedRoom.nom}</h3>
-                    <p className="ud-email">{getLocation(selectedRoom)}</p>
-                    <div className="ud-badges">
-                      <Badge s={selectedRoom.statut} />
-                      {selectedRoom.type_nom && (
-                        <span className="badge b-blue">
-                          {selectedRoom.type_nom}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <form className="room-form" onSubmit={handleUpdateRoom}>
-                  <label>
-                    Nom
-                    <input
-                      required
-                      value={editRoomForm.nom}
-                      onChange={(event) =>
-                        updateEditRoomForm("nom", event.target.value)
-                      }
-                    />
-                  </label>
-
-                  <label>
-                    Statut
-                    <select
-                      value={editRoomForm.statut}
-                      onChange={(event) =>
-                        updateEditRoomForm("statut", event.target.value)
-                      }
-                    >
-                      <option value="disponible">Disponible</option>
-                      <option value="reservee">Reservee</option>
-                      <option value="hors-service">Hors service</option>
-                    </select>
-                  </label>
-
-                  <label>
-                    Adresse
-                    <input
-                      value={editRoomForm.adresse}
-                      onChange={(event) =>
-                        updateEditRoomForm("adresse", event.target.value)
-                      }
-                    />
-                  </label>
-
-                  <label>
-                    Code postal
-                    <input
-                      value={editRoomForm.code_postal}
-                      onChange={(event) =>
-                        updateEditRoomForm("code_postal", event.target.value)
-                      }
-                    />
-                  </label>
-
-                  <label>
-                    Ville
-                    <input
-                      value={editRoomForm.ville}
-                      onChange={(event) =>
-                        updateEditRoomForm("ville", event.target.value)
-                      }
-                    />
-                  </label>
-
-                  <label>
-                    Capacite
-                    <input
-                      type="number"
-                      min="1"
-                      value={editRoomForm.capacite}
-                      onChange={(event) =>
-                        updateEditRoomForm("capacite", event.target.value)
-                      }
-                    />
-                  </label>
-
-                  <label>
-                    Prix heure
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={editRoomForm.prix_heure}
-                      onChange={(event) =>
-                        updateEditRoomForm("prix_heure", event.target.value)
-                      }
-                    />
-                  </label>
-
-                  <label>
-                    Prix demi-journee
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={editRoomForm.prix_demi_journee}
-                      onChange={(event) =>
-                        updateEditRoomForm(
-                          "prix_demi_journee",
-                          event.target.value,
-                        )
-                      }
-                    />
-                  </label>
-
-                  <label>
-                    Prix journee
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={editRoomForm.prix_journee}
-                      onChange={(event) =>
-                        updateEditRoomForm("prix_journee", event.target.value)
-                      }
-                    />
-                  </label>
-
-                  <label>
-                    Type de salle
-                    <div style={{ display: "flex", gap: "0.5rem" }}>
-                      <select
-                        required
-                        value={editRoomForm.type_id}
-                        onChange={(event) =>
-                          updateEditRoomForm("type_id", event.target.value)
-                        }
-                        disabled={loadingTypes}
-                        style={{ flex: 1 }}
-                      >
-                        <option value="">
-                          {loadingTypes
-                            ? "Chargement des types..."
-                            : "Choisir un type"}
-                        </option>
-                        {roomTypes.map((type) => (
-                          <option key={type.id} value={type.id}>
-                            {type.nom}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        className="ud-btn-danger"
-                        type="button"
-                        onClick={() =>
-                          handleDeleteType(editRoomForm.type_id, "edit")
-                        }
-                        disabled={!editRoomForm.type_id || deletingType}
-                        style={{ whiteSpace: "nowrap" }}
-                      >
-                        {deletingType ? "..." : "Supprimer"}
-                      </button>
-                    </div>
-                  </label>
-
-                  <div className="room-form-wide room-equipment-field">
-                    <span>Ajouter un type de salle</span>
-                    <div className="room-equipment-create">
-                      <input
-                        value={newTypeName}
-                        onChange={(event) =>
-                          setNewTypeName(event.target.value)
-                        }
-                        placeholder="Nouveau type de salle"
-                      />
-                      <button
-                        className="btn-primary"
-                        type="button"
-                        onClick={() => handleCreateType(newTypeName, "edit")}
-                        disabled={addingType}
-                      >
-                        {addingType ? "Ajout..." : "Ajouter"}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="room-form-wide room-equipment-field">
-                    <span>Equipements</span>
-                    <div className="room-equipment-list">
-                      {loadingEquipments && (
-                        <p className="ud-empty">
-                          Chargement des equipements...
-                        </p>
-                      )}
-
-                      {!loadingEquipments && equipments.length === 0 && (
-                        <p className="ud-empty">Aucun equipement disponible.</p>
-                      )}
-
-                      {!loadingEquipments &&
-                        equipments.map((equipment) => (
-                          <label
-                            key={equipment.id}
-                            className="room-equipment-choice"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={editRoomForm.equipement_ids.includes(
-                                String(equipment.id),
-                              )}
-                              onChange={() =>
-                                toggleEditRoomEquipment(equipment.id)
-                              }
-                            />
-                            <span>{equipment.nom}</span>
-                          </label>
-                        ))}
-                    </div>
-
-                    <div className="room-equipment-presets">
-                      {predefinedEquipmentNames
-                        .filter(
-                          (equipmentName) =>
-                            !findEquipmentByName(equipmentName),
-                        )
-                        .map((equipmentName) => (
-                          <button
-                            key={equipmentName}
-                            className="room-equipment-preset"
-                            type="button"
-                            onClick={() =>
-                              handleCreateEquipment(equipmentName, "edit")
-                            }
-                            disabled={addingEquipment}
-                          >
-                            + {equipmentName}
-                          </button>
-                        ))}
-                    </div>
-
-                    <div className="room-equipment-create">
-                      <input
-                        value={newEquipmentName}
-                        onChange={(event) =>
-                          setNewEquipmentName(event.target.value)
-                        }
-                        placeholder="Nouvel equipement"
-                      />
-                      <button
-                        className="btn-primary"
-                        type="button"
-                        onClick={() =>
-                          handleCreateEquipment(newEquipmentName, "edit")
-                        }
-                        disabled={addingEquipment}
-                      >
-                        {addingEquipment ? "Ajout..." : "Ajouter"}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="room-form-wide room-equipment-field">
-                    <span>Image principale</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleMainImageUpload(e, "edit")}
-                      disabled={uploadingEdit}
-                    />
-                    {uploadingEdit && (
-                      <p className="ud-empty">Upload en cours...</p>
-                    )}
-                    {editRoomForm.image_principale && (
-                      <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "10px" }}>
-                        <img
-                          src={editRoomForm.image_principale}
-                          alt="Image principale"
-                          style={{ width: "80px", height: "60px", objectFit: "cover", borderRadius: "6px", border: "1px solid var(--border)" }}
-                        />
-                        <button
-                          type="button"
-                          className="ud-btn-ghost"
-                          style={{ fontSize: "0.75rem", padding: "4px 10px" }}
-                          onClick={() => updateEditRoomForm("image_principale", "")}
-                          disabled={uploadingEdit}
-                        >
-                          Retirer
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="room-form-wide room-equipment-field">
-                    <span>Galerie de photos</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={(e) => handleGalleryUpload(e, "edit")}
-                      disabled={uploadingEdit}
-                    />
-                    {editRoomForm.photos.length > 0 && (
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px" }}>
-                        {editRoomForm.photos.map((url, index) => (
-                          <div key={index} style={{ position: "relative" }}>
-                            <img
-                              src={url}
-                              alt={`Photo ${index + 1}`}
-                              style={{ width: "70px", height: "60px", objectFit: "cover", borderRadius: "6px", border: "1px solid var(--border)" }}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeGalleryPhoto("edit", index)}
-                              disabled={uploadingEdit}
-                              style={{ position: "absolute", top: "-6px", right: "-6px", width: "18px", height: "18px", borderRadius: "50%", background: "var(--red, #e53e3e)", color: "#fff", border: "none", cursor: "pointer", fontSize: "10px", lineHeight: "18px", padding: 0 }}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <label className="room-form-wide">
-                    Description
-                    <textarea
-                      value={editRoomForm.description}
-                      onChange={(event) =>
-                        updateEditRoomForm("description", event.target.value)
-                      }
-                      rows="4"
-                    />
-                  </label>
-
-                  {editFormError && (
-                    <p className="room-form-error">{editFormError}</p>
-                  )}
-
-                  {typesError && (
-                    <p className="room-form-error">{typesError}</p>
-                  )}
-
-                  {typeCreateError && (
-                    <p className="room-form-error">{typeCreateError}</p>
-                  )}
-
-                  {typeDeleteError && (
-                    <p className="room-form-error">{typeDeleteError}</p>
-                  )}
-
-                  {equipmentCreateError && (
-                    <p className="room-form-error">{equipmentCreateError}</p>
-                  )}
-
-                  <div className="room-form-actions">
-                    <button
-                      className="ud-btn-ghost"
-                      type="button"
-                      onClick={closeRoomDetails}
-                      disabled={savingEditRoom || uploadingEdit}
-                    >
-                      Fermer
-                    </button>
-                    <button
-                      className="btn-primary"
-                      type="submit"
-                      disabled={savingEditRoom || uploadingEdit}
-                    >
-                      {uploadingEdit ? "Upload en cours..." : savingEditRoom ? "Modification..." : "Enregistrer"}
-                    </button>
-                  </div>
-                </form>
-
-                <div className="ud-section">
-                  <h4 className="ud-section-title">Equipements</h4>
-                  {selectedRoom.equipements?.length ? (
-                    <div className="ud-badges">
-                      {selectedRoom.equipements.map((equipment) => (
-                        <span key={equipment} className="badge b-done">
-                          {equipment}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="ud-empty">Aucun equipement renseigne.</p>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {roomToDelete && (
-        <div className="ud-overlay" onClick={closeDeleteConfirm}>
-          <div
-            className="ud-panel room-delete-panel"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <button
-              className="ud-close"
-              type="button"
-              onClick={closeDeleteConfirm}
-            >
-              x
-            </button>
-
-            <div>
-              <h3 className="ud-name">Supprimer une salle</h3>
-              <p className="ud-email">
-                Cette action supprimera vraiment la salle.
-              </p>
-            </div>
-
-            <div className="room-delete-box">
-              <span className="ud-meta-label">Salle selectionnee</span>
-              <strong>{roomToDelete.nom}</strong>
-              <p>{getLocation(roomToDelete)}</p>
-            </div>
-
-            {deleteError && <p className="room-form-error">{deleteError}</p>}
-
-            <div className="room-form-actions">
-              <button
-                className="ud-btn-ghost"
-                type="button"
-                onClick={closeDeleteConfirm}
-                disabled={deletingRoom}
-              >
-                Annuler
-              </button>
-              <button
-                className="ud-btn-danger"
-                type="button"
-                onClick={handleDeleteRoom}
-                disabled={deletingRoom}
-              >
-                {deletingRoom ? "Suppression..." : "Supprimer"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <RoomDeleteModal
+        room={roomToDelete}
+        onConfirm={handleDeleteRoom}
+        onCancel={() => {
+          setRoomToDelete(null);
+          setDeleteError(null);
+        }}
+        loading={deletingRoom}
+        error={deleteError}
+      />
     </>
   );
 }
