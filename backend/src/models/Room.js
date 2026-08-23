@@ -8,56 +8,14 @@ class Room extends BaseModel {
     Object.assign(this, data); // Astuce pour assigner tous les champs d'un coup
   }
 
-  // On réécrit getAll car on a une jointure spécifique (Polymorphisme)
-  static async getAll(filters = {}) {
-    const where = [];
-    const params = [];
-
-    if (filters.ville) {
-      where.push("LOWER(s.ville) LIKE ?");
-      params.push(`%${String(filters.ville).trim().toLowerCase()}%`);
-    }
-
-    if (filters.capacite_min) {
-      where.push("s.capacite >= ?");
-      params.push(Number(filters.capacite_min));
-    }
-
-    if (filters.capacite_max) {
-      where.push("s.capacite <= ?");
-      params.push(Number(filters.capacite_max));
-    }
-
-    if (filters.type_id) {
-      where.push("s.type_id = ?");
-      params.push(Number(filters.type_id));
-    }
-
-    if (filters.equipement_id) {
-      where.push(`
-        EXISTS (
-          SELECT 1
-          FROM salle_equipements filter_se
-          WHERE filter_se.salle_id = s.id
-          AND filter_se.equipement_id = ?
-        )
-      `);
-      params.push(Number(filters.equipement_id));
-    }
-
+  // Retourne toutes les salles sans filtre (appelée au montage)
+  static async getAll() {
     const sql = `
-    SELECT 
-        s.*, 
-        t.nom as type_nom,
-        GROUP_CONCAT(e.nom SEPARATOR ', ') as equipements
-    FROM salles s
-    JOIN types t ON s.type_id = t.id
-    LEFT JOIN salle_equipements se ON s.id = se.salle_id
-    LEFT JOIN equipements e ON se.equipement_id = e.id
-    ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
-    GROUP BY s.id
-`;
-    const [rows] = await db.execute(sql, params);
+      SELECT s.*, t.nom as type_nom
+      FROM salles s
+      JOIN types t ON s.type_id = t.id
+    `;
+    const [rows] = await db.execute(sql);
     return rows;
   }
 

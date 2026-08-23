@@ -7,8 +7,8 @@ import api from './api'
 */
 
 export const roomService = {
-  getRooms: async (filters = {}) => {
-    const res = await api.get('/rooms', { params: filters })
+  getRooms: async () => {
+    const res = await api.get('/rooms')
     return res.data
   },
 

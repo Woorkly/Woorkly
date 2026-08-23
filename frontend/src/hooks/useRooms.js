@@ -28,7 +28,7 @@ export default function useRooms(filters = {}) {
 
         const data = filters?.date
           ? await roomService.getAvailableRooms(filters)
-          : await roomService.getRooms(filters)
+          : await roomService.getRooms()
         setRooms(data)
       } catch (err) {
         setError(err.response?.data?.message || err.message)
