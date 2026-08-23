@@ -33,6 +33,7 @@ export default function Salle() {
   const [debouncedVille, setDebouncedVille] = useState('')
   const [types, setTypes] = useState([])
   const [equipements, setEquipements] = useState([])
+  const [dateError, setDateError] = useState('')
 
   useEffect(() => {
     const fetchTypes = async () => {
@@ -87,8 +88,26 @@ export default function Salle() {
     return `/images/${value || 'default-room.jpg'}`
   }
 
+  const isWeekend = (dateStr) => {
+    const date = new Date(dateStr + 'T00:00:00')
+    const dayOfWeek = date.getDay()
+    return dayOfWeek === 0 || dayOfWeek === 6
+  }
+
+  const getDayName = (dateStr) => {
+    const date = new Date(dateStr + 'T00:00:00')
+    return date.toLocaleDateString('fr-FR', { weekday: 'long' })
+  }
 
   const updateFilter = (key, value) => {
+    if (key === 'date') {
+      if (value && isWeekend(value)) {
+        const dayName = getDayName(value)
+        setDateError(`Les réservations ne sont pas disponibles le ${dayName}.`)
+        return
+      }
+      setDateError('')
+    }
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
 
@@ -96,6 +115,7 @@ export default function Salle() {
     setVilleInput('')
     setDebouncedVille('')
     setFilters({ date: '', capacite_min: '', type_id: '', equipement_id: '' })
+    setDateError('')
   }
 
   // Calculate center of map from rooms with valid coordinates
@@ -137,7 +157,9 @@ export default function Salle() {
                 value={filters.date}
                 min={new Date().toISOString().split('T')[0]}
                 onChange={(e) => updateFilter('date', e.target.value)}
+                style={dateError ? { borderColor: 'var(--color-danger)' } : {}}
               />
+              {dateError && <span style={{ color: 'var(--color-danger)', fontSize: '0.875rem', marginTop: '4px', display: 'block' }}>{dateError}</span>}
             </label>
 
             <label>
