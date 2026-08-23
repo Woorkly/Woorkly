@@ -1,22 +1,5 @@
 import TypeField from "./TypeField";
 import EquipmentField from "./EquipmentField";
-import uploadService from "../../services/uploadService";
-
-const imageIcons = {
-  hub: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="#1A56A0" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="26" height="26">
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <path d="M3 9h18M9 21V9" />
-      <circle cx="6" cy="6" r="0.5" fill="#1A56A0" />
-    </svg>
-  ),
-  boardroom: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="#1A56A0" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="26" height="26">
-      <rect x="2" y="7" width="20" height="10" rx="2" />
-      <path d="M6 7V5M12 7V4M18 7V5M6 17v2M18 17v2" />
-    </svg>
-  ),
-};
 
 function RoomForm({
   title,
@@ -53,6 +36,7 @@ function RoomForm({
   onRemovePhoto,
   uploading,
   mode = "create",
+  editingRoom = null,
 }) {
   const getRoomImageSrc = (imageName) => {
     const value = (imageName || "").trim();
@@ -60,6 +44,16 @@ function RoomForm({
     if (/^https?:\/\//i.test(value)) return value;
     return `/images/${value}`;
   };
+
+  const boardroomIcon = (
+    <svg viewBox="0 0 24 24" fill="none" stroke="#1A56A0" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="26" height="26">
+      <rect x="2" y="7" width="20" height="10" rx="2" />
+      <path d="M6 7V5M12 7V4M18 7V5M6 17v2M18 17v2" />
+    </svg>
+  );
+
+  const getLocation = (room) =>
+    [room?.adresse, room?.code_postal, room?.ville].filter(Boolean).join(", ") || "Non renseigné";
 
   return (
     <div className="ud-overlay" onClick={onClose}>
@@ -76,10 +70,26 @@ function RoomForm({
           x
         </button>
 
-        <div>
-          <h3 className="ud-name">{title}</h3>
-          <p className="ud-email">{subtitle}</p>
-        </div>
+        {mode === "edit" && editingRoom ? (
+          <div className="room-detail-admin-head">
+            <div className="room-detail-admin-thumb">
+              {getRoomImageSrc(editingRoom.image_principale) ? (
+                <img src={getRoomImageSrc(editingRoom.image_principale)} alt={editingRoom.nom} />
+              ) : (
+                boardroomIcon
+              )}
+            </div>
+            <div>
+              <h3 className="ud-name">{editingRoom.nom}</h3>
+              <p className="ud-email">{getLocation(editingRoom)}</p>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <h3 className="ud-name">{title}</h3>
+            <p className="ud-email">{subtitle}</p>
+          </div>
+        )}
 
         <form className="room-form" onSubmit={onSubmit}>
           {error && <p className="room-form-error">{error}</p>}

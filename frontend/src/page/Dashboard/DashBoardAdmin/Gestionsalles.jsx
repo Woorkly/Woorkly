@@ -737,6 +737,7 @@ export default function GestionSalles() {
           onRemovePhoto={removeGalleryPhoto}
           uploading={uploading}
           mode={isEditMode ? "edit" : "create"}
+          editingRoom={selectedRoomDetail}
         />
       )}
 
