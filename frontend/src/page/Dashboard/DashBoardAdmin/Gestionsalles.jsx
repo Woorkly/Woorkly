@@ -676,9 +676,17 @@ export default function GestionSalles() {
       const payload = buildRoomPayload(editRoomForm);
       await roomService.updateRoom(selectedRoom.id, payload);
       const updatedRoom = await roomService.getRoomById(selectedRoom.id);
-      setSelectedRoom(updatedRoom);
-      setEditRoomForm(buildRoomForm(updatedRoom));
       await refreshRooms();
+      setSelectedRoom(null);
+      setDetailError(null);
+      setLoadingRoom(false);
+      setEditRoomForm(initialRoomForm);
+      setEditFormError(null);
+      setEquipmentCreateError(null);
+      setNewEquipmentName("");
+      setTypeCreateError(null);
+      setNewTypeName("");
+      setTypeDeleteError(null);
     } catch (err) {
       setEditFormError(
         err.response?.data?.message ||
