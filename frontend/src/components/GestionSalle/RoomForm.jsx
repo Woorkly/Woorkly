@@ -149,30 +149,6 @@ function RoomForm({
             />
           </label>
 
-          {/* Latitude */}
-          <label>
-            Latitude
-            <input
-              type="number"
-              step="0.0001"
-              value={formData.latitude}
-              onChange={(e) => onFormChange("latitude", e.target.value)}
-              placeholder="43.2965"
-            />
-          </label>
-
-          {/* Longitude */}
-          <label>
-            Longitude
-            <input
-              type="number"
-              step="0.0001"
-              value={formData.longitude}
-              onChange={(e) => onFormChange("longitude", e.target.value)}
-              placeholder="5.3698"
-            />
-          </label>
-
           {/* Capacité */}
           <label>
             Capacité
@@ -224,80 +200,6 @@ function RoomForm({
             />
           </label>
 
-          {/* Description */}
-          <label>
-            Description
-            <textarea
-              value={formData.description}
-              onChange={(e) => onFormChange("description", e.target.value)}
-              placeholder="Description de la salle"
-              rows="4"
-            />
-          </label>
-
-          {/* Image principale */}
-          <div className="room-form-wide">
-            <span>Image principale</span>
-            <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
-              <div>
-                <label htmlFor={`main-image-${mode}`} style={{ cursor: "pointer" }}>
-                  <input
-                    id={`main-image-${mode}`}
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => onMainImageUpload(e, mode)}
-                    disabled={uploading}
-                    style={{ display: "none" }}
-                  />
-                  <span style={{ display: "inline-block", padding: "0.5rem 1rem", background: "var(--blue)", color: "white", borderRadius: "4px", cursor: "pointer" }}>
-                    {uploading ? "Upload..." : "Choisir une image"}
-                  </span>
-                </label>
-              </div>
-              {formData.image_principale && (
-                <div style={{ width: "100px", height: "100px", borderRadius: "4px", overflow: "hidden", background: "var(--bg-secondary)" }}>
-                  <img src={getRoomImageSrc(formData.image_principale)} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Galerie */}
-          <div className="room-form-wide">
-            <span>Galerie (photos supplémentaires)</span>
-            <label htmlFor={`gallery-${mode}`} style={{ cursor: "pointer" }}>
-              <input
-                id={`gallery-${mode}`}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => onGalleryUpload(e, mode)}
-                disabled={uploading}
-                style={{ display: "none" }}
-              />
-              <span style={{ display: "inline-block", padding: "0.5rem 1rem", background: "var(--blue)", color: "white", borderRadius: "4px", cursor: "pointer" }}>
-                {uploading ? "Upload..." : "Ajouter des photos"}
-              </span>
-            </label>
-
-            {formData.photos && formData.photos.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: "0.75rem", marginTop: "1rem" }}>
-                {formData.photos.map((photo, idx) => (
-                  <div key={idx} style={{ position: "relative", borderRadius: "4px", overflow: "hidden", background: "var(--bg-secondary)" }}>
-                    <img src={getRoomImageSrc(photo)} alt={`gallery-${idx}`} style={{ width: "100%", height: "100px", objectFit: "cover" }} />
-                    <button
-                      type="button"
-                      onClick={() => onRemovePhoto(mode, idx)}
-                      style={{ position: "absolute", top: 4, right: 4, background: "rgba(0,0,0,0.6)", color: "white", border: "none", borderRadius: "50%", width: "24px", height: "24px", cursor: "pointer", fontSize: "0.75rem" }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* Type de salle */}
           <TypeField
             roomTypes={roomTypes}
@@ -328,6 +230,80 @@ function RoomForm({
             equipmentCreateError={equipmentCreateError}
             target={mode}
           />
+
+          {/* Image principale */}
+          <div className="room-form-wide room-equipment-field">
+            <span>Image principale</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => onMainImageUpload(e, mode)}
+              disabled={uploading}
+            />
+            {uploading && <p className="ud-empty">Upload en cours...</p>}
+            {formData.image_principale && (
+              <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "10px" }}>
+                <img
+                  src={getRoomImageSrc(formData.image_principale)}
+                  alt="Image principale"
+                  style={{ width: "80px", height: "60px", objectFit: "cover", borderRadius: "6px", border: "1px solid var(--border)" }}
+                />
+                <button
+                  type="button"
+                  className="ud-btn-ghost"
+                  style={{ fontSize: "0.75rem", padding: "4px 10px" }}
+                  onClick={() => onFormChange("image_principale", "")}
+                  disabled={uploading}
+                >
+                  Retirer
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Galerie de photos */}
+          <div className="room-form-wide room-equipment-field">
+            <span>Galerie de photos</span>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => onGalleryUpload(e, mode)}
+              disabled={uploading}
+            />
+            {formData.photos.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "8px" }}>
+                {formData.photos.map((url, index) => (
+                  <div key={index} style={{ position: "relative" }}>
+                    <img
+                      src={getRoomImageSrc(url)}
+                      alt={`Photo ${index + 1}`}
+                      style={{ width: "70px", height: "60px", objectFit: "cover", borderRadius: "6px", border: "1px solid var(--border)" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => onRemovePhoto(index)}
+                      disabled={uploading}
+                      style={{ position: "absolute", top: "-6px", right: "-6px", width: "18px", height: "18px", borderRadius: "50%", background: "var(--red, #e53e3e)", color: "#fff", border: "none", cursor: "pointer", fontSize: "10px", lineHeight: "18px", padding: 0 }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Description */}
+          <label className="room-form-wide">
+            Description
+            <textarea
+              value={formData.description}
+              onChange={(e) => onFormChange("description", e.target.value)}
+              placeholder="Description de la salle"
+              rows="4"
+            />
+          </label>
 
           {/* Submit */}
           <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.5rem" }}>
