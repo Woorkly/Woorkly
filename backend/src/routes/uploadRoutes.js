@@ -6,20 +6,30 @@ const { uploadFromBuffer } = require('../services/uploadService');
 const { verifyImageBinary } = require('../utils/fileValidator');
 const uploadLimiter = require('../middlewares/uploadRateLimit');
 
+// Flux de sécurité pour les uploads d'images:
+// 1. uploadLimiter — Rate limiting (max 10 uploads/heure par utilisateur)
+// 2. authRequired — Authentification
+// 3. requireRole('admin') — Vérification des droits (pour salles)
+// 4. upload.single('image') — Multer vérifie: MIME type + extension
+// 5. verifyImageBinary() — Vérification des magic bytes
+// 6. uploadFromBuffer() — Upload Cloudinary + redimensionnement
+// 7. isValidImageUrl() — Validation de l'URL retournée par Cloudinary
+// 8. Stockage en BD avec validation stricte
 const handleUpload = (folder, transformations) => async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: 'Aucun fichier reçu.' });
         }
 
-        // Vérifier l'intégrité binaire du fichier (magic bytes)
+        // Étape 1: Vérifier l'intégrité binaire du fichier (magic bytes)
+        // Cela confirme que le fichier est vraiment une image, pas un fichier renommé
         const isValid = verifyImageBinary(req.file.buffer, req.file.mimetype);
         if (!isValid) {
             return res.status(400).json({ message: 'Fichier invalide ou corrompu. L\'en-tête binaire ne correspond pas au type déclaré.' });
         }
 
-        // Upload vers Cloudinary avec transformations optionnelles
-        // (ex: redimensionnement, optimisation)
+        // Étape 2: Upload vers Cloudinary avec transformations
+        // Cloudinary: redimensionne, optimise, et retourne une URL HTTPS
         const result = await uploadFromBuffer(req.file.buffer, folder, transformations);
         res.json({ url: result.secure_url || result.url });
     } catch (error) {
