@@ -34,10 +34,9 @@ const normalizeIds = (ids = []) => {
     return [...new Set(values.map((id) => Number(id)).filter(Boolean))];
 };
 
-// Récupérer toutes les salles (au montage, sans filtre)
 const getAllRooms = async (req, res) => {
     try {
-        const rooms = await Room.getAll();
+        const rooms = await Room.getAll(req.query);
         res.status(200).json(rooms);
     } catch (error) {
         console.error("ERREUR SQL :", error);
