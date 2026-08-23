@@ -4,7 +4,7 @@ const upload = require('../middlewares/upload');
 const { authRequired, requireRole } = require('../middlewares/auth');
 const { uploadFromBuffer } = require('../services/uploadService');
 const { verifyImageBinary } = require('../utils/fileValidator');
-const uploadLimiter = require('../middlewares/uploadRateLimit');
+const { uploadLimiter } = require('../middlewares/rateLimiter');
 
 // Flux de sécurité pour les uploads d'images:
 // 1. uploadLimiter — Rate limiting (max 10 uploads/heure par utilisateur)

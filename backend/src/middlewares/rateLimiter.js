@@ -55,4 +55,30 @@ const loginLimiter = rateLimit({
     }
 });
 
-module.exports = { globalLimiter, loginLimiter };
+// Limiteur pour les uploads : 10 uploads par utilisateur toutes les heures
+// Prévient les attaques DOS et la saturation du stockage
+const uploadLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 heure
+    max: 10,
+    standardHeaders: false,
+    legacyHeaders: false,
+    keyGenerator: (req) => {
+        // Limiter par ID utilisateur (nécessite authRequired)
+        return req.user?.userId || req.ip;
+    },
+    skip: (req) => req.method === 'OPTIONS',
+    handler: (req, res) => {
+        const retryAfter = req.rateLimit?.resetTime
+            ? Math.ceil((req.rateLimit.resetTime - Date.now()) / 1000)
+            : 3600;
+
+        res.status(429).json({
+            status: 429,
+            message: 'Trop d\'uploads en peu de temps. Limite: 10 uploads par heure.',
+            retryAfter,
+            hint: `Veuillez réessayer dans ${Math.ceil(retryAfter / 60)} minutes.`
+        });
+    }
+});
+
+module.exports = { globalLimiter, loginLimiter, uploadLimiter };
