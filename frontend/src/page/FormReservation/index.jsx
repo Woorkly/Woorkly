@@ -36,15 +36,28 @@ export default function ReservationPage() {
 
   const fetchDispo = useCallback(async (selectedDate) => {
     if (!selectedDate || !room?.id) { setDispo(null); return; }
+
+    let isMounted = true;
+
     setDispoLoading(true);
     try {
       const data = await reservationService.getDisponibilite(room.id, selectedDate);
-      setDispo(data);
+      if (isMounted) {
+        setDispo(data);
+      }
     } catch {
-      setDispo(null);
+      if (isMounted) {
+        setDispo(null);
+      }
     } finally {
-      setDispoLoading(false);
+      if (isMounted) {
+        setDispoLoading(false);
+      }
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [room?.id]);
 
   useEffect(() => {

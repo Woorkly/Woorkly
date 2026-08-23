@@ -274,6 +274,8 @@ export default function GestionSalles() {
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchRooms = async () => {
       setLoading(true);
       setError(null);
@@ -288,53 +290,87 @@ export default function GestionSalles() {
         }
 
         const data = await roomService.getRooms(filters);
-        setSalles(Array.isArray(data) ? data : []);
+        if (isMounted) {
+          setSalles(Array.isArray(data) ? data : []);
+        }
       } catch (err) {
-        setError(err.response?.data?.message || err.message || "Erreur lors du chargement des salles");
+        if (isMounted) {
+          setError(err.response?.data?.message || err.message || "Erreur lors du chargement des salles");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchRooms();
+
+    return () => {
+      isMounted = false;
+    };
   }, [capacityFilter, equipmentFilter]);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchTypes = async () => {
       setLoadingTypes(true);
       setTypesError(null);
 
       try {
         const data = await typeService.getTypes();
-        setRoomTypes(Array.isArray(data) ? data : []);
+        if (isMounted) {
+          setRoomTypes(Array.isArray(data) ? data : []);
+        }
       } catch (err) {
-        setTypesError(err.response?.data?.message || err.message || "Erreur lors du chargement des types");
+        if (isMounted) {
+          setTypesError(err.response?.data?.message || err.message || "Erreur lors du chargement des types");
+        }
       } finally {
-        setLoadingTypes(false);
+        if (isMounted) {
+          setLoadingTypes(false);
+        }
       }
     };
 
     fetchTypes();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchEquipments = async () => {
       setLoadingEquipments(true);
       setEquipmentsError(null);
 
       try {
         const data = await equipmentService.getEquipments();
-        setEquipments(Array.isArray(data) ? data : []);
+        if (isMounted) {
+          setEquipments(Array.isArray(data) ? data : []);
+        }
       } catch (err) {
-        setEquipmentsError(
-          err.response?.data?.message || err.message || "Erreur lors du chargement des equipements",
-        );
+        if (isMounted) {
+          setEquipmentsError(
+            err.response?.data?.message || err.message || "Erreur lors du chargement des equipements",
+          );
+        }
       } finally {
-        setLoadingEquipments(false);
+        if (isMounted) {
+          setLoadingEquipments(false);
+        }
       }
     };
 
     fetchEquipments();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const refreshRooms = async () => {

@@ -13,31 +13,47 @@ export default function useRooms(filters = {}) {
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    let isMounted = true
+
     const fetchRooms = async () => {
       setLoading(true)
       setError(null)
       try {
         if (filters?.roomId) {
           const data = await roomService.getRoomById(filters.roomId)
-          setRoom(data)
-          setRooms([])
+          if (isMounted) {
+            setRoom(data)
+            setRooms([])
+          }
           return
         }
 
-        setRoom(null)
+        if (isMounted) {
+          setRoom(null)
+        }
 
         const data = filters?.date
           ? await roomService.getAvailableRooms(filters)
           : await roomService.getRooms()
-        setRooms(data)
+        if (isMounted) {
+          setRooms(data)
+        }
       } catch (err) {
-        setError(err.response?.data?.message || err.message)
+        if (isMounted) {
+          setError(err.response?.data?.message || err.message)
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
     fetchRooms()
+
+    return () => {
+      isMounted = false
+    }
   }, [JSON.stringify(filters)])
 
   return { rooms, room, loading, error }

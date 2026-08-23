@@ -27,19 +27,31 @@ export default function useUsers() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    let isMounted = true
+
     const fetchUsers = async () => {
       setLoading(true)
       setError(null)
       try {
         const data = await userService.getAllUsers()
-        setUsers(data.map(mapUser))
+        if (isMounted) {
+          setUsers(data.map(mapUser))
+        }
       } catch (err) {
-        setError(err.response?.data?.message || err.message)
+        if (isMounted) {
+          setError(err.response?.data?.message || err.message)
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
     fetchUsers()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   const updateUserInList = (id, role) => {

@@ -86,19 +86,44 @@ export default function GestionReservations() {
 
   /* Chargement initial des listes pour les menus déroulants */
   useEffect(() => {
+    let isMounted = true;
+
     reservationService.getFiltersData()
-      .then(({ salles, utilisateurs }) => { setSalles(salles); setUtilisateurs(utilisateurs); })
+      .then(({ salles, utilisateurs }) => {
+        if (isMounted) {
+          setSalles(salles);
+          setUtilisateurs(utilisateurs);
+        }
+      })
       .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   /* Re-fetch à chaque changement de filtre */
   useEffect(() => {
+    let isMounted = true;
+
     setLoading(true);
     reservationService
       .getAllReservations(filters)
-      .then((data) => setEvents(data.map(toEvent)))
+      .then((data) => {
+        if (isMounted) {
+          setEvents(data.map(toEvent));
+        }
+      })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (isMounted) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [filters]);
 
   const setFilter = (key, value) =>

@@ -45,22 +45,34 @@ const SalleDetail = () => {
   const selectedDate = searchParams.get("date") || "";
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchRoom = async () => {
       setLoading(true);
       setError(null);
 
       try {
         const data = await roomService.getRoomById(id);
-        setRoom(data);
+        if (isMounted) {
+          setRoom(data);
+        }
       } catch (err) {
-        const status = err.response?.status;
-        setError(status === 404 ? "Salle introuvable" : "Erreur lors du chargement de la salle");
+        if (isMounted) {
+          const status = err.response?.status;
+          setError(status === 404 ? "Salle introuvable" : "Erreur lors du chargement de la salle");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchRoom();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   const images = useMemo(() => {

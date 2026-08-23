@@ -204,6 +204,8 @@ export default function DashboardUser() {
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchAll = async () => {
       try {
         const [upcomingData, historyData, statsData] = await Promise.all([
@@ -211,19 +213,27 @@ export default function DashboardUser() {
           reservationService.getMyHistory(),
           reservationService.getMyStats(),
         ]);
-        setUpcoming(upcomingData);
-        setHistory(historyData);
-        setHeuresMois(statsData.kpis.heures_ce_mois);
-        setTauxPresence(statsData.kpis.taux_presence);
-        setMonthlyData(buildMonthlyData(statsData.monthly));
-        setUsageData(buildUsageData(statsData.type_usage));
+        if (isMounted) {
+          setUpcoming(upcomingData);
+          setHistory(historyData);
+          setHeuresMois(statsData.kpis.heures_ce_mois);
+          setTauxPresence(statsData.kpis.taux_presence);
+          setMonthlyData(buildMonthlyData(statsData.monthly));
+          setUsageData(buildUsageData(statsData.type_usage));
+        }
       } catch (err) {
         console.error('Erreur chargement dashboard', err);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
     fetchAll();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   /* Calcul des initiales pour l'avatar */
