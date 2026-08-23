@@ -15,6 +15,12 @@ const getTodayIsoDate = () => {
     return today.toISOString().split('T')[0];
 };
 
+const isWeekend = (dateStr) => {
+    const date = new Date(dateStr + 'T00:00:00');
+    const dayOfWeek = date.getDay();
+    return dayOfWeek === 0 || dayOfWeek === 6;
+};
+
 
 // Calcule le prix total selon le type de réservation
 const calculatePrice = (room, typeReservation, heureDebut, heureFin) => {
@@ -92,6 +98,10 @@ const createReservation = async (data, userId) => {
 
     if (String(date) < getTodayIsoDate()) {
         throw createHttpError('Vous ne pouvez pas réserver une date antérieure à aujourd\'hui', 400);
+    }
+
+    if (isWeekend(date)) {
+        throw createHttpError('Les réservations ne sont pas disponibles les weekends (samedi et dimanche)', 400);
     }
 
     // Vérifier que la salle existe
