@@ -7,8 +7,14 @@ import api from './api'
 */
 
 export const roomService = {
-  getRooms: async () => {
-    const res = await api.get('/rooms')
+  getRooms: async (filters = {}) => {
+    const params = {
+      capacite_min: filters.capacite_min || undefined,
+      capacite_max: filters.capacite_max || undefined,
+      equipement_id: filters.equipement_id || undefined,
+      type_id: filters.type_id || undefined,
+    };
+    const res = await api.get('/rooms', { params })
     return res.data
   },
 
