@@ -139,6 +139,29 @@ export default function ReservationPage() {
       return;
     }
 
+    // Vérifier que les horaires sont entre 8h et 18h
+    const [startHour, startMinute] = heureDebut.split(":").map(Number);
+    const [endHour, endMinute] = heureFin.split(":").map(Number);
+    const startInMinutes = (startHour * 60) + startMinute;
+    const endInMinutes = (endHour * 60) + endMinute;
+    const minTime = 8 * 60; // 08:00
+    const maxTime = 18 * 60; // 18:00
+
+    if (startInMinutes < minTime) {
+      setLocalError("Les réservations ne peuvent pas commencer avant 8h00.");
+      return;
+    }
+
+    if (endInMinutes > maxTime) {
+      setLocalError("Les réservations ne peuvent pas se terminer après 18h00.");
+      return;
+    }
+
+    if (startInMinutes >= endInMinutes) {
+      setLocalError("L'heure de fin doit être après l'heure de début.");
+      return;
+    }
+
     try {
       const payload = {
         salle_id: room.id,

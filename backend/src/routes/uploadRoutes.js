@@ -50,18 +50,25 @@ const handleUpload = (folder, transformations) => async (req, res) => {
 };
 
 // POST /api/upload/avatar — Avatar utilisateur
+// Format: multipart/form-data avec champ 'image'
+// Exemple client: const fd = new FormData(); fd.append('image', file); fetch('/upload/avatar', {method: 'POST', body: fd})
+// Retourne: { url: "https://cloudinary.com/..." }
 // Sécurité: rate limiting + redimensionnement pour éviter de charger d'énormes images
 // Les avatars sont redimensionnés à 400x400px (optimal pour affichage)
 router.post('/avatar', authRequired, uploadLimiter, upload.single('image'),
     handleUpload('woorkly/avatars', { width: 400, height: 400, crop: 'fill', quality: 'auto' }));
 
 // POST /api/upload/room-image — Image principale de salle
+// Format: multipart/form-data avec champ 'image' (admin seulement)
+// Retourne: { url: "https://cloudinary.com/..." }
 // Sécurité: rate limiting + admin + redimensionnement pour les performances
 // Les images principales sont redimensionnées à 1200px max (pour affichage web)
 router.post('/room-image', authRequired, requireRole('admin'), uploadLimiter, upload.single('image'),
     handleUpload('woorkly/salles/images', { width: 1200, height: 800, crop: 'fill', quality: 'auto' }));
 
 // POST /api/upload/room-gallery — Galerie de salle
+// Format: multipart/form-data avec champ 'image' (admin seulement)
+// Retourne: { url: "https://cloudinary.com/..." }
 // Sécurité: rate limiting + admin + redimensionnement
 // Les images galerie sont redimensionnées à 600px max (pour galerie)
 router.post('/room-gallery', authRequired, requireRole('admin'), uploadLimiter, upload.single('image'),

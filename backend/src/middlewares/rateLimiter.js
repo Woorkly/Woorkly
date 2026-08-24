@@ -1,4 +1,5 @@
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = require('express-rate-limit');
 
 const createMessage = (windowMs) => {
     const minutes = Math.ceil(windowMs / 60 / 1000);
@@ -64,7 +65,8 @@ const uploadLimiter = rateLimit({
     legacyHeaders: false,
     keyGenerator: (req) => {
         // Limiter par ID utilisateur (nécessite authRequired)
-        return req.user?.userId || req.ip;
+        // Pour IPv6, utiliser le helper ipKeyGenerator pour éviter les contournements
+        return req.user?.userId || ipKeyGenerator(req);
     },
     skip: (req) => req.method === 'OPTIONS',
     handler: (req, res) => {
