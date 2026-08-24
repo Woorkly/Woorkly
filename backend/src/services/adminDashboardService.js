@@ -1,157 +1,180 @@
-// Service analytique du dashboard admin.
-// Toutes les requêtes sont exécutées en parallèle (Promise.all) pour réduire la latence.
-// Hypothèse métier : 10 heures disponibles par salle par jour (08h00–18h00).
-const db = require('../config/db');
+/**
+ * Service analytique du dashboard admin
+ *
+ * Responsabilités:
+ * - Orchestrer les appels au modèle adminDashboardModel
+ * - Transformer les données brutes de la BD en format frontend
+ * - Exécuter tous les calculs en parallèle (Promise.all) pour réduire la latence
+ *
+ * Note: Les requêtes SQL sont dans adminDashboardModel, pas ici
+ */
 
+const dashboardModel = require('../models/adminDashboardModel');
+
+// Labels des mois en français pour le formatage de l'affichage
 const MONTH_LABELS = [
-  'Jan',
-  'Fév',
-  'Mar',
-  'Avr',
-  'Mai',
-  'Jun',
-  'Jul',
-  'Aoû',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Déc',
+  'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun',
+  'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc',
 ];
 
-const formatMonth = (monthNumber) => MONTH_LABELS[monthNumber - 1] || String(monthNumber);
+// ============================================================================
+// SECTION 1: Fonctions utilitaires d'extraction
+// ============================================================================
 
-const DAILY_AVAILABLE_HOURS = 10;
+/**
+ * Extrait le premier résultat d'une requête BD
+ * La BD retourne [[{result}]] donc on extrait [0][0]
+ * @param {Array} dbResult - Résultat brut de la BD
+ * @returns {Object} Le premier objet ou un objet vide {}
+ */
+const extractFirstResult = (dbResult) => dbResult[0]?.[0] || {};
 
-const getAdminDashboardStats = async () => {
-  const [
-    totalSallesRows,
-    reservationsTodayRows,
-    totalUtilisateursRows,
-    occupationRows,
-    monthlyRows,
-    typeRows,
-    recentRows,
-  ] = await Promise.all([
-    db.execute('SELECT COUNT(*) AS total_salles FROM salles'),
-    db.execute("SELECT COUNT(*) AS reservations_today FROM reservations WHERE date = CURDATE() AND statut <> 'annulee'"),
-    db.execute('SELECT COUNT(*) AS total_utilisateurs FROM utilisateurs'),
-    db.execute(`
-     SELECT
-  COALESCE(
-    ROUND(
-      (
-        SELECT COALESCE(
-          SUM(TIME_TO_SEC(TIMEDIFF(heure_fin, heure_debut)) / 3600),
-          0
-        )
-        FROM reservations
-        WHERE YEAR(date) = YEAR(CURDATE())
-          AND MONTH(date) = MONTH(CURDATE())
-          AND date <= CURDATE()
-          AND statut <> 'annulee'
-      )
-      /
-      NULLIF(
-        (
-          SELECT COUNT(*)
-          FROM salles
-        ) * ${DAILY_AVAILABLE_HOURS} * DAY(CURDATE()),
-        0
-      ) * 100,
-      1
-    ),
-    0
-  ) AS taux_occupation;
-    `),
-    db.execute(`
-      SELECT
-        MONTH(r.date) AS month_number,
-        COUNT(*) AS total_reservations,
-        SUM(CASE WHEN r.statut = 'confirmee' THEN 1 ELSE 0 END) AS confirmees
-      FROM reservations r
-      WHERE YEAR(r.date) = YEAR(CURDATE())
-      GROUP BY MONTH(r.date)
-      ORDER BY MONTH(r.date)
-    `),
-    db.execute(`
-      SELECT
-        t.nom AS type_name,
-        COUNT(*) AS total
-      FROM reservations r
-      JOIN salles s ON r.salle_id = s.id
-      JOIN types t ON s.type_id = t.id
-      WHERE r.statut <> 'annulee'
-      GROUP BY t.id, t.nom
-      ORDER BY total DESC, t.nom ASC
-    `),
-    db.execute(`
-      SELECT
-        r.id,
-        r.date,
-        r.heure_debut,
-        r.heure_fin,
-        r.statut,
-        r.type_reservation,
-        s.nom AS salle_nom,
-        u.nom AS user_nom
-      FROM reservations r
-      JOIN salles s ON r.salle_id = s.id
-      JOIN utilisateurs u ON r.utilisateur_id = u.id
-      ORDER BY r.date DESC, r.heure_debut DESC, r.id DESC
-      LIMIT 4
-    `),
-  ]);
+// ============================================================================
+// SECTION 2: Fonctions de transformation
+// ============================================================================
 
-  const [[totalSallesResult]] = totalSallesRows;
-const [[reservationsTodayResult]] = reservationsTodayRows;
-const [[totalUtilisateursResult]] = totalUtilisateursRows;
-const [[occupationResult]] = occupationRows;
-  const [monthlyResult] = monthlyRows;
-  const [typeResult] = typeRows;
-  const [recentResult] = recentRows;
+/**
+ * Transforme les résultats des 4 requêtes KPI en objet structuré
+ * @param {Object} sallesResult - Résultat getTotalSalles()
+ * @param {Object} todayResult - Résultat getReservationsToday()
+ * @param {Object} utilisateursResult - Résultat getTotalUtilisateurs()
+ * @param {Object} occupationResult - Résultat getOccupationRate()
+ * @returns {Object} {total_salles, reservations_today, total_utilisateurs, taux_occupation}
+ */
+const transformKpis = (sallesResult, todayResult, utilisateursResult, occupationResult) => ({
+  total_salles: Number(sallesResult.total_salles || 0),
+  reservations_today: Number(todayResult.reservations_today || 0),
+  total_utilisateurs: Number(utilisateursResult.total_utilisateurs || 0),
+  taux_occupation: Number(occupationResult.taux_occupation || 0),
+});
 
-  // Indexe les résultats par numéro de mois pour combler les mois sans données (valeur 0)
+/**
+ * Transforme les données mensuelles brutes en array complet de 12 mois
+ * Si un mois n'a pas de données dans la BD, on retourne 0
+ * Exemple BD: [{month_number: 1, total: 10}, {month_number: 3, total: 15}]
+ * Retour: [{month: 'Jan', total_reservations: 10, confirmees: 0}, ..., {month: 'Déc', ...}]
+ * @param {Array} monthlyResult - Tableau des résultats mensuels de la BD
+ * @returns {Array} Array de 12 objets (un par mois)
+ */
+const transformMonthlyTrends = (monthlyResult) => {
+  // Crée une Map pour accès rapide aux données par mois (month_number → données)
   const monthlyByMonth = new Map(
-    monthlyResult.map((row) => [Number(row.month_number), row])
+    monthlyResult.map(row => [Number(row.month_number), row])
   );
 
-  const monthly_trends = Array.from({ length: 12 }, (_, index) => {
+  // Génère un array de 12 mois, en remplissant les données existantes et 0 pour les vides
+  return Array.from({ length: 12 }, (_, index) => {
     const monthNumber = index + 1;
     const row = monthlyByMonth.get(monthNumber);
-   
-          return {
-      month: formatMonth(monthNumber),
+
+    return {
+      month: MONTH_LABELS[monthNumber - 1] || String(monthNumber),
       total_reservations: Number(row?.total_reservations || 0),
       confirmees: Number(row?.confirmees || 0),
     };
   });
+};
 
+/**
+ * Transforme les données d'utilisation par type de salle en ajoutant les pourcentages
+ * Exemple entrée: [{type_name: 'Conférence', total: 25}, {type_name: 'Atelier', total: 15}]
+ * Retour: [{type: 'Conférence', total: 25, percentage: 62.5}, ...]
+ * @param {Array} typeResult - Résultats bruts de getTypeUsage()
+ * @returns {Array} Tableau avec type, total et percentage
+ */
+const transformTypeUsage = (typeResult) => {
+  // Calcule le total global de toutes les réservations pour les pourcentages
   const totalTypeUsage = typeResult.reduce((sum, row) => sum + Number(row.total || 0), 0);
-  const type_usage = typeResult.map((row) => ({
+
+  return typeResult.map(row => ({
     type: row.type_name,
     total: Number(row.total || 0),
-    percentage: totalTypeUsage > 0 ? Math.round((Number(row.total || 0) / totalTypeUsage) * 100) : 0,
-  }));    
+    // Calcul du pourcentage (0% si aucune donnée)
+    percentage: totalTypeUsage > 0
+      ? Math.round((Number(row.total || 0) / totalTypeUsage) * 100)
+      : 0,
+  }));
+};
 
+/**
+ * Transforme les données brutes des réservations récentes en format API
+ * Sélectionne uniquement les champs à retourner et les convertit en types corrects
+ * @param {Array} recentResult - Résultats bruts de getRecentReservations()
+ * @returns {Array} Tableau de réservations formatées
+ */
+const transformRecentReservations = (recentResult) =>
+  recentResult.map(row => ({
+    id: row.id,
+    date: row.date,
+    heure_debut: row.heure_debut,
+    heure_fin: row.heure_fin,
+    statut: row.statut,
+    type_reservation: row.type_reservation,
+    salle_nom: row.salle_nom,
+    user_nom: row.user_nom,
+  }));
+
+// ============================================================================
+// SECTION 3: Orchestration principale
+// ============================================================================
+
+/**
+ * Récupère toutes les statistiques du dashboard admin
+ *
+ * Processus:
+ * 1. Appelle 7 fonctions du modèle EN PARALLÈLE (Promise.all)
+ * 2. Extrait les résultats de chaque requête
+ * 3. Transforme chaque groupe de données dans le format frontend
+ * 4. Retourne un objet structuré avec kpis, trends, usage, recent
+ *
+ * Performance: Toutes les requêtes sont en parallèle, pas en cascade
+ *
+ * @returns {Promise<Object>} Structure complète du dashboard:
+ *   {
+ *     kpis: {total_salles, reservations_today, total_utilisateurs, taux_occupation},
+ *     monthly_trends: [...12 mois...],
+ *     type_usage: [...types avec pourcentages...],
+ *     recent_reservations: [...4 dernières réservations...]
+ *   }
+ */
+const getAdminDashboardStats = async () => {
+  // ÉTAPE 1: Exécuter toutes les requêtes BD en parallèle
+  const [
+    sallesResult,
+    todayResult,
+    utilisateursResult,
+    occupationResult,
+    monthlyResult,
+    typeResult,
+    recentResult,
+  ] = await Promise.all([
+    dashboardModel.getTotalSalles(),
+    dashboardModel.getReservationsToday(),
+    dashboardModel.getTotalUtilisateurs(),
+    dashboardModel.getOccupationRate(),
+    dashboardModel.getMonthlyTrends(),
+    dashboardModel.getTypeUsage(),
+    dashboardModel.getRecentReservations(),
+  ]);
+
+  // ÉTAPE 2: Assembler et retourner les données transformées
   return {
-    kpis: {
-      total_salles: Number(totalSallesResult?.total_salles || 0),
-      reservations_today: Number(reservationsTodayResult?.reservations_today || 0),
-      total_utilisateurs: Number(totalUtilisateursResult?.total_utilisateurs || 0),
-      taux_occupation: Number(occupationResult?.taux_occupation || 0),
-    },
-    monthly_trends,
-    type_usage,
-    recent_reservations: recentResult.map((row) => ({
-      id: row.id,
-      date: row.date,
-      heure_debut: row.heure_debut,
-      heure_fin: row.heure_fin,
-      statut: row.statut,
-      type_reservation: row.type_reservation,
-      salle_nom: row.salle_nom,
-      user_nom: row.user_nom,
-    })),
+    // KPIs: 4 chiffres clés du dashboard
+    kpis: transformKpis(
+      extractFirstResult(sallesResult),
+      extractFirstResult(todayResult),
+      extractFirstResult(utilisateursResult),
+      extractFirstResult(occupationResult)
+    ),
+
+    // Tendances mensuelles: graphique avec données par mois (Jan à Déc)
+    monthly_trends: transformMonthlyTrends(monthlyResult[0]),
+
+    // Utilisation par type: graphique camembert avec pourcentages
+    type_usage: transformTypeUsage(typeResult[0]),
+
+    // Réservations récentes: affichage des 4 dernières
+    recent_reservations: transformRecentReservations(recentResult[0]),
   };
 };
 
