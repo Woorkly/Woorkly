@@ -3,7 +3,7 @@ const router = express.Router();
 const upload = require('../middlewares/upload');
 const { authRequired, requireRole } = require('../middlewares/auth');
 const { uploadFromBuffer } = require('../services/uploadService');
-const { verifyImageBinary } = require('../utils/fileValidator');
+const { verifyImageBinary, isValidImageUrl } = require('../utils/fileValidator');
 const { uploadLimiter } = require('../middlewares/rateLimiter');
 
 // Flux de sécurité pour les uploads d'images:
@@ -31,7 +31,18 @@ const handleUpload = (folder, transformations) => async (req, res) => {
         // Étape 2: Upload vers Cloudinary avec transformations
         // Cloudinary: redimensionne, optimise, et retourne une URL HTTPS
         const result = await uploadFromBuffer(req.file.buffer, folder, transformations);
-        res.json({ url: result.secure_url || result.url });
+
+        // Étape 3: Valider que Cloudinary a retourné une URL sécurisée et valide
+        // Sécurité: prévient l'injection d'URLs malveillantes si Cloudinary est compromis
+        if (!result || !result.secure_url) {
+            return res.status(500).json({ message: "Erreur: upload échoué ou URL sécurisée non disponible" });
+        }
+
+        if (!isValidImageUrl(result.secure_url)) {
+            return res.status(500).json({ message: "Erreur: URL d'image invalide reçue de Cloudinary" });
+        }
+
+        res.json({ url: result.secure_url });
     } catch (error) {
         console.error('Erreur upload Cloudinary:', error);
         res.status(500).json({ message: "Erreur lors de l'upload de l'image." });
