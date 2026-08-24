@@ -349,7 +349,7 @@ export default function ReservationPage() {
                 </div>
               </div>
               <p className="time-hint">
-                Les horaires sont ajustés automatiquement selon la formule choisie.
+                Réservations possibles de <strong>8h00 à 18h00</strong>. Les horaires sont ajustés automatiquement selon la formule choisie.
               </p>
             </>
           ) : (

@@ -121,6 +121,26 @@ const createReservation = async (data, userId) => {
         throw createHttpError('Vous ne pouvez pas réserver une heure qui est déjà passée', 400);
     }
 
+    // Vérifier que la réservation est entre 8h et 18h
+    const [startHour, startMinute] = heure_debut.split(':').map(Number);
+    const [endHour, endMinute] = heure_fin.split(':').map(Number);
+    const startInMinutes = (startHour * 60) + startMinute;
+    const endInMinutes = (endHour * 60) + endMinute;
+    const minTime = 8 * 60; // 08:00 en minutes
+    const maxTime = 18 * 60; // 18:00 en minutes
+
+    if (startInMinutes < minTime) {
+        throw createHttpError('Les réservations ne peuvent pas commencer avant 8h00', 400);
+    }
+
+    if (endInMinutes > maxTime) {
+        throw createHttpError('Les réservations ne peuvent pas se terminer après 18h00', 400);
+    }
+
+    if (startInMinutes >= endInMinutes) {
+        throw createHttpError('L\'heure de fin doit être après l\'heure de début', 400);
+    }
+
     // Vérifier que la salle existe
     const room = await Room.getById(salle_id);
     if (!room) {
