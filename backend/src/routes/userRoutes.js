@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
-const upload = require('../middlewares/upload');
 const { authRequired, requireRole } = require('../middlewares/auth');
 const { createUserValidator, patchProfileValidator, patchRoleValidator } = require('../validators/userValidator');
 const validate = require('../middlewares/validate');
@@ -19,8 +18,9 @@ router.get('/:id', authRequired, requireRole('admin'), userController.getUserDet
 router.post('/', createUserValidator, validate, userController.createUser);
 
 // PATCH /api/users/:id/profile (connecté)
-// Modification du profil personnel (nom, email, avatar, password) — chaque utilisateur ne peut modifier que le sien
-router.patch('/:id/profile', authRequired, upload.single('avatar'), patchProfileValidator, validate, userController.patchProfile);
+// Modification du profil personnel (nom, email, avatar_url, password) — chaque utilisateur ne peut modifier que le sien
+// Pour l'avatar: d'abord POST /upload/avatar pour récupérer l'URL, puis inclure avatar_url dans les données ici
+router.patch('/:id/profile', authRequired, patchProfileValidator, validate, userController.patchProfile);
 
 // PATCH /api/users/:id/role (admin only)
 // Modification du rôle d'un utilisateur

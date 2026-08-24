@@ -1,6 +1,5 @@
 const User = require('../models/User');
 const Reservation = require('../models/Reservation');
-const { uploadFromBuffer } = require('../services/uploadService');
 
 // Récupérer tous les utilisateurs
 const getAllUsers = async (req, res) => {
@@ -62,18 +61,13 @@ const patchProfile = async (req, res) => {
             }
         });
 
-        // Gestion de l'upload de l'avatar s'il y a un fichier
-        // Sécurité: la validation de l'URL est faite dans handleUpload() du middleware
-        if (req.file) {
-            const result = await uploadFromBuffer(req.file.buffer, 'woorkly/avatars');
-            if (result && result.secure_url) {
-                updates.avatar_url = result.secure_url;
+        // Validation de l'avatar_url: vérifier que c'est une URL HTTPS valide de Cloudinary
+        // L'avatar doit être uploadé via POST /upload/avatar en premier
+        if (updates.avatar_url) {
+            const { isValidImageUrl } = require('../utils/fileValidator');
+            if (!isValidImageUrl(updates.avatar_url)) {
+                return res.status(400).json({ message: "avatar_url invalide. Utilisez POST /upload/avatar d'abord." });
             }
-        }
-
-        // Sécurité: empêcher que quelqu'un injecte avatar_url directement via le body JSON
-        if (req.body.avatar_url !== undefined && !req.file) {
-            delete updates.avatar_url;
         }
 
         await User.patch(id, updates);

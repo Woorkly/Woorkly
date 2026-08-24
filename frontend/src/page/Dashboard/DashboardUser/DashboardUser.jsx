@@ -106,7 +106,10 @@ function EditProfileModal({ user, onClose, onSave }) {
       if (avatarFile) payload.avatar_url = await userService.uploadAvatar(avatarFile);
       await onSave(payload);
     } catch (err) {
-      setError(err?.response?.data?.message || 'Erreur lors de la mise à jour.');
+      // Erreurs de validation (422) ont un message précis
+      // Autres erreurs ont un message générique
+      const errorMsg = err?.response?.data?.message || 'Erreur lors de la mise à jour du profil.';
+      setError(errorMsg);
       setSaving(false);
     }
   };

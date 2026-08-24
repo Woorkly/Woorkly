@@ -6,7 +6,14 @@ const { validationResult } = require('express-validator');
 const validate = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(422).json({ errors: errors.array() });
+        // Construire un message à partir du premier message d'erreur (pour le frontend)
+        const firstError = errors.array()[0];
+        const message = firstError?.msg || 'Erreur de validation';
+
+        return res.status(422).json({
+            message,
+            errors: errors.array()
+        });
     }
     next();
 };
