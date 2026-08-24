@@ -272,6 +272,7 @@ class Reservation extends BaseModel {
     }
 
     // Taux de présence : (confirmee + terminee) / (confirmee + terminee + abandonne)
+    // Si aucune réservation, taux = 0% (pas encore calculable = 0)
     static async getPresenceRate(userId) {
         const sql = `
             SELECT
@@ -282,7 +283,7 @@ class Reservation extends BaseModel {
         `;
         const [rows] = await db.execute(sql, [userId]);
         const { presences, total } = rows[0];
-        if (total === 0) return 100;
+        if (total === 0) return 0;
         return Math.round((presences / total) * 100);
     }
 }
