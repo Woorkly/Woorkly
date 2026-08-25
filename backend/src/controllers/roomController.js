@@ -88,30 +88,7 @@ const getRoomDetails = async (req, res) => {
         res.status(500).json({ message: "Erreur lors de la récupération des détails" });
     }
 };
-// Détail d'une salle avec sa galerie
-// const getRoomDetails = async (req, res) => {
-//     try {
-//         const { id } = req.params;
-        
-//         // On lance les deux requêtes
-//         const room = await Room.getById(id);
-        
-//         if (!room) {
-//             return res.status(404).json({ message: "Salle non trouvée" });
-//         }
 
-//         const photos = await Room.getPhotos(id);
-
-//         // On fusionne les données : on ajoute la galerie dans l'objet room
-//         res.status(200).json({
-//             ...room,
-//             galerie: photos
-//         });
-
-//     } catch (error) {
-//         res.status(500).json({ message: "Erreur serveur" });
-//     }
-// };
 
 // Création d'une salle (Admin)
 const createRoom = async (req, res) => {
