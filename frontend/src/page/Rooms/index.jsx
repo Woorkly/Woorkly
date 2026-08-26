@@ -157,9 +157,7 @@ export default function Salle() {
                 value={filters.date}
                 min={new Date().toISOString().split('T')[0]}
                 onChange={(e) => updateFilter('date', e.target.value)}
-                style={dateError ? { borderColor: 'var(--color-danger)' } : {}}
               />
-              {dateError && <span style={{ color: '#b45309', fontSize: '0.875rem', marginTop: '4px', display: 'block' }}>{dateError}</span>}
             </label>
 
             <label>
