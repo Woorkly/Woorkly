@@ -25,19 +25,20 @@ const Header = ({ isDashboardUser = false }) => {
             {user?.role?.toLowerCase() === "admin" && (
               <Link to="/dashboardAdmin"
                 style={{ cursor: "pointer" }}
-                
+
               >
                 ADMIN
               </Link>
             )}
           </div>
-          <div
+          <button
             className="header-nav__logo"
-            style={{ cursor: "pointer" }}
             onClick={() => navigate("/")}
+            aria-label="Accueil - Woorkly"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
             woorkly.
-          </div>
+          </button>
           <div className="header-nav__actions">
             <button
               className={`header-burger ${menuOpen ? 'open' : ''}`}
@@ -56,7 +57,9 @@ const Header = ({ isDashboardUser = false }) => {
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
+                aria-label="Maison"
               >
+                <title>Voir nos espaces</title>
                 <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
                 <polyline points="9 22 9 12 15 12 15 22" />
               </svg>
@@ -79,7 +82,7 @@ const Header = ({ isDashboardUser = false }) => {
             )}
           </div>
           {menuOpen && (
-            <div className="header-mobile">
+            <nav className="header-mobile" aria-label="Menu mobile">
               <div className="header-mobile__links">
                 <Link to="/salle">SALLES</Link>
                 {user?.role !== "admin" && <Link to="/dashboardUser">MON ESPACE</Link>}
@@ -97,7 +100,7 @@ const Header = ({ isDashboardUser = false }) => {
                   <button className="header-nav__btn-dark" onClick={() => navigate('/login')}>Connexion</button>
                 )}
               </div>
-            </div>
+            </nav>
           )}
         </nav>
       </section>

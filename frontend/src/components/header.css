@@ -28,6 +28,7 @@
 .header-nav__logo {
   font-family: 'Georgia', serif;
   font-size: 26px; font-weight: 700; color: #fff; letter-spacing: -1px;
+  background: none; border: none; padding: 0; cursor: pointer;
 }
 .header-nav__actions { display: flex; gap: 10px; align-items: center; }
 

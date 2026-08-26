@@ -20,16 +20,19 @@ const footer = () => {
             <div className="footer-tagline">Espace de travail & réunion</div>
             <p className="footer-newsletter-label">Inscrivez-vous à notre newsletter</p>
           </div>
-          <div className="newsletter">
+          <form className="newsletter" onSubmit={(e) => e.preventDefault()}>
+            <label htmlFor="newsletter-email" style={{ display: 'none' }}>Email pour la newsletter</label>
             <input
+              id="newsletter-email"
               className="newsletter-input"
               type="email"
               placeholder="Votre email"
-              value="email"
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
+              aria-label="Votre adresse email"
             />
-            <button className="newsletter-btn">S'inscrire</button>
-          </div>
+            <button type="submit" className="newsletter-btn">S'inscrire</button>
+          </form>
         </div>
 
         {/* <div className="footer-links">
@@ -74,10 +77,10 @@ const footer = () => {
             <a href="#">Sécurité et cookies</a>
           </div>
           <div className="social-icons">
-            <a href="#">f</a>
-            <a href="#">in</a>
-            <a href="#">x</a>
-            <a href="#">yt</a>
+            <a href="#" aria-label="Suivez-nous sur Facebook">f</a>
+            <a href="#" aria-label="Suivez-nous sur LinkedIn">in</a>
+            <a href="#" aria-label="Suivez-nous sur X (Twitter)">x</a>
+            <a href="#" aria-label="Regardez nos vidéos sur YouTube">yt</a>
           </div>
         </div>
       </footer>

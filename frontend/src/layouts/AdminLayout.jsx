@@ -35,9 +35,14 @@ export default function AdminLayout() {
 
         {/* Header mobile — remplace la sidebar sur petit écran */}
         <header className="admin-header">
-          <div className="admin-header__logo" onClick={() => navigate('/')}>
+          <button
+            className="admin-header__logo"
+            onClick={() => navigate('/')}
+            aria-label="Accueil - Woorkly Admin"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
             Woorkly<span>,</span>
-          </div>
+          </button>
           <button
             className={`admin-header__burger${menuOpen ? ' open' : ''}`}
             onClick={() => setMenuOpen(s => !s)}
