@@ -8,6 +8,7 @@
     "dev": "nodemon --watch src --ext js,json --legacy-watch src/server.js",
     "db:setup": "node database/setup.js",
     "db:migrate": "node database/migrate-only.js",
+    "create:admin": "node src/scripts/createAdmin.js",
     "test": "jest"
   },
   "keywords": [],
