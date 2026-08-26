@@ -104,9 +104,9 @@ export default function Salle() {
       if (value && isWeekend(value)) {
         const dayName = getDayName(value)
         setDateError(`Les réservations ne sont pas disponibles le ${dayName}.`)
-        return
+      } else {
+        setDateError('')
       }
-      setDateError('')
     }
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
