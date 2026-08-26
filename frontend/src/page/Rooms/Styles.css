@@ -256,6 +256,30 @@
   font-size: 16px;
 }
 
+/* Weekend alert message */
+.weekend-alert {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  margin: 32px 0;
+}
+
+.weekend-alert-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: #92400e;
+  font-weight: 600;
+}
+
+.weekend-alert-hint {
+  margin: 0;
+  font-size: 13px;
+  color: #b45309;
+  line-height: 1.5;
+}
+
 /* Right: Map Section */
 .rooms-map-section {
   position: relative;

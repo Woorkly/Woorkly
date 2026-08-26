@@ -159,7 +159,7 @@ export default function Salle() {
                 onChange={(e) => updateFilter('date', e.target.value)}
                 style={dateError ? { borderColor: 'var(--color-danger)' } : {}}
               />
-              {dateError && <span style={{ color: 'var(--color-danger)', fontSize: '0.875rem', marginTop: '4px', display: 'block' }}>{dateError}</span>}
+              {dateError && <span style={{ color: '#b45309', fontSize: '0.875rem', marginTop: '4px', display: 'block' }}>{dateError}</span>}
             </label>
 
             <label>
@@ -225,7 +225,12 @@ export default function Salle() {
 
         {/* Left: Rooms list */}
         <div className="rooms-list-section">
-          {rooms.length === 0 ? (
+          {dateError ? (
+            <div className="weekend-alert">
+              <p className="weekend-alert-title">{dateError}</p>
+              <p className="weekend-alert-hint">Sélectionnez une date entre lundi et vendredi pour voir les salles disponibles.</p>
+            </div>
+          ) : rooms.length === 0 ? (
             <p className="no-rooms">Aucune salle trouvée.</p>
           ) : (
             <div className="rooms-list-grid">
