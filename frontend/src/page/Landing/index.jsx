@@ -27,7 +27,7 @@ export default function Landing() {
           </ul>
 
           <div className="hero-actions">
-            <Link to="/rooms">
+            <Link to="/salle">
               <Button variant="primary">Découvrir les salles</Button>
             </Link>
             <Link to="/salle">

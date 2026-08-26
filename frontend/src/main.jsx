@@ -1,3 +1,6 @@
+// Point d'entrée principal de l'application React
+// Configure le routage, l'authentification et le strict mode
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'

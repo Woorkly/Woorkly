@@ -32,7 +32,7 @@ const footer = () => {
           </div>
         </div>
 
-        <div className="footer-links">
+        {/* <div className="footer-links">
           <div className="footer-col">
             <h4>Espace de travail</h4>
             <a href="#">Coworking</a>
@@ -64,10 +64,10 @@ const footer = () => {
             <a href="#">Partir à un endroit</a>
             <a href="#">Recrutement</a>
           </div>
-        </div>
+        </div> */}
 
         <div className="footer-bottom">
-          <p>© Copyright Woorkly 2024</p>
+          <p>© Copyright Woorkly 2026</p>
           <div className="footer-bottom-links">
             <a href="#">Règlement de partenage</a>
             <a href="#">CPG</a>
