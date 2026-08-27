@@ -10,23 +10,49 @@ const MUTATION_METHODS = ['post', 'put', 'patch', 'delete']
 let csrfToken = null
 
 // Générer ou récupérer un UUID stable pour la session (utilisé pour le CSRF)
+// Note: utilise localStorage au lieu de sessionStorage pour la fiabilité sur iOS
 const getSessionId = () => {
   const key = '__session_id__'
-  let sessionId = sessionStorage.getItem(key)
 
-  if (!sessionId) {
-    // Génère un UUID v4 si disponible (navigateurs modernes)
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-      sessionId = crypto.randomUUID()
-    } else {
-      // Fallback pour navigateurs anciens
-      sessionId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = (Math.random() * 16) | 0
-        const v = c === 'x' ? r : (r & 0x3) | 0x8
-        return v.toString(16)
-      })
+  // Priorité 1: localStorage (plus fiable sur iOS que sessionStorage)
+  try {
+    let sessionId = localStorage.getItem(key)
+    if (sessionId) return sessionId
+  } catch (e) {
+    // localStorage peut être désactivé (mode privé)
+  }
+
+  // Priorité 2: sessionStorage (fallback)
+  try {
+    let sessionId = sessionStorage.getItem(key)
+    if (sessionId) return sessionId
+  } catch (e) {
+    // sessionStorage peut être désactivé
+  }
+
+  // Génère un nouvel UUID
+  let sessionId
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    sessionId = crypto.randomUUID()
+  } else {
+    // Fallback pour navigateurs anciens
+    sessionId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = (Math.random() * 16) | 0
+      const v = c === 'x' ? r : (r & 0x3) | 0x8
+      return v.toString(16)
+    })
+  }
+
+  // Persister dans localStorage (et sessionStorage en fallback)
+  try {
+    localStorage.setItem(key, sessionId)
+  } catch (e) {
+    // Si localStorage échoue, utiliser sessionStorage
+    try {
+      sessionStorage.setItem(key, sessionId)
+    } catch (e2) {
+      // Si rien ne marche, au moins on a le UUID en mémoire cette session
     }
-    sessionStorage.setItem(key, sessionId)
   }
 
   return sessionId
