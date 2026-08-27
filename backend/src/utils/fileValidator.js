@@ -4,7 +4,7 @@ const MAGIC_BYTES = {
     'image/gif': [0x47, 0x49, 0x46, 0x38],
     'image/webp': [0x52, 0x49, 0x46, 0x46],
 };
-
+// Vérifie si un buffer est un fichier image valide selon son type MIME
 const verifyImageBinary = (buffer, mimetype) => {
     if (!buffer || buffer.length === 0) {
         return false;

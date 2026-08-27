@@ -2,25 +2,25 @@
 // Centralisent la logique de validation, calcul de prix, et anti-chevauchement
 const Reservation = require('../models/Reservation');
 const Room = require('../models/Room');
-
+// Fonctions utilitaires pour la gestion des réservations
 const createHttpError = (message, statusCode) => {
     const error = new Error(message);
     error.statusCode = statusCode;
     return error;
 };
-
+// Récupère la date actuelle au format ISO (YYYY-MM-DD)
 const getTodayIsoDate = () => {
     const today = new Date();
     today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
     return today.toISOString().split('T')[0];
 };
-
+// Vérifie si une date donnée est un weekend (samedi ou dimanche)
 const isWeekend = (dateStr) => {
     const date = new Date(dateStr + 'T00:00:00');
     const dayOfWeek = date.getDay();
     return dayOfWeek === 0 || dayOfWeek === 6;
 };
-
+// Vérifie si une date/heure donnée est dans le passé par rapport à maintenant
 const isTimeInPast = (dateStr, timeStr) => {
     const now = new Date();
     const today = getTodayIsoDate();
@@ -181,7 +181,7 @@ const createReservation = async (data, userId) => {
     };
 };
 
-
+// Statuts valides pour une réservation
 const VALID_STATUTS = ['en-attente', 'confirmee', 'annulee', 'terminee', 'abandonne'];
 
 // Agrège toutes les stats du dashboard utilisateur en un seul appel

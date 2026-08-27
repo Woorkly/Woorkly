@@ -1,11 +1,11 @@
 const rateLimit = require('express-rate-limit');
 const { ipKeyGenerator } = require('express-rate-limit');
-
+// Message par défaut pour les limites de taux
 const createMessage = (windowMs) => {
     const minutes = Math.ceil(windowMs / 60 / 1000);
     return `Trop de requêtes détectées. Veuillez réessayer dans ${minutes} minutes.`;
 };
-
+// Message pour les tentatives de connexion
 const loginMessage = (windowMs) => {
     const minutes = Math.ceil(windowMs / 60 / 1000);
     return `Trop de tentatives de connexion. Veuillez réessayer dans ${minutes} minutes.`;
